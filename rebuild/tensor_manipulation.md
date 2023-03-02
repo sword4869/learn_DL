@@ -1,0 +1,472 @@
+- [1. tensor\_manipulation](#1-tensor_manipulation)
+  - [1.1. create](#11-create)
+  - [1.2. calculate](#12-calculate)
+  - [1.3. 维度操作](#13-维度操作)
+  - [1.4. 逻辑运算符](#14-逻辑运算符)
+  - [1.5. 转换为其他Python对象](#15-转换为其他python对象)
+  - [1.6. 拷贝](#16-拷贝)
+    - [1.6.1. 原地操作变量](#161-原地操作变量)
+    - [1.6.2. 拷贝](#162-拷贝)
+    - [1.6.3. grad](#163-grad)
+
+# 1. tensor_manipulation
+
+## 1.1. create
+```python
+import torch
+
+
+
+# 标量
+x = torch.tensor(8)
+# 行向量
+torch.arange(4)
+# tensor([0, 1, 2, 3])
+torch.arange(4.0)
+# tensor([0., 1., 2., 3.])
+torch.arange(0.7, 4.7)
+# tensor([0.7000, 1.7000, 2.7000, 3.7000])
+
+
+
+### 全0
+# torch.zeros((2, 3, 4)),元组格式也行
+torch.zeros(2, 3, 4)
+torch.zeros_like(X)
+
+### 全1
+torch.ones(2, 3, 4)
+torch.ones_like(X)
+
+### 单位矩阵
+torch.eye(3, 3)
+
+
+### 随即
+# [0, 1]中随机采样
+torch.rand(3, 4)
+# 从均值为0、标准差为1的标准高斯分布（正态分布）中随机采样。
+torch.randn(3, 4)
+
+# 限定元素大小 [min, max)
+torch.randint(10, 12, (3, 4))
+# 默认最小0
+torch.randint(2, (3, 4))
+
+
+# Python列表
+torch.tensor([[2, 1, 4, 3], [1, 2, 3, 4], [4, 3, 2, 1]])
+```
+
+浮点数
+```python
+# 整数默认torch.int64
+a = torch.tensor(12).dtype
+# 直接tensor，浮点数默认torch.float32
+a2 = torch.tensor(12.1).dtype
+# 转化来，浮点数默认torch.float64
+import numpy as np
+a3 = torch.tensor(np.array([1.2])).dtype
+
+
+### 所以，一般在转化时，指定float32
+# 方式1
+b = torch.tensor(12, dtype=torch.float32)
+# 方式2
+c = torch.tensor(12).float()
+```
+
+维度
+
+```python
+# 0-D标量
+x = torch.tensor(8).shape
+# torch.Size([])
+len(x)  # 0
+
+# 1-D向量
+y = torch.arange(12).shape
+# torch.Size([12])
+len(y)  # 1
+
+z = torch.arange(12).reshape(2, 2, 3).shape
+# torch.Size([2, 2, 3])
+len(z)  # 3
+```
+```python
+X = torch.arange(8).reshape(2, 4)
+
+# 自动计算出维度
+X.reshape(-1, 4)
+X.reshape(2, -1)
+
+X.reshape(-1)       # 化为1D
+# torch.Size([8])
+
+X.reshape(-1, 8)    # 化为2D
+# torch.Size([1, 8])
+
+X.reshape(-1, 1)    # 化为2D
+# torch.Size([8, 1])
+```
+
+切片
+
+```python
+X = torch.arange(36).reshape(4, 3, 3)
+
+X, X[-1], X[1:3], X[1:3, :], X[1,1]
+
+# 超出索引, 返回全0
+# X[5], X[5, :] 不行，当行必须是slice格式的，而不是index
+X[5:6], X[:, 7:8]
+# tensor([], size=(0, 2), dtype=torch.int64)
+# tensor([], size=(4, 0), dtype=torch.int64)
+
+# 效果一样
+x[0, 0, 0] == x[0][0][0]    # 拆分成index
+X[1:3] == X[1:3, :]
+
+# slice的效果不同
+Y1 = X[1, :]
+# tensor([2, 3]), torch.Size([2]),
+Y2 = X[1:2, :]
+# tensor([[2, 3]]), torch.Size([1, 2]))
+```
+为多个元素赋值相同的值
+```python
+X[0:2, :] = 12
+X[:] = 12
+```
+广播机制
+
+```python
+# 形状不能是 (3), 得是 (3,1)，len(shape)要一致
+X = torch.arange(3).reshape((3, 1))
+Y = torch.arange(2).reshape((1, 2))
+
+a = X+Y
+# - (3,1),(1,2),都扩展为(3,2). 
+# - 矩阵`X`将复制列，变成`[[0,0], [1,1], [2,2]]`.
+# - 矩阵`Y`将复制行，变成`[[0,1], [0,1], [0,1]]`
+# - 然后相加
+```
+
+
+## 1.2. calculate
+
+element-wise
+```python
+X = torch.arange(9).reshape((3, 3))
+
+2 + X
+2 * X
+2 ** X
+```
+matrix
+```python
+X = torch.arange(9).reshape((3, 3))
+Y = torch.arange(9).reshape((3, 3))
+
+X + Y
+X - Y
+X / Y
+X * Y   # element-wise, 按元素相乘，即Hadamard product
+torch.mul(X, Y)
+X ** Y  # 求幂运算
+torch.exp(X)  # e^x
+```
+
+
+1D向量的点积：结果是一个0维标量
+```python
+A = torch.tensor([1, 2, 3])
+B = torch.tensor([2, 0, 0])
+
+# (1) torch.dot 限定 1D 向量
+torch.dot(A, B) 
+# tensor(2)
+
+
+# (2) element-wise，再求和
+(A * B).sum()
+
+# (3)
+torch.matmul(A, B)
+
+# (4) 
+A @ B
+```
+
+2D矩阵-1D向量积：结果是一个1维向量
+
+```python
+A = torch.arange(9).reshape(3,3)
+x = torch.tensor([1,2,3])
+
+# (1) 限定 matrix-vector (vector-matrix 不能颠倒)
+torch.mv(A, x)
+# tensor([ 8, 26, 44])
+
+# (2) 
+torch.matmul(A, x)
+
+# (3)
+A@x
+```
+矩阵-矩阵乘法: 结果是2D
+```python
+X = torch.arange(9).reshape((3, 3))
+Y = torch.ones_like(X)
+
+# (1) 限定 matrix-matrix multiplication
+torch.mm(X, Y)
+
+# (2)
+torch.matmul(X, Y)
+
+# (3)
+X@Y
+```
+
+sum求和，降低维度
+```python
+Z = torch.ones(3,4)
+
+# 对张量中的所有元素进行求和，会产生一个单元素张量
+Z.sum()
+# tensor(12.) torch.Size([3, 4])
+
+# 沿着轴求和,即输入轴0的维数在输出形状中消失。
+Z.sum(axis=0)
+# tensor([3., 3., 3., 3.]) torch.Size([4])
+Z.sum(axis=1)
+# tensor([4., 4., 4.]) torch.Size([3])
+
+# 沿着行和列对矩阵求和，等价于对矩阵的所有元素进行求和。
+Z.sum(axis=[0,1])
+# tensor(12.)
+```
+
+sum，非降维求和
+```python
+Z.sum(axis=1, keepdims=True)
+# tensor([[4.],[4.],[4.]])
+```
+
+元素的累积总和，此函数不会沿任何轴降低输入张量的维度
+```python
+T = torch.arange(12).reshape(3, 4)
+
+# T[i] = T[i-1] + T[i]
+T.cumsum(axis=0)
+#  tensor([[ 0,  1,  2,  3],
+#          [ 4,  6,  8, 10],
+#          [12, 15, 18, 21]]),
+
+# T[:, i] = T[:, i-1] + T[;, i]
+T.cumsum(axis=1)
+#  tensor([[ 0,  1,  3,  6],
+#          [ 4,  9, 15, 22],
+#          [ 8, 17, 27, 38]]))
+```
+
+张量中元素的总数，number of element，即形状的所有元素乘积
+```python
+X.numel()
+```
+
+平均值
+```python
+# (1) mean: Input dtype must be either a floating point or complex dtype
+a = X.float().mean()
+
+# (2) 平均值 = 所有元素求和 / 元素个数
+b = X.sum() / X.numel()
+```
+最大值的维度序号
+```python
+a = torch.arange(16).reshape(2,8)
+torch.argmax(a, dim=0)
+torch.argmax(a, dim=1)
+```
+
+限定元素大小 [min, max]
+```python
+X = torch.randint(20, (1, 10))
+X.clamp(min=0, max=9)
+```
+
+```python
+torch.max()
+torch.abs()
+```
+
+## 1.3. 维度操作
+
+
+交换维度
+```python
+A = torch.arange(12).reshape(3, 4)
+
+# 转置
+A.T
+A.permute(1, 0)
+
+# X: [B, H, W, C]，变换成Y: [B, C, H, W]
+X.permute(0, 3, 1, 2)
+```
+连接张量
+```python
+X = torch.arange(9).reshape((3, 3))
+Y = torch.ones_like(X)
+
+# 按外层的列
+a = torch.cat((X, Y), dim=0)    # (6, 3)
+# 按内层的列
+b = torch.cat((X, Y), dim=1)    # (3, 6)
+```
+张量的序列变张量
+```python
+t = []
+t.append(torch.ones(3,4))
+t.append(torch.ones(3,4))
+t_tensor_0 = torch.stack(t, dim=0)    # [2, 3, 4]
+t_tensor_1 = torch.stack(t, dim=1)    # [3, 2, 4]
+t_tensor_2 = torch.stack(t, dim=2)    # [3, 4, 2]
+```
+张量升维，在哪个地方加一个维度。
+```python
+X=torch.arange(6).reshape(2, 3)
+X.unsqueeze(0)      # torch.Size([1, 2, 3])
+X.unsqueeze(1)      # torch.Size([2, 1, 3])
+X.unsqueeze(2)      # torch.Size([2, 3, 1])
+```
+降维
+```python
+x = torch.zeros(2, 1, 2, 1, 2)
+# @dim=None： 删除一个张量中所有维数为1的维度
+torch.squeeze(x)        # torch.Size([2, 2, 2])
+# 查询维度0, 不是1, 不改变什么
+torch.squeeze(x, 0)     # torch.Size([2, 1, 2, 1, 2])
+# 查询维度1, 是1, 删除调
+torch.squeeze(x, 1)     # torch.Size([2, 2, 1, 2])
+```
+
+## 1.4. 逻辑运算符
+
+```python
+X = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+
+# 逻辑运算符
+X == Y
+
+# 筛选
+X * (torch.abs(X) >= 5)
+'''
+ tensor([[0, 0, 0],
+         [0, 0, 5],
+         [6, 7, 8]]))
+'''
+```
+
+
+## 1.5. 转换为其他Python对象
+
+```python
+# tensor -> numpy
+# Can't call numpy() on Tensor that requires grad. Use tensor.detach().numpy() instead. 
+A = torch.tensor(1).numpy()
+
+# numpy -> tensor
+B = torch.tensor(A)
+```
+
+```python
+# 将大小为1的张量转换为Python标量
+a = torch.tensor([3.5])
+a.item(), float(a), int(a)
+# 3.5, 3.5, 3
+```
+
+## 1.6. 拷贝
+
+### 1.6.1. 原地操作变量
+原本是`Y = Y + X`
+```python
+X = torch.randn(3,4)
+Y = torch.randn(3,4)
+
+# Y = X+Y, 取消Y
+before1 = id(Y)
+Y = Y + X
+after1 = id(Y)
+
+# Z = X+Y, 取消Z
+Z = torch.zeros_like(Y)
+before2 = id(Z)
+Z = X + Y
+after2 = id(Z)
+
+before1 == after1, before2 == after2
+# (False, False)
+```
+`X[:] = X + Y`或`X += Y`来减少操作的内存开销。
+```python
+X = torch.randn(3,4)
+Y = torch.randn(3,4)
+
+# 方式1
+before1 = id(Y)
+Y += X
+after1 = id(Y)
+
+# 方式2
+Z = torch.zeros_like(Y)
+before2 = id(Z)
+Z[:] = X + Y
+after2 = id(Z)
+
+before1 == after1, before2 == after2
+```
+### 1.6.2. 拷贝
+
+深拷贝
+```python
+B = X.clone()  # 通过分配新内存，将A的一个副本分配给B
+```
+浅拷贝
+```python
+X = torch.rand(3, 4)
+Y = X
+# 原来的X也被改变
+Y[1:2] = 2
+```
+
+### 1.6.3. grad
+
+创建梯度
+```python
+# (1) 默认创建的tensor没有grad
+torch.arange(4.0, requires_grad=True)
+
+# (2)
+# only Tensors of floating point and complex dtype can require gradients
+X = torch.randint(2, (2, 3)).float()
+X.requires_grad = True
+# tensor([[0., 1., 0.],
+#         [0., 0., 1.]], requires_grad=True)
+
+# (3)
+X = torch.randint(2, (2, 3)).float()
+X.requires_grad_(True)
+```
+
+计算梯度
+```python
+# 计算梯度: 计算谁的梯度写谁
+y.backward()
+
+# 在默认情况下，PyTorch会累积梯度，我们需要清除之前的值
+x.grad.zero_()
+```
