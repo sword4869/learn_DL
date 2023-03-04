@@ -7,7 +7,6 @@
   - [1.6. 拷贝](#16-拷贝)
     - [1.6.1. 原地操作变量](#161-原地操作变量)
     - [1.6.2. 拷贝](#162-拷贝)
-    - [1.6.3. grad](#163-grad)
 
 # 1. tensor_manipulation
 
@@ -32,6 +31,7 @@ torch.arange(0.7, 4.7)
 ### 全0
 # torch.zeros((2, 3, 4)),元组格式也行
 torch.zeros(2, 3, 4)
+torch.zeros(X.shape)
 torch.zeros_like(X)
 
 ### 全1
@@ -45,13 +45,16 @@ torch.eye(3, 3)
 ### 随即
 # [0, 1]中随机采样
 torch.rand(3, 4)
-# 从均值为0、标准差为1的标准高斯分布（正态分布）中随机采样。
+# rand-normal, 从均值为0、标准差为1的标准高斯分布（正态分布）中随机采样。
 torch.randn(3, 4)
 
 # 限定元素大小 [min, max)
 torch.randint(10, 12, (3, 4))
 # 默认最小0
 torch.randint(2, (3, 4))
+
+# normal
+torch.normal(0, 1, (3,3 ))
 
 
 # Python列表
@@ -92,6 +95,9 @@ len(y)  # 1
 z = torch.arange(12).reshape(2, 2, 3).shape
 # torch.Size([2, 2, 3])
 len(z)  # 3
+
+# 所以，对于非标量，常用
+len(X) == X.shape[0]
 ```
 ```python
 X = torch.arange(8).reshape(2, 4)
@@ -361,13 +367,31 @@ X = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
 # 逻辑运算符
 X == Y
 
-# 筛选
-X * (torch.abs(X) >= 5)
-'''
- tensor([[0, 0, 0],
-         [0, 0, 5],
-         [6, 7, 8]]))
-'''
+# 会广播没有的维度、或者为1的维度
+X == 1                  # [3, 4] match []
+X == torch.ones(3)      # [3, 4] match [3]
+X == torch.ones(4)      # [3, 4] match [4]
+X == torch.ones(3, 1)   # [3, 4] match [3]
+X == torch.ones(1, 4)   # [3, 4] match [3]
+X == torch.ones(3, 4)   # [3, 4] match [3, 4]
+X == torch.ones(6)      # [3, 4] cannot match [4]
+X == torch.ones(8)      # [3, 4] cannot match [4]
+X == torch.ones(6, 4)   # [3, 4] cannot match [6, 4]
+```
+```python
+# Mask 筛选：以下两个结果相反
+X = torch.arange(4).reshape(2,2)
+M = X > 1     # 想相反，~M
+
+# 运算快
+X * M
+# tensor([[0, 0],
+#         [2, 3]])
+
+# 运算慢
+X[M] = 0
+# tensor([[0, 1],
+#         [0, 0]])
 ```
 
 
@@ -443,30 +467,3 @@ Y = X
 Y[1:2] = 2
 ```
 
-### 1.6.3. grad
-
-创建梯度
-```python
-# (1) 默认创建的tensor没有grad
-torch.arange(4.0, requires_grad=True)
-
-# (2)
-# only Tensors of floating point and complex dtype can require gradients
-X = torch.randint(2, (2, 3)).float()
-X.requires_grad = True
-# tensor([[0., 1., 0.],
-#         [0., 0., 1.]], requires_grad=True)
-
-# (3)
-X = torch.randint(2, (2, 3)).float()
-X.requires_grad_(True)
-```
-
-计算梯度
-```python
-# 计算梯度: 计算谁的梯度写谁
-y.backward()
-
-# 在默认情况下，PyTorch会累积梯度，我们需要清除之前的值
-x.grad.zero_()
-```
