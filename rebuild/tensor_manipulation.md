@@ -309,14 +309,21 @@ torch.abs()
 ```
 
 ## 1.3. 维度操作
-
-
-交换维度
+转置: 交换两个维度
 ```python
 A = torch.arange(12).reshape(3, 4)
 
 # 转置
 A.T
+
+# [4, 3]
+A.transpose(0, 1) == A.transpose(1, 0)
+```
+
+交换维度
+```python
+A = torch.arange(12).reshape(3, 4)
+
 A.permute(1, 0)
 
 # X: [B, H, W, C]，变换成Y: [B, C, H, W]
@@ -326,11 +333,13 @@ X.permute(0, 3, 1, 2)
 ```python
 X = torch.arange(9).reshape((3, 3))
 Y = torch.ones_like(X)
+Z = torch.arange(9).reshape((3, 2))
 
 # 按外层的列
-a = torch.cat((X, Y), dim=0)    # (6, 3)
+a = torch.cat((X, Y), dim=0)    # [6, 3]
 # 按内层的列
-b = torch.cat((X, Y), dim=1)    # (3, 6)
+b = torch.cat((X, Y), dim=1)    # [3, 6]
+c = torch.cat((X, Z), dim=1)    # [3, 5]
 ```
 张量的序列变张量
 ```python
@@ -403,7 +412,10 @@ X[M] = 0
 A = torch.tensor(1).numpy()
 
 # numpy -> tensor
-B = torch.tensor(A)
+B1 = torch.from_numpy(np.array(1.2))
+B2 = torch.tensor(np.array(1.2))
+
+# 此时B是float64，在上面浮点数中有提及。
 ```
 
 ```python

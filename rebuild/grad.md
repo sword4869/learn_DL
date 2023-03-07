@@ -45,12 +45,22 @@ u = y.detach()
 
 
 不加载梯度
-```python
-# 不需要计算梯度时，比如评估loss时（不需要反向传播来更新，这不是在训练）
-with torch.no_grad():
-    ...
-```
-```python
-# 评估模式，也不加载梯度
-net.eval()
-```
+
+![图 7](../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
+
+训练、验证、测试
+
+![图 5](../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
+ 
+
+
+For every **batch**( not epoch ) of data:
+1. Call `optimizer.zero_grad()` to reset gradients of model parameters.
+2. Call `loss.backward()` to backpropagate gradients of prediction loss.
+3. Call `optimizer.step()` to adjust model parameters.
+
+
+![图 4](../images/77bdacd36dfa57e1f72fe6bc5641e2113c9104ec83594fe69cf14081d8c2bea8.png)  
+
+
+![图 6](../images/9c5c01f071d2528b0b0b415fad698050d815069f68811e78b415d5f4ae393816.png)  
