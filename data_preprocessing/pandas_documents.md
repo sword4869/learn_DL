@@ -295,13 +295,6 @@ df1['3'] = [1, 2, 3, 4]
 <https://www.cnblogs.com/avivi/p/10813318.html>
 
 ## 判断nan
-```python
-x = np.nan		# 用numpy的
-if pd.isna(x):	# 用pandas的
-    pass
-if pd.notna(x):
-    pass
-```
 
 ## 自动化对齐
 
@@ -342,14 +335,6 @@ np_arr2 = np.array(df1[0:2][['A','B']])
 np_arr2 = np.array(df1[0:2])[:,0:2]
 ```
 
-## dropna()的注意
-因为扔掉包含Nan的行后，`index`是直接扔掉，不是自动连续的。如，少了个40行
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20210111073520517.png)
-所以要重新排列index
-```python
-df_stock = pd.DataFrame(pile_lists).dropna()
-df_stock.index = [i for i in range(df_stock.index.size)]
-```
 # 五、读取csv文件
 ## 保存和读取文件
 ```python
