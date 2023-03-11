@@ -309,6 +309,8 @@ torch.abs()
 ```
 
 ## 1.3. 维度操作
+如果有4个维度，`dim=-1`, 等同`dim=3`。
+
 转置: 交换两个维度
 ```python
 A = torch.arange(12).reshape(3, 4)
@@ -367,6 +369,11 @@ torch.squeeze(x, 0)     # torch.Size([2, 1, 2, 1, 2])
 # 查询维度1, 是1, 删除调
 torch.squeeze(x, 1)     # torch.Size([2, 2, 1, 2])
 ```
+split: 
+https://blog.csdn.net/qq_42518956/article/details/103882579
+
+norm:
+https://zhuanlan.zhihu.com/p/260162240
 
 ## 1.4. 逻辑运算符
 

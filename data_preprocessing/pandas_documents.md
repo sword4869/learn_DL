@@ -1,7 +1,25 @@
+- [1. pandas](#1-pandas)
+  - [1.1. install \& import](#11-install--import)
+  - [1.2. 体系](#12-体系)
+  - [1.3. 数据框DataFrame](#13-数据框dataframe)
+    - [1.3.1. 数据框DataFrame创建](#131-数据框dataframe创建)
+    - [1.3.2. 转化类型](#132-转化类型)
+    - [1.3.3. 获取行、列索引的名字](#133-获取行列索引的名字)
+    - [1.3.4. 行数、列数](#134-行数列数)
+    - [1.3.5. 自定义索引](#135-自定义索引)
+    - [1.3.6. 切片行、列](#136-切片行列)
+    - [1.3.7. 单元格](#137-单元格)
+    - [1.3.8. 反转reverse](#138-反转reverse)
+    - [1.3.9. 插入一行](#139-插入一行)
+    - [1.3.10. 插入一列](#1310-插入一列)
+    - [1.3.11. 排序](#1311-排序)
+    - [1.3.12. 自动化对齐](#1312-自动化对齐)
+    - [1.3.13. 转化成np数组](#1313-转化成np数组)
+    - [1.3.14. 读取csv文件](#1314-读取csv文件)
 
-# pandas
+# 1. pandas
 
-## install & import
+## 1.1. install & import
 ```python
 # 第三方库
 pip install pandas
@@ -10,7 +28,7 @@ pip install pandas
 import pandas as pd
 ```
 
-## 体系
+## 1.2. 体系
 
 pandas中有两类非常重要的数据结构，即序列Series和数据框DataFrame。
 
@@ -23,8 +41,8 @@ graph LR
 a[pandas]-->|数据结构1|b1[Series]
 a-->|数据结构2|b2[DataFrame]
 ```
-
-## 数据框DataFrame创建
+## 1.3. 数据框DataFrame
+### 1.3.1. 数据框DataFrame创建
 
 
 `df = pd.DataFrame(...)`
@@ -33,63 +51,78 @@ a-->|数据结构2|b2[DataFrame]
 如果不给一个指定的索引值，则自动生成一个从0开始的自增索引。
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210319222201567.png)
 
-### 嵌套列表
+
 ```python
-arr = [[0,1,2],[3,4,5],[6,7,8],[9,10,11]]
-df1 = pd.DataFrame(arr)
+# (1) 嵌套列表
+
+arr1 = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11]]
+df1 = pd.DataFrame(arr1)
 print(df1)
+
+
+# (2) 二维np数组
+arr2 = np.array(np.arange(12)).reshape(4, 3)
+df2 = pd.DataFrame(arr2)
+print(df2)
+
+
+# (3) 字典列表：key值表示列索引, value列表是此列的列向量
+dict3 = {
+    'A': [0, 3, 6, 9],
+    'B': [1, 4, 7, 10],
+    'C': [2, 5, 8, 11]
+}
+df3 = pd.DataFrame(dict3)
+print(df3)
+
+
+# (4) 嵌套字典：外面是列，里面是对应的每行，也就是指定了行的index
+dict4 = {
+    'A': {0: 0, 1: 3, 2: 6, 3: 9},
+    'B': {0: 1, 1: 4, 2: 7, 3: 10},
+    'C': {0: 2, 1: 5, 2: 8, 3: 11}
+}
+df4 = pd.DataFrame(dict4)
+print(df4)
+
+
+# (5) 赋值DataFrame来创建（通常你要修改原df的值，因为直接在切片上修改是不允许的）
+df5 = df1.copy()
+
 '''
    0   1   2
 0  0   1   2
 1  3   4   5
 2  6   7   8
 3  9  10  11
+
+   0   1   2
+0  0   1   2
+1  3   4   5
+2  6   7   8
+3  9  10  11
+
+   A   B   C
+0  0   1   2
+1  3   4   5
+2  6   7   8
+3  9  10  11
+
+   A   B   C
+0  0   1   2
+1  3   4   5
+2  6   7   8
+3  9  10  11
 '''
 ```
-### 二维np数组
+### 1.3.2. 转化类型
 ```python
-arr = np.array(np.arange(12)).reshape(4,3)
-df1 = pd.DataFrame(arr)
-```
-### 字典
-
-以下以两种字典来创建数据框，一个是字典列表，一个是嵌套字典。
-
-```python
-# 字典列表：key值表示列索引
-dict1 = {0:[0,3,6,9],1:[1,4,7,10],2:[2,5,8,11]}
-df1 = pd.DataFrame(dict1)
-```
-```python
-# 嵌套字典：外面是列，里面是对应的每行
-dict2 = {0:{0:0,1:3,2:6,3:9},1:{0:1,1:4,2:7,3:10},2:{0:2,1:5,2:8,3:11}}
-df1 = pd.DataFrame(dict2)
-'''
-```
-
-## 赋值DataFrame来创建
-
-```python
-arr = [[0,1,2],[3,4,5],[6,7,8],[9,10,11]]
-df1 = pd.DataFrame(arr)
-df2 = df1
-```
-
-# 三、DataFrame基本知识点
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20210319222218275.png)
-## 转化类型
-```python
-import numpy as np
-import pandas as pd
-
-arr = np.array(np.arange(12)).reshape(4,3)
-df1 = pd.DataFrame(arr)
-df1 = df1.astype(str)
-print(df1)
+df1 = df.astype(str)
 print(type(df1.iat[0,0]))
+# <class 'str'>
 ```
 
-## 获取行、列索引的名字
+### 1.3.3. 获取行、列索引的名字
 默认索引是从0开始的整数数组。
 ```python
 # 行
@@ -102,22 +135,22 @@ print(df1.columns)
 ```
 
 
-## 行数、列数
+### 1.3.4. 行数、列数
 ```python
->>> df1.index.size		# 行
+>>> df1.index.size      # 行
 4
->>> df1.columns.size	# 列
+>>> df1.columns.size    # 列
 3
 
 >>> df1.shape
 (4,3)
->>> df1.shape[0]		# 行
+>>> df1.shape[0]        # 行
 4
->>> df1.shape[1]		# 列
+>>> df1.shape[1]        # 列
 3
 ```
 
-## 自定义索引
+### 1.3.5. 自定义索引
 ```python
 # 初始化时就自定义索引
 arr1 = np.array(np.arange(12)).reshape(4,3)
@@ -132,8 +165,11 @@ d  9  10  11
 '''
 ```
 ```python
-df1.index=['a','b','c','d']		# 自定义索引（行）
-print(df1)
+# 分开
+arr2 = np.array(np.arange(12)).reshape(4,3)
+df2 = pd.DataFrame(arr2)
+df2.index=['a','b','c','d']		# 自定义索引（行）
+print(df2)
 '''
    0   1   2
 a  0   1   2
@@ -142,8 +178,8 @@ c  6   7   8
 d  9  10  11
 '''
 
-df1.columns=['A','B','C']		# 自定义列索引（列）
-print(df1)
+df2.columns=['A','B','C']		# 自定义列索引（列）
+print(df2)
 '''
    A   B   C
 a  0   1   2
@@ -153,7 +189,7 @@ d  9  10  11
 '''
 ```
 
-## 切片行、列
+### 1.3.6. 切片行、列
 行：
 ```python
 # 选取第2行
@@ -234,7 +270,7 @@ a  0  1
 b  3  4
 '''
 ```
-## 单元格
+### 1.3.7. 单元格
 ```python
 # 选取行'b'的列'B'
 df1.at['b','B']
@@ -242,7 +278,7 @@ df1.at['b','B']
 # 选取第2行第2列
 df1.iat[1,1]
 ```
-## 反转reverse
+### 1.3.8. 反转reverse
 行反转
 - `df1 = df1.reindex(index=df1.index[::-1])`
 - `df1 = df1.iloc[::-1]`
@@ -250,7 +286,7 @@ df1.iat[1,1]
 列反转：
 - `df1 = df1[df1.columns[::-1]]`
 
-## 插入一行
+### 1.3.9. 插入一行
 ```python
 add_data = {'A':12,'B':13,'C':14}		# '列':值。没添加的就是nan
 df2 = df1.append(add_data, ignore_index=True)	
@@ -264,7 +300,7 @@ df2 = df1.append(add_data, ignore_index=True)
 4  12  13  14
 ''''
 ```
-## 插入一列
+### 1.3.10. 插入一列
 ```python
 # 都是同一个值
 df1['3'] = 1
@@ -289,14 +325,12 @@ df1['3'] = [1, 2, 3, 4]
 ```
 
 
-## 排序
+### 1.3.11. 排序
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20201230222808347.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
 <https://www.cnblogs.com/avivi/p/10813318.html>
 
-## 判断nan
-
-## 自动化对齐
+### 1.3.12. 自动化对齐
 
 如果有两个序列，需要对这两个序列进行算术运算，这时索引的存在就体现的它的价值了—自动化对齐.
 
@@ -316,10 +350,7 @@ print(d1+d2)
 '''
 ```
 
-
-# 四、实战知识点
-
-## 转化成np数组
+### 1.3.13. 转化成np数组
 ```python
 # 方式1：
 np_arr = np.array(df1)
@@ -335,8 +366,8 @@ np_arr2 = np.array(df1[0:2][['A','B']])
 np_arr2 = np.array(df1[0:2])[:,0:2]
 ```
 
-# 五、读取csv文件
-## 保存和读取文件
+### 1.3.14. 读取csv文件
+
 ```python
 # 保存
 df.to_csv('digits.csv')
@@ -345,7 +376,7 @@ df.to_csv('digits.csv')
 df = pd.read_csv('digits.csv', encoding='utf-8')
 ```
 
-## 多出一列的问题
+
 注意：保存再读取后的df，会多出一列（其实是表示行索引的），读取的时候要去掉，比如下面的`'Unnamed: 0'`。
 ```python
 >>> df
@@ -358,11 +389,10 @@ df = pd.read_csv('digits.csv', encoding='utf-8')
 >>> df.columns
 Index(['Unnamed: 0', 'A', 'B', 'C'], dtype='object')
 
->> df = df[df[df.columns[1:]].columns]	# 这样抛弃了原来的行索引，重新生成
-```
+### (1) # 这样抛弃了原来的第一列
+>> df = df[df[df.columns[1:]].columns]	
 
-这个问题可以在保存的时候就避免
-```python
+### (2) 这个问题可以在保存的时候就避免
 df.to_csv('digits.csv', index=False)	# 不保存行索引
 '''
    A   B   C
@@ -371,8 +401,7 @@ df.to_csv('digits.csv', index=False)	# 不保存行索引
 2  6   7   8
 3  9  10  11
 '''
-```
-```python
+
 df.to_csv('digits.csv', index_label='index')	# 或者直接将其行索引存储为一列
 '''
    index  A   B   C

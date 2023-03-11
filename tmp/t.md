@@ -26,22 +26,18 @@ print(df_select)
     0    male   True  18.0
     1  female    NaN  22.0
     2    male  False   NaN
+    
         Age  Sex_female  Sex_male  Sex_nan  Alive_False  Alive_True  Alive_nan
     0  18.0           0         1        0            0           1          0
     1  22.0           1         0        0            0           0          1
     2   NaN           0         1        0            1           0          0
+    
        Sex_female  Sex_male  Sex_nan  Alive_False  Alive_True  Alive_nan  \
     0           0         1        0            0           1          0   
     1           1         0        0            0           0          1   
     2           0         1        0            1           0          0   
-    
        Age_18.0  Age_22.0  Age_nan  
     0         1         0        0  
     1         0         1        0  
     2         0         0        1  
     
-
-
-```python
-
-```

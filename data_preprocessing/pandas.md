@@ -1,6 +1,10 @@
-# pandas
+- [1. pandas](#1-pandas)
+  - [1.1. one-shot](#11-one-shot)
+  - [1.2. Nan](#12-nan)
 
-## one-shot
+# 1. pandas
+
+## 1.1. one-shot
 
 ```python
 data = {
@@ -38,7 +42,7 @@ print(df_select)
 ```
 
 
-## Nan
+## 1.2. Nan
 
 单个元素判断
 ```python
@@ -61,8 +65,15 @@ df[pd.isna(df).values]
 2    male  False   NaN
 '''
 ```
-
-直接扔掉含Nan的行
+(1) 填充
+```python
+df.fillna(-1)
+```
+        Sex  Alive   Age
+    0    male   True  18.0
+    1  female     -1  22.0
+    2    male  False  -1.0
+(2) 直接扔掉含Nan的行
 ```python
 df = df.dropna()
 
@@ -71,7 +82,7 @@ df = df.dropna()
 df.index = [i for i in range(df.index.size)]
 ```
 
-用one-shot表示Nan：但是显然含有nan的Age不应该用one-shot表示，这就是局限
+(3) 用one-shot表示Nan：但是显然含有nan的Age不应该用one-shot表示，这就是局限
 ```python
 data = {
     'Sex': ['male','female', 'male'],
@@ -89,22 +100,22 @@ print(df_default)
 df_select = pd.get_dummies(df, columns=['Sex', 'Alive', 'Age'], dummy_na=True)
 print(df_select)
 ```
-
           Sex  Alive   Age
     0    male   True  18.0
     1  female    NaN  22.0
     2    male  False   NaN
+    
         Age  Sex_female  Sex_male  Sex_nan  Alive_False  Alive_True  Alive_nan
     0  18.0           0         1        0            0           1          0
     1  22.0           1         0        0            0           0          1
     2   NaN           0         1        0            1           0          0
-       Sex_female  Sex_male  Sex_nan  Alive_False  Alive_True  Alive_nan   Age_18.0  Age_22.0  Age_nan  
-    0           0         1        0            0           1          0          1         0        0 
-    1           1         0        0            0           0          1          0         1        0  
-    2           0         1        0            1           0          0          0         0        1  
     
-       
-    0          
+       Sex_female  Sex_male  Sex_nan  Alive_False  Alive_True  Alive_nan  \
+    0           0         1        0            0           1          0   
+    1           1         0        0            0           0          1   
+    2           0         1        0            1           0          0   
+       Age_18.0  Age_22.0  Age_nan  
+    0         1         0        0  
     1         0         1        0  
     2         0         0        1  
     
