@@ -1,6 +1,8 @@
 - [1. tensor\_manipulation](#1-tensor_manipulation)
   - [1.1. create](#11-create)
   - [1.2. calculate](#12-calculate)
+    - [multiple](#multiple)
+    - [other](#other)
   - [1.3. 维度操作](#13-维度操作)
   - [1.4. 逻辑运算符](#14-逻辑运算符)
   - [1.5. 转换为其他Python对象](#15-转换为其他python对象)
@@ -160,7 +162,7 @@ a = X+Y
 
 
 ## 1.2. calculate
-
+### multiple
 element-wise
 ```python
 X = torch.arange(9).reshape((3, 3))
@@ -235,6 +237,19 @@ torch.matmul(X, Y)
 X@Y
 ```
 
+> 和向量乘就是向量，和矩阵乘就是矩阵
+
+```python
+A = torch.rand(3,4)
+B = torch.rand(4,1) 
+C = torch.rand(4) 
+
+A@B     # [3, 1], tensor([[1.0079],[0.7648],[1.0638]])
+A@C     # [3], tensor([0.8935, 1.2776, 0.6071])
+```
+
+
+### other
 sum求和，降低维度
 ```python
 Z = torch.ones(3,4)
