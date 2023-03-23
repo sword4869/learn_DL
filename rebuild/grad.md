@@ -1,6 +1,5 @@
 - [1. grad](#1-grad)
   - [1.1. grad of tensor](#11-grad-of-tensor)
-  - [Net](#net)
 
 # 1. grad
 ## 1.1. grad of tensor
@@ -56,26 +55,3 @@ detach:
 [detach, detach_](https://blog.csdn.net/qq_27825451/article/details/95498211)
 
 [在模型中时开时关detach()而不能阻止权重更新](../unsolvable/net_recurring_detach.ipynb)
-
-## Net
-
-
-不加载梯度
-
-![图 7](../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
-
-训练、验证、测试:
-
-这里`optimizer.zero_grad()`写在for循环开始、写在`optimizer.step()`后面的都行。
-
-![图 5](../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
- 
-
-
-
-![图 4](../images/77bdacd36dfa57e1f72fe6bc5641e2113c9104ec83594fe69cf14081d8c2bea8.png)  
-
-
-![图 6](../images/9c5c01f071d2528b0b0b415fad698050d815069f68811e78b415d5f4ae393816.png)  
-
-

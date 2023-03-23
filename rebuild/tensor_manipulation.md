@@ -318,10 +318,13 @@ X = torch.randint(20, (1, 10))
 X.clamp(min=0, max=9)
 ```
 
-```python
-torch.max()
+[torch.max()](https://blog.csdn.net/ViatorSun/article/details/108909312): 三种形式
+- torch.max(x), 返回一个最大值的标量
+- torch.max(x, dim=d), 返回元组(维度最大值，在该维度的下标)
+- torch.max(x,y)，element-wise最大值
+
+
 torch.abs()
-```
 
 ## 1.3. 维度操作
 如果有4个维度，`dim=-1`, 等同`dim=3`。
@@ -346,26 +349,28 @@ A.permute(1, 0)
 # X: [B, H, W, C]，变换成Y: [B, C, H, W]
 X.permute(0, 3, 1, 2)
 ```
-连接张量
-```python
-X = torch.arange(9).reshape((3, 3))
-Y = torch.ones_like(X)
-Z = torch.arange(9).reshape((3, 2))
-
-# 按外层的列
-a = torch.cat((X, Y), dim=0)    # [6, 3]
-# 按内层的列
-b = torch.cat((X, Y), dim=1)    # [3, 6]
-c = torch.cat((X, Z), dim=1)    # [3, 5]
-```
 张量的序列变张量
 ```python
-t = []
-t.append(torch.ones(3,4))
-t.append(torch.ones(3,4))
-t_tensor_0 = torch.stack(t, dim=0)    # [2, 3, 4]
-t_tensor_1 = torch.stack(t, dim=1)    # [3, 2, 4]
-t_tensor_2 = torch.stack(t, dim=2)    # [3, 4, 2]
+X = torch.ones(3,4)
+Y = torch.ones(3,4)
+
+# 按外层的列
+a = torch.cat((X, Y), dim=0)    # [6, 4]
+# 按内层的列
+b = torch.cat((X, Y), dim=1)    # [3, 8]
+
+# 元组，或者列表
+l = [X, Y]
+d = torch.cat(l, dim=0)         # [6, 4]
+```
+```python
+X = torch.ones(3,4)
+Y = torch.ones(3,4)
+
+l = [X, Y]
+tensor_0 = torch.stack(l, dim=0)    # [2, 3, 4]
+tensor_1 = torch.stack(l, dim=1)    # [3, 2, 4]
+tensor_2 = torch.stack(l, dim=2)    # [3, 4, 2]
 ```
 张量升维，在哪个地方加一个维度。
 ```python
