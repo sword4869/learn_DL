@@ -371,6 +371,9 @@ l = [X, Y]
 tensor_0 = torch.stack(l, dim=0)    # [2, 3, 4]
 tensor_1 = torch.stack(l, dim=1)    # [3, 2, 4]
 tensor_2 = torch.stack(l, dim=2)    # [3, 4, 2]
+
+# 提升最后一个维度: RGB图片，前面是xy坐标，最后一个是RGB通道；最后一个是样本特征features
+tensor_2 = torch.stack(l, dim=-1)    # [3, 4, 2]
 ```
 张量升维，在哪个地方加一个维度。
 ```python
