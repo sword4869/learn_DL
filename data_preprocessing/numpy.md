@@ -2,6 +2,7 @@
 - [2. np.newaxis](#2-npnewaxis)
 - [3. np.concatenate](#3-npconcatenate)
 - [np.tile](#nptile)
+- [linspace](#linspace)
 
 
 ## 1. np.random.choice()
@@ -102,3 +103,23 @@ array([[1, 2, 3, 4],
        [1, 2, 3, 4],
        [1, 2, 3, 4]])
 ```
+
+## linspace
+
+```python
+# 包含 start 和 stop, [start, stop]
+>>>  np.linspace(1, 10, 10)
+array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])
+
+# 不想在序列计算中包括最后一点, [start, stop)
+>>> np.linspace(1, 10, 10, endpoint=False)
+array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
+```
+间隔是 ( stop - start ) / (num - 1), 这么理解：5个点num，间隔为4。
+
+- `array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
+`np.linspace(1, 10, 10)`
+- `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
+`np.linspace(0, 10, 10 + 1)`
+- `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.])`
+`np.linspace(0, 10, 10 + 1)[:-1]` or `np.linspace(0, 10, 10, endpoint=False)`
