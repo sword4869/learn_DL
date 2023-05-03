@@ -1,8 +1,9 @@
 - [1. np.random.choice()](#1-nprandomchoice)
 - [2. np.newaxis](#2-npnewaxis)
 - [3. np.concatenate](#3-npconcatenate)
-- [np.tile](#nptile)
-- [linspace](#linspace)
+- [4. np.tile](#4-nptile)
+- [5. linspace](#5-linspace)
+- [6. meshgrid](#6-meshgrid)
 
 
 ## 1. np.random.choice()
@@ -42,7 +43,7 @@ np.concatenate((a, b), axis=None)
 # array([1, 2, 3, 4, 5, 6])
 ```
 
-## np.tile
+## 4. np.tile
 
 `numpy.tile(A, reps)`:通过重复A代表给出的次数来构建数组，平铺效果。
 - If `reps` has length `d`, the result will have dimension of `max(d, A.ndim)`.
@@ -104,7 +105,7 @@ array([[1, 2, 3, 4],
        [1, 2, 3, 4]])
 ```
 
-## linspace
+## 5. linspace
 
 ```python
 # 包含 start 和 stop, [start, stop]
@@ -123,3 +124,57 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 `np.linspace(0, 10, 10 + 1)`
 - `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.])`
 `np.linspace(0, 10, 10 + 1)[:-1]` or `np.linspace(0, 10, 10, endpoint=False)`
+
+## 6. meshgrid
+
+
+参考资料：[meshgrid理解](https://blog.csdn.net/lllxxq141592654/article/details/81532855)
+
+
+1. meshgrid函数的作用：生成坐标矩阵。
+2. meshgrid函数的输入，两个一维数组
+3. meshgrid函数的输出：两个二维矩阵
+
+
+`indexing='xy'`:
+- In the 2-D case ：inputs length (M, N), outputs shape (N, M) 
+- In the 3-D case : inputs length (M, N, P), outputs shape (N, M, P) 
+```python
+import numpy as np
+# 横坐标有几个，纵坐标有几个
+nx, ny = (3, 2)
+x = np.linspace(0, 1, nx)
+y = np.linspace(0, 1, ny)
+# shape(2, 3)，意思是，横坐标3个，纵坐标2个
+xv, yv = np.meshgrid(x, y)
+# xv：坐标矩阵的横坐标
+# array([[0. , 0.5, 1. ],
+#        [0. , 0.5, 1. ]])
+# yv：坐标矩阵的纵坐标
+# array([[0.,  0.,  0.],
+#        [1.,  1.,  1.]])
+'''
+```
+
+```python
+import matplotlib.pyplot as plt
+plt.plot(xv, yv, marker='o', color='k', linestyle='none')
+plt.show()
+```
+![图 1](../images/073851869c3c51c1573feb5ffb0eaf6291ce47e200b5f0f40f7962839233a39e.png)  
+
+
+例子2：计算$x^2 + y^2$
+```python
+import numpy as np
+point = np.array([ 0. ,1. ,2. ,3.])
+x, y = np.meshgrid(point, point)
+z = x ** 2 + y ** 2
+print(z)
+'''
+[[ 0.  1.  4.  9.]
+ [ 1.  2.  5. 10.]
+ [ 4.  5.  8. 13.]
+ [ 9. 10. 13. 18.]]
+'''
+```
