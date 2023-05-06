@@ -7,6 +7,7 @@
 - [4. ndarray的数据类型](#4-ndarray的数据类型)
   - [4.1. 指定类型： ](#41-指定类型)
   - [4.2. 转化类型：](#42-转化类型)
+  - [4.3. np.array()和np.asarray()的区别](#43-nparray和npasarray的区别)
 - [5. ndarray数组的运算](#5-ndarray数组的运算)
 - [6. 数组的广播(不同shape的数组兼容处理) ](#6-数组的广播不同shape的数组兼容处理)
 - [7. 基本的切片与索引](#7-基本的切片与索引)
@@ -17,6 +18,7 @@
 - [9. 布尔型索引 ](#9-布尔型索引)
 - [10. 花式索引](#10-花式索引)
 - [11. 数组转置](#11-数组转置)
+- [12. 如何判断两个numpy数组是否相等](#12-如何判断两个numpy数组是否相等)
 
 ```
 pip install numpy
@@ -29,7 +31,7 @@ import numpy as np
 
 ## 2. 性质
 
-```
+```python
 arr = np.array([[1., 2., 3.], [4., 5., 6.]])  # 创建ndarray
  
 # 元素个数
@@ -47,7 +49,7 @@ print(arr.size)    # 6
 
 > shape
 
-```
+```python
 arr1=np.array(1)
 print(arr1)
 #1
@@ -84,37 +86,46 @@ print(arr4.shape)
 
 ### 3.1. np.array()
 
-```
+```python
 import numpy as np
  
-#一维
-a={1,2,3}
+# 一维
+a = {1,2,3}
 data1 = np.array(a)
 print(data1)
-#{1, 2, 3}
-#没什么区别
+print(type(data1))
+'''
+{1, 2, 3}
+<class 'numpy.ndarray'>
+'''
  
-b=[4,5,6]
+b = [4,5,6]
 data2 = np.array(b)
 print(data2)
-#[4 5 6]
-#列表类型去掉了逗号
+print(type(data2))
+'''
+[4 5 6]
+<class 'numpy.ndarray'>
+'''
  
-#多维
-c=[[1,2,3],[4,5,6]]
+# 多维
+c = [[1,2,3],[4,5,6]]
 data3 = np.array(c)
 print(data3)
+print(type(data3))
 '''
 [[1 2 3]
 [4 5 6]]
+<class 'numpy.ndarray'>
 '''
  
-d={{1,2,3},{4,5,6}}
+d = {{1,2,3},{4,5,6}}
 data4 = np.array(d)
 print(data4)
-#error
- 
-#所以array()中的数据最好写成列表类型
+print(type(data4))
+# TypeError: unhashable type: 'set'
+
+# 所以array()中的数据最好写成列表类型
 ```
 
 ### 3.2. np.zeros() 、ones() 、empty()
@@ -211,7 +222,7 @@ arr=np.arange(28).reshape((3,2,4))
 
 ### 4.1. 指定类型： 
 
-```
+```python
 arr1=np.array([1,2,3])
 print(arr1.dtype)
 #int32
@@ -222,7 +233,7 @@ print(arr2.dtype)
 #int64
 ```
 
-```
+```python
 #简洁形式
 empty_uint32 = np.empty(8, dtype='u4')
 ```
@@ -231,7 +242,7 @@ empty_uint32 = np.empty(8, dtype='u4')
 
 > astype()
 
-```
+```python
 arr = np.array([3.7, -1.2, -2.6, 0.5, 12.9, 10.1])
 print(arr)
 print(arr.astype(np.int32))
@@ -246,10 +257,49 @@ print(arr.astype(np.int32))
 > 
 > 注意：使用numpy.string\_类型时，一定要小心，因为NumPy的字符串数据是大小固定的，发生截取时，不会发出警告。
 
-```
+```python
 arr= np.array(['1.25', '-9.6', '42.00000002344'], dtype=np.string_)
 print(arr.astype(np.float))
 #[  1.25        -9.6         42.00000002]
+```
+
+### 4.3. np.array()和np.asarray()的区别
+
+`array` 和 `asarray` 都可以将结构数据转化为 `ndarray` 
+- 当数据源是列表时，都会copy出一个副本，占用新的内存。
+- 当数据源是 `ndarray` 时, `array` 仍然会copy出一个副本，占用新的内存，但 `asarray` 不会，从而修改原np数组，也会变化。
+- 混合的情况`[array([1, 1, 1]), array([1, 2, 1]), array([1, 1, 1])]`，同列表
+```python
+import numpy as np
+ 
+# example 1: 列表
+data1 = [[1,1,1],[1,1,1],[1,1,1]]
+arr2 = np.array(data1)
+arr3 = np.asarray(data1)
+data1[1][1] = 2
+print(data1[1][1], arr2[1][1], arr3[1][1])
+
+import numpy as np
+ 
+# example 2: ndarry
+arr4 = np.ones((3,3))
+arr5 = np.array(arr4)
+arr6 = np.asarray(arr4)
+arr4[1][1] = 2
+print(arr4[1][1], arr5[1][1], arr6[1][1])
+
+# example 3: 混合，[ndarry]
+arr7 = [np.array([1,1,1]) for i in range(3)]
+arr8 = np.array(arr7)
+arr9 = np.asarray(arr7)
+arr7[1][1] = 2
+print(arr7[1][1], arr8[1][1], arr9[1][1])
+
+'''
+2 1 1
+2.0 1.0 2.0
+2 1 1
+'''
 ```
 
 ## 5. ndarray数组的运算
@@ -785,15 +835,15 @@ print(arr[[2,1,0,3]] [:,:3])
 
 转置是重塑的一种特殊形式，它返回的是源数据的视图（不会进行任何复制操作）
 
-转置方法有.T()、.transpose()和.swapaxes().
+转置方法有`.T`、`.transpose()`和`.swapaxes()`.
 
 transpose()与T和swapaxes()的关系：在transpose()的基础上分化出T()和swapaxes()。
 
 ps:transpose是转置的意思，pose是姿势的意思。swap是交换，axes通axis，axis是轴的意思。
 
-> transpose（1,0,2）：表示将（\[0\], \[1\], \[2\]）转换为（\[1\], \[0\], \[2\]）。简单理解就是，将不同位置元素替换掉。
+> transpose（1,0,2）：表示将（[0], [1], [2]）转换为（[1], [0], [2]）。简单理解就是，将不同位置元素替换掉。
 > 
-> 比如：arr\[0, 0, 0\]，第一位和第二位转换后，仍是arr\[0, 0, 0\]。arr\[0 , 1, 0\] = 4, 转换后为 arr\[1, 0, 0\] = 8。同理arr\[1, 0 , 0\]转换为 arr\[0, 1, 0\]。此次类推。
+> 比如：arr[0, 0, 0]，第一位和第二位转换后，仍是arr[0, 0, 0]。arr[0 , 1, 0] = 4, 转换后为 arr[1, 0, 0] = 8。同理arr[1, 0 , 0]转换为 arr[0, 1, 0]。此次类推。
 
 ```
 arr = np.arange(16).reshape((2, 2, 4))
@@ -813,7 +863,7 @@ print(arr.transpose(1,0,2))
 '''
 ```
 
-> T转置：表示整个顺序颠倒，（\[0\], \[1\], \[2\]）转换为（\[2\], \[1\], \[0\]）。就是内容替换。  
+> T转置：表示整个顺序颠倒，（[0], [1], [2]）转换为（[2], [1], [0]）。就是内容替换。  
 
 ```
 arr = np.arange(16).reshape((2, 2, 4))
@@ -895,6 +945,11 @@ print(arr.transpose(0,2,1))
 '''
 ```
 
+## 12. 如何判断两个numpy数组是否相等
+
+- `(array1 == array2)` 返回两个矩阵中对应元素是否相等的逻辑值
+- `(array1 == array2).all()`当两个矩阵所有对应元素相等，返回一个逻辑值True
+- `(array1 == array2).any()`当两个矩阵所有任何一个对应元素相等，返回一个逻辑值True
 ___
 
 参考：

@@ -1,21 +1,31 @@
 - [1. np.random.choice()](#1-nprandomchoice)
-- [2. np.newaxis](#2-npnewaxis)
+- [2. 增加维度与删除维度](#2-增加维度与删除维度)
 - [3. np.concatenate](#3-npconcatenate)
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
 - [6. meshgrid](#6-meshgrid)
+- [7. norm](#7-norm)
 
 
 ## 1. np.random.choice()
 <https://blog.csdn.net/ImwaterP/article/details/96282230>
 
-## 2. np.newaxis 
-<https://zhuanlan.zhihu.com/p/356601576>
+## 2. 增加维度与删除维度
+> 增加维度 
+
+np.newaxis 
+- <https://zhuanlan.zhihu.com/p/356601576>
 - 是切片
+- `np.newaxis` 等价于 `None`
 - `y[:, np.newaxis, :] == y[...,  np.newaxis, :]`, [4,1,3]
 - `y[:, np.newaxis, :].shape`, [4, 1 ,3]; `y[:, np.newaxis, :].shape`, [4, 3, 1]
 
+np.expand_dims
 
+> 删除维度 
+
+np.squeeze
+- <https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html>
 
 ## 3. np.concatenate
 
@@ -178,3 +188,37 @@ print(z)
  [ 9. 10. 13. 18.]]
 '''
 ```
+
+
+## 7. norm
+
+vector
+- p-范数: $\sqrt[ord]{\sum(|x|^{ord})}$，即`sum(abs(x)**ord)**(1./ord)`
+```python
+# 默认2范数
+np.linalg.norm(x)
+np.linalg.norm(x, 2)
+
+# 1范数
+np.linalg.norm(x, 1)
+
+# 3范数
+np.linalg.norm(x, 3)
+```
+- max(abs(x)): `np.linalg.norm(a, np.inf)`
+- min(abs(x)): `np.linalg.norm(a, -np.inf)`
+- sum(x != 0): `np.linalg.norm(a, 0)`
+
+
+2D matrix:
+- Frobenius norm
+
+```python
+np.linalg.norm(x)
+np.linalg.norm(x, 2)
+np.linalg.norm(x, 'fro')
+```
+
+- specifies the axis of x along which to compute the vector norms. 
+  `np.linalg.norm(x, axis=0)`就是对各列向量，求向量2范数。
+  `np.linalg.norm(x, axis=1)`就是对各行向量，求向量2范数。

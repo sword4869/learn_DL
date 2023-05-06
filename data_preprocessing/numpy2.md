@@ -3,28 +3,28 @@
   - [1.2. 二元ufunc](#12-二元ufunc)
 - [2. 可以返回多个数组的ufunc](#2-可以返回多个数组的ufunc)
 - [3. out可选参数](#3-out可选参数)
-- [6. 将条件逻辑表述为数组运算np.where()](#6-将条件逻辑表述为数组运算npwhere)
-- [7. 数学和统计方法](#7-数学和统计方法)
-  - [7.1. 聚合计算aggregation](#71-聚合计算aggregation)
-  - [7.2. 非聚合](#72-非聚合)
-- [8. 对布尔型数组中的True值计数](#8-对布尔型数组中的true值计数)
-- [9. 排序](#9-排序)
-  - [9.1. 三种排序算法](#91-三种排序算法)
-  - [9.2. numpy.sort()](#92-numpysort)
-  - [9.3. numpy.argsort()](#93-numpyargsort)
-  - [9.4. numpy.lexsort()](#94-numpylexsort)
-- [10. 唯一化以及其它的集合逻辑 ](#10-唯一化以及其它的集合逻辑)
-- [11. 用于数组的文件输入输出](#11-用于数组的文件输入输出)
-- [12. 线性代数](#12-线性代数)
-- [13. 伪随机数生成](#13-伪随机数生成)
-- [14. seed()](#14-seed)
-- [15. rand()](#15-rand)
-- [16. randint()](#16-randint)
-- [17. randn()正态分布](#17-randn正态分布)
-- [18. 一个简单的随机漫步](#18-一个简单的随机漫步)
-- [19. 通过内置的random模块以纯Python的方式](#19-通过内置的random模块以纯python的方式)
-- [20. 用np.random模块 ](#20-用nprandom模块)
-- [21. 一次模拟多个随机漫步](#21-一次模拟多个随机漫步)
+- [4. 将条件逻辑表述为数组运算np.where()](#4-将条件逻辑表述为数组运算npwhere)
+- [5. 数学和统计方法](#5-数学和统计方法)
+  - [5.1. 聚合计算aggregation](#51-聚合计算aggregation)
+  - [5.2. 非聚合](#52-非聚合)
+- [6. 对布尔型数组中的True值计数](#6-对布尔型数组中的true值计数)
+- [7. 排序](#7-排序)
+  - [7.1. 三种排序算法](#71-三种排序算法)
+  - [7.2. numpy.sort()](#72-numpysort)
+  - [7.3. numpy.argsort()](#73-numpyargsort)
+  - [7.4. numpy.lexsort()](#74-numpylexsort)
+- [8. 唯一化以及其它的集合逻辑 ](#8-唯一化以及其它的集合逻辑)
+- [9. 用于数组的文件输入输出](#9-用于数组的文件输入输出)
+- [10. 线性代数](#10-线性代数)
+- [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
+  - [11.1. seed()](#111-seed)
+  - [11.2. rand()](#112-rand)
+- [12. randint()](#12-randint)
+  - [12.1. randn()正态分布](#121-randn正态分布)
+- [13. 一个简单的随机漫步](#13-一个简单的随机漫步)
+- [14. 通过内置的random模块以纯Python的方式](#14-通过内置的random模块以纯python的方式)
+- [15. 用np.random模块 ](#15-用nprandom模块)
+- [16. 一次模拟多个随机漫步](#16-一次模拟多个随机漫步)
 
 
 ## 1. 通用函数：快速的元素级数组函数
@@ -115,7 +115,7 @@ print(arr)
 ```
 
 
-## 6. 将条件逻辑表述为数组运算np.where()
+## 4. 将条件逻辑表述为数组运算np.where()
 
 > numpy.where函数是三元表达式x if condition else y的矢量化版本,更快，更简洁
 > 
@@ -173,7 +173,7 @@ print(np.where(arr > 0, 2, arr))
 '''
 ```
 
-## 7. 数学和统计方法
+## 5. 数学和统计方法
 
  ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzM3Mzk5NDE0X3pzVkVjOU0zdWouanBn?x-oss-process=image/format,png)
 
@@ -197,7 +197,7 @@ np.mean((a - b) ** 2)
 # 4.0
 ```
 
-### 7.1. 聚合计算aggregation
+### 5.1. 聚合计算aggregation
 
 可以通过数组上的一组数学函数对整个数组或某个轴向的数据进行统计计算。sum、mean以及标准差std等聚合计算（aggregation，通常叫做约简（reduction））
 
@@ -236,7 +236,7 @@ print(arr.sum(axis=0))     #列，计算每列的和
 '''
 ```
 
-### 7.2. 非聚合
+### 5.2. 非聚合
 
 > cumsum和cumprod之类的方法则不聚合，而是产生一个由中间结果组成的数组
 
@@ -266,7 +266,7 @@ print(arr.cumprod(axis=1))       #行，计算每行的累计和
 '''
 ```
 
-## 8. 对布尔型数组中的True值计数
+## 6. 对布尔型数组中的True值计数
 
 > sum经常被用来对布尔型数组中的True值计数
 
@@ -304,9 +304,9 @@ False
 '''
 ```
 
-## 9. 排序
+## 7. 排序
 
-###  9.1. 三种排序算法
+###  7.1. 三种排序算法
 
 | 种类 | 速度 | 最坏情况 | 工作空间 | 稳定性 |
 | --- | --- | --- | --- | --- |
@@ -314,7 +314,7 @@ False
 | 'mergesort'(归并排序) | 2 | O(n\*log(n)) | ~n/2 | 是 |
 | 'he**a**psort'(堆排序) | 3 | O(n\*log(n)) | 0 | 否 |
 
-### 9.2. numpy.sort()
+### 7.2. numpy.sort()
 
 sort()函数返回输入数组的排序副本。 它有以下参数：
 
@@ -356,7 +356,7 @@ print (np.sort(a, axis =  0))
 '''
 ```
 
-### 9.3. numpy.argsort()
+### 7.3. numpy.argsort()
 
 numpy.argsort()函数对输入数组沿给定轴执行间接排序，并使用指定排序类型返回数据的索引数组。 这个索引数组用于构造排序后的数组。 
 
@@ -389,11 +389,11 @@ for i in y:
 '''
 ```
 
-### 9.4. numpy.lexsort()
+### 7.4. numpy.lexsort()
 
 函数使用键序列执行间接排序。 键可以看作是电子表格中的一列。 该函数返回一个索引数组，使用它可以获得排序数据。 注意，最后一个键恰好是 sort 的主键。 
 
-## 10. 唯一化以及其它的集合逻辑 
+## 8. 唯一化以及其它的集合逻辑 
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzQ0NzIzODU5XzRoNkdOYnhTWDAuanBn?x-oss-process=image/format,png)
 
@@ -418,7 +418,7 @@ print(np.in1d(values, [2, 3, 6]))
 #[ True False False  True  True False  True]
 ```
 
-## 11. 用于数组的文件输入输出
+## 9. 用于数组的文件输入输出
 
 NumPy能够读写磁盘上的文本数据或二进制数据。
 
@@ -453,7 +453,7 @@ print(arch['b'])
 np.savez_compressed('arrays_compressed.npz', a=arr, b=arr)
 ```
 
-## 12. 线性代数
+## 10. 线性代数
 
 >  np.dot计算矩阵内积（点乘积）
 
@@ -501,13 +501,13 @@ print(np.linalg.inv(arr))
 #print(np.inv(arr)) 报错
 ```
 
-## 13. 伪随机数生成
+## 11. 伪随机数生成 np.random
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzk2MDk4OTIxX25QTzMyWVFTUHouanBn?x-oss-process=image/format,png)
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzk2MTM0Nzk1X3hvYXZ3d1Z5cGQuanBn?x-oss-process=image/format,png)
 
-## 14. seed()
+### 11.1. seed()
 
 > np.random.seed更改随机数生成种子： 
 
@@ -522,7 +522,7 @@ rng = np.random.RandomState(1234)
 print(rng.randn(10))
 ```
 
-## 15. rand()
+### 11.2. rand()
 
 均匀分布，生成(0,1)之间的数据。
 
@@ -545,7 +545,7 @@ print(np.random.rand(2,3)-0.5)
 '''
 ```
 
-## 16. randint()
+## 12. randint()
 
 > randint给定上下限范围内的选取整数 
 
@@ -572,7 +572,7 @@ print(z2)
 '''
 ```
 
-## 17. randn()正态分布
+### 12.1. randn()正态分布
 
 > randn(d1,d2...)。不是元组类型
 
@@ -588,9 +588,9 @@ print(y)
 '''
 ```
 
-## 18. 一个简单的随机漫步
+## 13. 一个简单的随机漫步
 
-## 19. 通过内置的random模块以纯Python的方式
+## 14. 通过内置的random模块以纯Python的方式
 
 > 一个通过内置的random模块以纯Python的方式实现1000步的随机漫步：从0开始，步长1和－1出现的概率相等。
 
@@ -617,7 +617,7 @@ plt.plot(walk[:100])
 
 ![](https://img-blog.csdnimg.cn/20190324232154749.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-## 20. 用np.random模块 
+## 15. 用np.random模块 
 
 > 用np.random模块一次性就能随机产生1000个结果
 
@@ -654,7 +654,7 @@ print((np.abs(walk) >= 10).argmax())
 #在本例中，只要发现了一个True，那我们就知道它是个最大值了。
 ```
 
-## 21. 一次模拟多个随机漫步
+## 16. 一次模拟多个随机漫步
 
 > 如果你希望模拟多个随机漫步过程（比如5000个），只需对上面的代码做一点点修改即可生成所有的随机漫步过程。只要给numpy.random的函数传入一个二元元组就可以产生一个二维数组，然后我们就可以一次性计算5000个随机漫步过程（一行一个）的累计和了：
 
