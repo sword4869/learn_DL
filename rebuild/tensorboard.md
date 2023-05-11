@@ -5,6 +5,7 @@
     - [3.1.1. add\_scalar](#311-add_scalar)
     - [3.1.2. add\_scalars](#312-add_scalars)
   - [3.2. images](#32-images)
+    - [add\_image](#add_image)
     - [3.2.1. add\_images](#321-add_images)
   - [3.3. net graph](#33-net-graph)
   - [3.4. 网络例子](#34-网络例子)
@@ -48,6 +49,24 @@ for entry_point in pkg_resources.iter_entry_points('tensorboard_plugins'):
 I had a strange package installed, `~ensorboard` and `~ensorboard-2.12.0.dist-info` in `envs\nerf\lib\site-packages` and deleted the directories.
 
 Then reinstall `pip install tensorboard`, ok!
+
+
+> 使用tensorboard启动之后，想再启动一个新的event发现还是原来的，而且浏览器scalars左下角的目录也仍然是第一次的目录。
+
+通过CTRL+C的退出的时候会有问题, 无法正常关闭。这样退出之后，在浏览器输入地址还是可以看到第一次的event信息。
+
+1. 手动杀死进程。
+2. 后来想再开启另一个event的时候只能指定port。
+3. 指定全局tensorboard路径，这样就不用担心各自工程路径下的tensorboard路径。
+```bash
+tensorboard --logdir=D:/tensorboard
+
+writer = SummaryWriter('D:/tensorboard/exp_N1')
+```
+
+
+
+
 
 ## 2. 创建SummaryWriter()
 
@@ -151,7 +170,11 @@ writer.close()
 ![图 1](../images/cc2f602a18cbdec5c172a7330c4f4856efa1d6f86ae02d869fb73eb2ac1f9153.png)  
 
 ### 3.2. images
-img_tensor： numpy array, torch tensor
+
+#### add_image
+
+- `img`： numpy array, torch tensor
+- `dataformats `: Image data format specification of the form `CHW`, `HWC`, `HW`, `WH`, etc.
 
 - tensor
 ```python
@@ -161,9 +184,9 @@ from torch.utils.tensorboard import SummaryWriter
 X, y = next(iter(test_iter))
 
 writer = SummaryWriter()
-# writer.add_image(tag, img_tensor, global_step, dataformats='CHW')
+# writer.add_image(tag, img, global_step, dataformats='CHW')
 # dataformats: CHW, HWC, HW, WH
-writer.add_image('gt', X[0], 0)
+writer.add_image('gt', X[0], 0, dataformats='HWC')
 writer.close()
 ```
 ![图 5](../images/d36e25c5bd39401d8f2ab5286bf58c1affd0ce06914a17a665f9cd15f55e965b.png)  
@@ -185,6 +208,7 @@ writer.close()
 
 
 #### 3.2.1. add_images
+- `dataformats `: Image data format specification of the form `NCHW`, `NHWC`, `CHW`, `HWC`, `HW`, `WH`, etc.
 ```python
 # dataformats (str): Image data format specification of the form NCHW, NHWC, CHW, HWC, HW, WH, etc.
 # imgs：

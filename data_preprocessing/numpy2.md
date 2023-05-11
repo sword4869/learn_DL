@@ -19,12 +19,12 @@
 - [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
   - [11.1. seed()](#111-seed)
   - [11.2. rand()](#112-rand)
-- [12. randint()](#12-randint)
-  - [12.1. randn()正态分布](#121-randn正态分布)
-- [13. 一个简单的随机漫步](#13-一个简单的随机漫步)
-- [14. 通过内置的random模块以纯Python的方式](#14-通过内置的random模块以纯python的方式)
-- [15. 用np.random模块 ](#15-用nprandom模块)
-- [16. 一次模拟多个随机漫步](#16-一次模拟多个随机漫步)
+  - [11.3. randint()](#113-randint)
+  - [11.4. randn()正态分布](#114-randn正态分布)
+- [12. 一个简单的随机漫步](#12-一个简单的随机漫步)
+- [13. 通过内置的random模块以纯Python的方式](#13-通过内置的random模块以纯python的方式)
+- [14. 用np.random模块 ](#14-用nprandom模块)
+- [15. 一次模拟多个随机漫步](#15-一次模拟多个随机漫步)
 
 
 ## 1. 通用函数：快速的元素级数组函数
@@ -511,13 +511,13 @@ print(np.linalg.inv(arr))
 
 > np.random.seed更改随机数生成种子： 
 
-```
+```python
 np.random.seed(1234)
 ```
 
 >  numpy.random的数据生成函数使用了全局的随机种子。要避免全局状态，你可以使用numpy.random.RandomState，创建一个与其它隔离的随机数生成器
 
-```
+```python
 rng = np.random.RandomState(1234)
 print(rng.randn(10))
 ```
@@ -526,7 +526,7 @@ print(rng.randn(10))
 
 均匀分布，生成(0,1)之间的数据。
 
-```
+```python
 print(np.random.rand())
 #生成一个数
 #0.6548904423938792
@@ -545,11 +545,11 @@ print(np.random.rand(2,3)-0.5)
 '''
 ```
 
-## 12. randint()
+### 11.3. randint()
 
 > randint给定上下限范围内的选取整数 
 
-```
+```python
 import numpy as np
  
 x=np.random.randint(5)             #一个参数，产生[0,n)内的整数
@@ -572,11 +572,11 @@ print(z2)
 '''
 ```
 
-### 12.1. randn()正态分布
+### 11.4. randn()正态分布
 
 > randn(d1,d2...)。不是元组类型
 
-```
+```python
 x=np.random.randn(5)
 print(x)
 #[ 0.61697938  0.25645408  0.60145609  0.49726365  0.55797877]
@@ -588,9 +588,9 @@ print(y)
 '''
 ```
 
-## 13. 一个简单的随机漫步
+## 12. 一个简单的随机漫步
 
-## 14. 通过内置的random模块以纯Python的方式
+## 13. 通过内置的random模块以纯Python的方式
 
 > 一个通过内置的random模块以纯Python的方式实现1000步的随机漫步：从0开始，步长1和－1出现的概率相等。
 
@@ -617,7 +617,7 @@ plt.plot(walk[:100])
 
 ![](https://img-blog.csdnimg.cn/20190324232154749.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-## 15. 用np.random模块 
+## 14. 用np.random模块 
 
 > 用np.random模块一次性就能随机产生1000个结果
 
@@ -654,7 +654,7 @@ print((np.abs(walk) >= 10).argmax())
 #在本例中，只要发现了一个True，那我们就知道它是个最大值了。
 ```
 
-## 16. 一次模拟多个随机漫步
+## 15. 一次模拟多个随机漫步
 
 > 如果你希望模拟多个随机漫步过程（比如5000个），只需对上面的代码做一点点修改即可生成所有的随机漫步过程。只要给numpy.random的函数传入一个二元元组就可以产生一个二维数组，然后我们就可以一次性计算5000个随机漫步过程（一行一个）的累计和了：
 

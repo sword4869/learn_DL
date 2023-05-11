@@ -22,6 +22,15 @@ np.newaxis
 
 np.expand_dims
 
+np.broadcast_to
+```python
+x = np.array([1, 2, 3])
+# 规定广播行为是复制行(3,)→(N, 3)
+y = np.broadcast_to(x, (4, 3))
+# 不能复制列(3,)→(3, N)
+# y = np.broadcast_to(x, (x.shape[0], 4))
+```
+
 > 删除维度 
 
 np.squeeze
