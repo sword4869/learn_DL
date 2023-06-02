@@ -1,18 +1,52 @@
+- [1. Net](#1-net)
+  - [1.1. model 加载梯度与否](#11-model-加载梯度与否)
+  - [1.2. loss 和 optimizer 的三者顺序](#12-loss-和-optimizer-的三者顺序)
+  - [1.3. 训练、验证、测试](#13-训练验证测试)
+- [2. train\_val](#2-train_val)
 
-## Net
+---
+## 1. Net
 
-
-不加载梯度
+### 1.1. model 加载梯度与否
 
 ![图 7](../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
 
-训练、验证、测试:
+### 1.2. loss 和 optimizer 的三者顺序
 
-这里`optimizer.zero_grad()`写在for循环开始、写在`optimizer.step()`后面的都行。
+`loss.backward()`紧跟着就是`optimizer.step()`来完成梯度更新，所以只要`optimizer.zero_grad()`不写在二者中间就行。
+
+也就是说，`optimizer.zero_grad()`可以写在for循环开始，还可以写在for循环中间`optimizer.step()`的前面，也可以写在for循环最后面，即`optimizer.step()`后面。
+
+```python
+for batch in train_loader:
+    optimizer.zero_grad()
+
+    outputs = model() 
+    loss = loss()
+
+    train_loss.backward()
+    optimizer.step()
+---
+for batch in train_loader:
+    outputs = model() 
+    loss = loss()
+
+    optimizer.zero_grad()
+    train_loss.backward()
+    optimizer.step()
+---
+for batch in train_loader:
+    outputs = model() 
+    loss = loss()
+
+    train_loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+```
+
+### 1.3. 训练、验证、测试
 
 ![图 5](../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
- 
-
 
 
 ![图 4](../images/77bdacd36dfa57e1f72fe6bc5641e2113c9104ec83594fe69cf14081d8c2bea8.png)  
@@ -21,7 +55,7 @@
 ![图 6](../images/9c5c01f071d2528b0b0b415fad698050d815069f68811e78b415d5f4ae393816.png)  
 
 
-## train_val
+## 2. train_val
 
 ```python
 def train(train_loader, val_loader, model, config, device):
@@ -37,7 +71,7 @@ def train(train_loader, val_loader, model, config, device):
         for i, (x, y) in enumerate(train_loader):
             x, y = x.to(device), y.to(device)
             outputs = model(x) 
-            batch_loss = criterion(outputs, y)
+            batch_loss = loss(outputs, y)
             _, train_pred = torch.max(outputs, 1) # get the index of the class with the highest probability
 
             train_acc += (train_pred.cpu() == y.cpu()).sum().item()
@@ -55,7 +89,7 @@ def train(train_loader, val_loader, model, config, device):
             for i, (x,y) in enumerate(val_loader):
                 x, y = x.to(device), y.to(device)
                 outputs = model(x)
-                batch_loss = criterion(outputs, y) 
+                batch_loss = loss(outputs, y) 
                 _, val_pred = torch.max(outputs, 1) 
             
                 val_acc += (val_pred.cpu() == y.cpu()).sum().item() # get the index of the class with the highest probability
