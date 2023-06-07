@@ -1,27 +1,31 @@
 - [1. grad](#1-grad)
   - [1.1. grad of tensor](#11-grad-of-tensor)
+    - [1.1.1. 创建梯度](#111-创建梯度)
+    - [1.1.2. 计算梯度](#112-计算梯度)
+  - [1.2. detach](#12-detach)
 
 # 1. grad
 ## 1.1. grad of tensor
 
-创建梯度
+### 1.1.1. 创建梯度
+
+only Tensors of **floating** point and complex dtype can require gradients.
 ```python
 # (1) 默认创建的tensor没有grad
 torch.arange(4.0, requires_grad=True)
 
-# (2)
-# only Tensors of floating point and complex dtype can require gradients
+# (2) requires_grad = True
 X = torch.randint(2, (2, 3)).float()
 X.requires_grad = True
 # tensor([[0., 1., 0.],
 #         [0., 0., 1.]], requires_grad=True)
 
-# (3)
+# (3) requires_grad_(True)
 X = torch.randint(2, (2, 3)).float()
 X.requires_grad_(True)
 ```
 
-计算梯度
+### 1.1.2. 计算梯度
 ```python
 y = X * X
 
@@ -29,6 +33,7 @@ y = X * X
 y.backward()
 
 # 当y是个N-D时，化成0-D的标量。因为不是标量，越求导维度越大。
+# 这就是为什么 loss.backward(), loss is a fuction returning a scalar.
 y.sum().backward()
 
 # 获取得到的梯度
@@ -40,7 +45,7 @@ X.grad.zero_()
 ```
 
 
-detach:
+## 1.2. detach
 [clone, detach](https://zhuanlan.zhihu.com/p/389738863): 
 - `clone()`: a和b不是同一个对象, 也不指向同一块内存地址, 但b的requires_grad属性和a的一样，同样是True or False.
   
