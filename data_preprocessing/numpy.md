@@ -10,6 +10,13 @@
 ## 1. np.random.choice()
 <https://blog.csdn.net/ImwaterP/article/details/96282230>
 
+```bash
+numpy.random.choice(a, size=None, replace=True, p=None)
+从a(只要是ndarray都可以，但必须是一维的)中随机抽取数字，并组成指定大小(size)的数组
+replace:True表示可以取相同数字，False表示不可以取相同数字
+数组p：与数组a相对应，表示取数组a中每个元素的概率，默认为选取每个元素的概率相同。
+```
+
 ## 2. 增加维度与删除维度
 > 增加维度 
 
@@ -126,6 +133,7 @@ array([[1, 2, 3, 4],
 
 ## 5. linspace
 
+在区间内，平均划分，返回n个点。
 ```python
 # 包含 start 和 stop, [start, stop]
 >>>  np.linspace(1, 10, 10)
@@ -135,10 +143,11 @@ array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])
 >>> np.linspace(1, 10, 10, endpoint=False)
 array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 ```
-间隔是 ( stop - start ) / (num - 1), 这么理解：5个点num，间隔为4。
+间隔是 ( stop - start ) / (num - 1).
 
 - `array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
 `np.linspace(1, 10, 10)`
+
 - `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
 `np.linspace(0, 10, 10 + 1)`
 - `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.])`
@@ -229,5 +238,20 @@ np.linalg.norm(x, 'fro')
 ```
 
 - specifies the axis of x along which to compute the vector norms. 
-  `np.linalg.norm(x, axis=0)`就是对各列向量，求向量2范数。
-  `np.linalg.norm(x, axis=1)`就是对各行向量，求向量2范数。
+    沿着那个轴，就是消除那个轴
+    ![图 1](../images/b6d7d4266ce9f00f34ebfad9fb388225cf53f7e34272682241c4eb985529f086.png)  
+
+    ```python
+    import numpy as np
+
+    t = np.array([1,2,3,4,5,6,7,8]).reshape([2,4])
+    y = np.linalg.norm(t, axis=0)
+    print(y)
+    z = np.linalg.norm(t, axis=1)
+    print(z)
+
+    # [[1 2 3 4]
+    #  [5 6 7 8]]
+    # [5.09901951 6.32455532 7.61577311 8.94427191]
+    # [ 5.47722558 13.19090596]
+    ```
