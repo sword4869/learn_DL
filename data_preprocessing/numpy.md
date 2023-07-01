@@ -156,7 +156,10 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 ## 6. meshgrid
 
 
-参考资料：[meshgrid理解](https://blog.csdn.net/lllxxq141592654/article/details/81532855)
+参考资料：[meshgrid理解](https://blog.csdn.net/lllxxq141592654/article/details/81532855), [numpy](https://numpy.org/doc/stable/reference/generated/numpy.meshgrid.html)
+
+
+`numpy.meshgrid(*xi, copy=True, sparse=False, indexing='xy')`
 
 
 1. meshgrid函数的作用：生成坐标矩阵。
@@ -164,49 +167,121 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 3. meshgrid函数的输出：两个二维矩阵
 
 
-`indexing='xy'`:
+> `indexing='xy'`: Cartesian indexing. M个横坐标，N个纵坐标。返回成数组自然是N行M列
 - In the 2-D case ：inputs length (M, N), outputs shape (N, M) 
 - In the 3-D case : inputs length (M, N, P), outputs shape (N, M, P) 
+
 ```python
 import numpy as np
-# 横坐标有几个，纵坐标有几个
+
+# 横坐标3个，纵坐标2个
 nx, ny = (3, 2)
 x = np.linspace(0, 1, nx)
 y = np.linspace(0, 1, ny)
-# shape(2, 3)，意思是，横坐标3个，纵坐标2个
+
+# input length (3, 2)， 横坐标3个，纵坐标2个
+# output shape (2, 3)， 2行3列
 xv, yv = np.meshgrid(x, y)
-# xv：坐标矩阵的横坐标
+# xv：坐标矩阵的横坐标, 自然每行都相同
 # array([[0. , 0.5, 1. ],
 #        [0. , 0.5, 1. ]])
-# yv：坐标矩阵的纵坐标
+# yv：坐标矩阵的纵坐标： 自然每列都相同
 # array([[0.,  0.,  0.],
 #        [1.,  1.,  1.]])
 '''
-```
 
-```python
 import matplotlib.pyplot as plt
 plt.plot(xv, yv, marker='o', color='k', linestyle='none')
 plt.show()
 ```
 ![图 1](../images/073851869c3c51c1573feb5ffb0eaf6291ce47e200b5f0f40f7962839233a39e.png)  
 
+> `indexing='ij'`: matrix indexing. M行N列的矩阵
+- In the 2-D case ：inputs length (M, N), outputs shape (M, N) 
+- In the 3-D case : inputs length (M, N, P), outputs shape (M, N, P) 
+
+
+```python
+import numpy as np
+
+# 矩阵是3行2列
+nx, ny = (3, 2)
+x = np.linspace(0, 1, nx)
+y = np.linspace(0, 1, ny)
+
+# input length (3, 2)， 矩阵是3行2列
+# output shape (3, 2)， 矩阵是3行2列
+xv, yv = np.meshgrid(x, y, indexing='ij')
+# xv：矩阵， 每列都相同
+# [[0.  0. ]
+#  [0.5 0.5]
+#  [1.  1. ]]
+# yv：矩阵， 每行都相同
+# [[0. 1.]
+#  [0. 1.]
+#  [0. 1.]]
+```
+
+例子1： for
+```python
+xv, yv = np.meshgrid(x, y, indexing='xy')
+for i in range(nx):
+    for j in range(ny):
+        # treat xv[j,i], yv[j,i]
+
+xv, yv = np.meshgrid(x, y, indexing='ij')
+for i in range(nx):
+    for j in range(ny):
+        # treat xv[i,j], yv[i,j]
+```
 
 例子2：计算$x^2 + y^2$
 ```python
+import matplotlib.pyplot as plt
 import numpy as np
-point = np.array([ 0. ,1. ,2. ,3.])
-x, y = np.meshgrid(point, point)
-z = x ** 2 + y ** 2
+x = np.linspace(-5, 5, num=10)
+y = np.linspace(-5, 5, num=10)
+xv, yv = np.meshgrid(x, y, indexing='xy')
+z = xv ** 2 + yv ** 2
 print(z)
 '''
-[[ 0.  1.  4.  9.]
- [ 1.  2.  5. 10.]
- [ 4.  5.  8. 13.]
- [ 9. 10. 13. 18.]]
+[[50. 41. 34. 29. 26. 25. 26. 29. 34. 41. 50.]
+ [41. 32. 25. 20. 17. 16. 17. 20. 25. 32. 41.]
+ [34. 25. 18. 13. 10.  9. 10. 13. 18. 25. 34.]
+ [29. 20. 13.  8.  5.  4.  5.  8. 13. 20. 29.]
+ [26. 17. 10.  5.  2.  1.  2.  5. 10. 17. 26.]
+ [25. 16.  9.  4.  1.  0.  1.  4.  9. 16. 25.]
+ [26. 17. 10.  5.  2.  1.  2.  5. 10. 17. 26.]
+ [29. 20. 13.  8.  5.  4.  5.  8. 13. 20. 29.]
+ [34. 25. 18. 13. 10.  9. 10. 13. 18. 25. 34.]
+ [41. 32. 25. 20. 17. 16. 17. 20. 25. 32. 41.]
+ [50. 41. 34. 29. 26. 25. 26. 29. 34. 41. 50.]]
 '''
+ax = plt.axes(projection='3d')
+ax.plot_surface(xv, yv, z)
+plt.show()
 ```
+![图 1](../images/f2379011d0512af6b34b11062fd7ef5655d00e009c9776fff346b7bd2a73d227.png)  
 
+例子3： 
+
+```python
+coords = np.stack(
+    np.meshgrid(
+        np.linspace(0, 1, nx), 
+        np.linspace(0, 1, ny),
+    ), -1)
+
+print(coords)
+# 逐行，x从小到大，y再从小到大。
+# [[[0.  0. ]
+#   [0.5 0. ]
+#   [1.  0. ]]
+
+#  [[0.  1. ]
+#   [0.5 1. ]
+#   [1.  1. ]]]
+```
 
 ## 7. norm
 

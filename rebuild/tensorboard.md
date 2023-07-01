@@ -1,12 +1,14 @@
 - [1. Installation](#1-installation)
 - [2. 创建SummaryWriter()](#2-创建summarywriter)
+  - [2.1. 无参的](#21-无参的)
+  - [2.2. 有参的](#22-有参的)
 - [3. 写入](#3-写入)
   - [3.1. scalar](#31-scalar)
     - [3.1.1. add\_scalar](#311-add_scalar)
     - [3.1.2. add\_scalars](#312-add_scalars)
   - [3.2. images](#32-images)
-    - [add\_image](#add_image)
-    - [3.2.1. add\_images](#321-add_images)
+    - [3.2.1. add\_image](#321-add_image)
+    - [3.2.2. add\_images](#322-add_images)
   - [3.3. net graph](#33-net-graph)
   - [3.4. 网络例子](#34-网络例子)
 - [4. share](#4-share)
@@ -24,6 +26,8 @@ pip install tensorboard
 TensorBoard 1.14+ **can be run** with a reduced feature set if you do not have TensorFlow installed. 
 
 The primary limitation is that as of 1.14, only the following plugins are supported: scalars, custom scalars, image, audio, graph, projector (partial), distributions, histograms, text, PR curves, mesh.
+
+直接安`tensorflow`得了。
 
 > Duplicate plugins for name projector
 
@@ -72,7 +76,9 @@ writer = SummaryWriter('D:/tensorboard/exp_N1')
 
 `SummaryWriter()`分为有参和无参的两种形式.
 
-- 无参的: 是创建在`runs`文件夹下, 按日期再创子文件夹, 同时显示不同的记录.
+### 2.1. 无参的
+
+是创建在`runs`文件夹下, 按日期再创子文件夹, 同时显示不同的记录.
 
 ```bash
 runs
@@ -85,7 +91,9 @@ runs
 ```
 ![图 1](../images/9af23935ac8a7efb08be3dbfb7b2c4eeeccd44822cd968b330b5328d28536d7f.png)  
 
-- 有参的: 则是创建在指定文件夹下, 只显示一个最新的记录.
+### 2.2. 有参的
+
+是创建在指定文件夹下, 只显示一个最新的记录.
 ```bash
 logs
 ├── events.out.tfevents.1683298987.DESKTOP-LOO39KP.1936.7
@@ -171,9 +179,9 @@ writer.close()
 
 ### 3.2. images
 
-#### add_image
+#### 3.2.1. add_image
 
-- `img`： numpy array, torch tensor
+- `img`： numpy array, torch tensor, [0.,1.0] or [0, 255]
 - `dataformats `: Image data format specification of the form `CHW`, `HWC`, `HW`, `WH`, etc.
 
 - tensor
@@ -207,7 +215,7 @@ writer.close()
 ![图 6](../images/ebb993bbdf19c6b6d43e65433ff2bd1fdfb0252ce5f95f97fe2b9d96cd5ddc10.png)  
 
 
-#### 3.2.1. add_images
+#### 3.2.2. add_images
 - `dataformats `: Image data format specification of the form `NCHW`, `NHWC`, `CHW`, `HWC`, `HW`, `WH`, etc.
 ```python
 # dataformats (str): Image data format specification of the form NCHW, NHWC, CHW, HWC, HW, WH, etc.
@@ -312,7 +320,7 @@ writer = SummaryWriter()
 # 训练
 for epoch in range(num_epochs):
     total_train_loss = train_loop(train_iter, net, loss, optimizer)
-    writer.add_scalar('epoch', total_train_loss, epoch+1)
+    writer.add_scalar('total_train_loss', total_train_loss, epoch+1)
 writer.close()
 ```
 
