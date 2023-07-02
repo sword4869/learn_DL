@@ -340,14 +340,15 @@ View your TensorBoard live at URL provided in your terminal. E.g. https://tensor
 
 ### 4.2. ssh
 
+A -> B(tensorboard)
+```bash
+A$ ssh -L 2222:localhost:6006 user_B@host_B -N
+A$ localhost:2222
+```
+
 A(tensorboard) -> B
 ```bash
 A$ ssh -R 2222:localhost:6006 user_B@host_B -N
 B$ localhost:2222
 ```
 
-A -> B(tensorboard)
-```bash
-A$ ssh -L 2222:localhost:6006 user_B@host_B -N
-A$ localhost:2222
-```
