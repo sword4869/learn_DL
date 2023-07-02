@@ -12,6 +12,8 @@
   - [3.3. net graph](#33-net-graph)
   - [3.4. 网络例子](#34-网络例子)
 - [4. share](#4-share)
+  - [4.1. dev](#41-dev)
+  - [4.2. ssh](#42-ssh)
 
 ---
 
@@ -325,6 +327,8 @@ writer.close()
 ```
 
 ## 4. share 
+
+### 4.1. dev
 ```bash
 $ tensorboard dev upload --logdir runs \
 --name "My latest experiment" \ # optional
@@ -334,3 +338,16 @@ Uploaded TensorBoards are **public and visible to everyone**. Do not upload sens
 
 View your TensorBoard live at URL provided in your terminal. E.g. https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA
 
+### 4.2. ssh
+
+A(tensorboard) -> B
+```bash
+A$ ssh -R 2222:localhost:6006 user_B@host_B -N
+B$ localhost:2222
+```
+
+A -> B(tensorboard)
+```bash
+A$ ssh -L 2222:localhost:6006 user_B@host_B -N
+A$ localhost:2222
+```
