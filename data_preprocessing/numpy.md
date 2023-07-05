@@ -163,13 +163,13 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 
 
 1. meshgrid函数的作用：生成坐标矩阵。
-2. meshgrid函数的输入，两个一维数组
-3. meshgrid函数的输出：两个二维矩阵
+2. meshgrid函数的输入，K个一维数组
+3. meshgrid函数的输出：K个K维矩阵, 分别表示第一维度、第二维度……第K维度。
 
 
 > `indexing='xy'`: Cartesian indexing. M个横坐标，N个纵坐标。返回成数组自然是N行M列
 - In the 2-D case ：inputs length (M, N), outputs shape (N, M) 
-- In the 3-D case : inputs length (M, N, P), outputs shape (N, M, P) 
+- In the N-D case : inputs length (M, N, P3, P4, ..., PK), outputs shape (N, M, P3, P4, ..., PK)
 
 ```python
 import numpy as np
@@ -198,7 +198,7 @@ plt.show()
 
 > `indexing='ij'`: matrix indexing. M行N列的矩阵
 - In the 2-D case ：inputs length (M, N), outputs shape (M, N) 
-- In the 3-D case : inputs length (M, N, P), outputs shape (M, N, P) 
+- In the N-D case : inputs length (M, N, P3, P4, ..., PK), outputs shape (M, N, P3, P4, ..., PK)
 
 
 ```python
