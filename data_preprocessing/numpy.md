@@ -266,6 +266,7 @@ plt.show()
 例子3： 
 
 ```python
+nx, ny = 3, 2
 coords = np.stack(
     np.meshgrid(
         np.linspace(0, 1, nx), 
@@ -273,7 +274,6 @@ coords = np.stack(
     ), -1)
 
 print(coords)
-# 逐行，x从小到大，y再从小到大。
 # [[[0.  0. ]
 #   [0.5 0. ]
 #   [1.  0. ]]
@@ -281,6 +281,17 @@ print(coords)
 #  [[0.  1. ]
 #   [0.5 1. ]
 #   [1.  1. ]]]
+
+
+coords = coords.reshape([-1, coords.shape[-1]])
+# 逐行，x从小到大，y再从小到大。
+print(coords)
+# [[0.  0. ]
+#  [0.5 0. ]
+#  [1.  0. ]
+#  [0.  1. ]
+#  [0.5 1. ]
+#  [1.  1. ]]
 ```
 
 ## 7. norm
