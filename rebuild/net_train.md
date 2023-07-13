@@ -1,5 +1,7 @@
 - [1. Net](#1-net)
   - [1.1. model 加载梯度与否](#11-model-加载梯度与否)
+    - [1.1.1. 只关乎BN和Dropout](#111-只关乎bn和dropout)
+      - [1.1.1.1. torch.no\_grad()](#1111-torchno_grad)
   - [1.2. loss 和 optimizer 的三者顺序](#12-loss-和-optimizer-的三者顺序)
   - [1.3. 训练、验证、测试](#13-训练验证测试)
 - [2. train\_val](#2-train_val)
@@ -10,6 +12,21 @@
 ### 1.1. model 加载梯度与否
 
 ![图 7](../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
+
+#### 1.1.1. 只关乎BN和Dropout
+
+`model.train()`的作用是启用 Batch Normalization 和 Dropout。在train模式，Dropout层会按照设定的参数p设置保留激活单元的概率，如keep_prob=0.8，Batch Normalization层会继续计算数据的mean和var并进行更新。
+
+`model.eval()`的作用是不启用 Batch Normalization 和 Dropout。在eval模式下，Dropout层会让所有的激活单元都通过，而Batch Normalization层会停止计算和更新mean和var，直接使用在训练阶段已经学出的mean和var值。
+
+`model.eval()`不会影响各层的梯度计算行为，即会和训练模式一样进行梯度计算和存储，只是不进行反向传播。
+
+也就是说，没有用BN和Dropout的架构，就不用写这个。
+
+##### 1.1.1.1. torch.no_grad()
+
+只是防止梯度传递，没有梯度只节省一点点内存，OOM还是会发生。
+
 
 ### 1.2. loss 和 optimizer 的三者顺序
 
