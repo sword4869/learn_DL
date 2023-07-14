@@ -8,15 +8,15 @@
 
 ## 1. optimizer
 ```python
-torch.optim.SGD(net.parameters(), lr=lr)
+torch.optim.SGD(model.parameters(), lr=lr)
 
 # Adam优化器的主要吸引力在于它对初始学习率不那么敏感。
 torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
 torch.optim.AdamW(model.parameters(), lr=lr)
-
-
 ```
+
 ## 2. lr_scheduler
+
 Decays the learning rate of each parameter group by gamma **every epoch**. 
 ```python
 # 指数
@@ -54,8 +54,8 @@ torch.optim.Adam(net.parameters(), lr=lr, weight_decay=1e-3)
 # 偏置参数没有衰减
 optimizer = torch.optim.SGD(
     [
-        {"params": net[0].weight, 'weight_decay': wd},
-        {"params": net[0].bias}
+        {"params": model[0].weight, 'weight_decay': wd},
+        {"params": model[0].bias}
     ],
     lr=lr
 )
@@ -67,4 +67,6 @@ optimizer = torch.optim.SGD(
 # 联合优化，转为list来连接不同模型的参数
 grad_vars = list(model.parameters())
 grad_vars += list(model_fine.parameters())
+
+optimizer = torch.optim.Adam(params=grad_vars, lr=args.lrate, betas=(0.9, 0.999))
 ```
