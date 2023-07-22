@@ -355,8 +355,11 @@ print(d1+d2)
 # 方式1：
 np_arr = np.array(df1)
 
-# 方式2：
+# 方式2：此方法不被推荐
 np_arr = df1.values
+
+# 方式3：推荐此方法
+np_arr = df1.to_numpy()
 ```
 PS：因为在df中列的切边需要直到列名，很麻烦，所以可以将其转化成np数组用列的索引切片。
 ```python

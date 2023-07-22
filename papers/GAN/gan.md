@@ -1,7 +1,8 @@
 - [1. 网络结构](#1-网络结构)
-- [2. 优化目标](#2-优化目标)
+- [2. 优化](#2-优化)
 - [3. 最优解](#3-最优解)
 - [4. 模式坍塌 Helvetica scenario](#4-模式坍塌-helvetica-scenario)
+- [难训练](#难训练)
 
 ---
 
@@ -25,7 +26,18 @@
 
 
 
-## 2. 优化目标
+## 2. 优化
+
+> iterations
+
+![图 4](../../images/4250da1e5f71990d7ad272fc87b86e21f3d5ef76b95846bc6abea4881e32d4f5.png)
+
+每个 iteration 里，先优化判别器D(固定生成器G)，在判别器D取得最优 $max_D$ 后，再优化生成器 $min_G$ （固定判别器D）.  
+
+
+
+> loss
+
 
 $$\min_G\max_D V(D,G)=\mathbb{E}_{\boldsymbol{x}\sim p_{\mathrm{data}}(\boldsymbol{x})}[\log D(x)]+\mathbb{E}_{\boldsymbol{z}\sim p_{\boldsymbol{z}}(\boldsymbol{z})}[\log(1-D(G(z)))]$$
 
@@ -34,15 +46,15 @@ $\min_G\max_D$可以分开来看：
     既要让真实图片趋于1，又要让生成图片趋于0.
 - G: $\min_G [\log(1-D(G(z)))]$, 即 $\max[D(G(z))]$ 
     为什么没有 $\min_D \log(D(x))$, 因为我们在优化G的参数，而其只和判别器D的参数有关。
-- $min_G max_D$，表示先优化判别器，在判别器取得最优 $max_D$ 后，再优化生成器 $min_G$.
+- 顺序：$min_G max_D$，表示先优化判别器，在判别器取得最优 $max_D$ 后，再优化生成器 $min_G$.
+- 想法来源：把D当成一个二元分类器，最小化 cross-entropy 即是
+
 
 或者我们可以直接理解
 - D的loss是 
-    $-log(D(x)) - log(1-D(G(z))) $
-    $-log(D(x)) + log(D(G(z))) $
+    $-log(D(x)) - log(1-D(G(z))) $, 或者 $-log(D(x)) + log(D(G(z))) $
 - G的loss是 
-    $log(1-D(G(z))$
-    $-log(D(G(z))$
+    $log(1-D(G(z))$, 或者 $-log(D(G(z))$
 
 
 简而言之，让 $p_g(x)$ 趋近于 $p_{data}(x)$
@@ -124,3 +136,7 @@ $p_g(x) = p_{data}(x)$
 生成器 G 将太多的 z 值折叠为相同的 x 值，导致生成器 G 对原始数据分布 $p_{data}$ 建模时发生功能坍塌而失去生成多样性样本的能力
 
 不管输入的随机噪声 z 取值如何，生成器都会一直生成同样的样本。生成器通过不断生成此样本就能够一直骗过判别器，因此生成器也就开始偷奸耍滑了，不好好学习了，一直源源不断地生成同样的数据样本，不会再去训练提高自己生成 多样性数据 的能力了。
+
+## 难训练
+
+当数据分布不重叠时，JS散度总是log2，从而训练Generator时的loss总是常数。
