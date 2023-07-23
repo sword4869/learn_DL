@@ -861,9 +861,9 @@ print(arr[[2,1,0,3]] [:,:3])
 
 转置是重塑的一种特殊形式，它返回的是源数据的视图（不会进行任何复制操作）
 
-转置方法有`.T`、`.transpose()`和`.swapaxes()`.
+转置方法有`.T`、`transpose()`和`swapaxes()`.
 
-transpose()与T和swapaxes()的关系：在transpose()的基础上分化出T()和swapaxes()。
+关系：在`transpose()`的基础上分化出`.T`和`swapaxes()`。
 
 ps:transpose是转置的意思，pose是姿势的意思。swap是交换，axes通axis，axis是轴的意思。
 

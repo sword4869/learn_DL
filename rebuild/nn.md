@@ -1,3 +1,9 @@
+- [1. 父类的8个属性](#1-父类的8个属性)
+- [2. 3个容器 container](#2-3个容器-container)
+  - [2.1. ModelSequential](#21-modelsequential)
+  - [2.2. ModuleDict](#22-moduledict)
+  - [2.3. ModuleList](#23-modulelist)
+- [3. example](#3-example)
 
 
 ---
@@ -30,9 +36,9 @@ def __init__(self):
 其中比较重要的是 `_parameters` 和 `_modules` 属性。
 
 
-## 3个容器 container
+## 2. 3个容器 container
 
-### ModelSequential
+### 2.1. ModelSequential
 
 ```python
 class ModelSequential(nn.Module):
@@ -87,7 +93,7 @@ class ModelSequential(nn.Module):
         }))
 ```
 
-### ModuleDict
+### 2.2. ModuleDict
 
 ```python
 class ModuleDict(nn.Module):
@@ -115,7 +121,7 @@ fake_img = torch.randn((4, 10, 32, 32))
 
 output = net(fake_img, 'conv', 'relu')
 ```
-### ModuleList
+### 2.3. ModuleList
 
 [详解PyTorch中的ModuleList和Sequential](https://zhuanlan.zhihu.com/p/75206669)
 
@@ -150,4 +156,25 @@ h = self.blocks(inputs)
 ```python
 # RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cpu and cuda:1! (when checking argument for argument mat1 in method wrapper_CUDA_addmm)
 self.views_linears = [nn.Linear(W + W, W)] + [nn.Linear(W, W) for i in range(4)]
+```
+
+## 3. example
+
+```python
+nn.ReLU()
+
+nn.Flatten()
+
+nn.Dropout(0.1)
+
+nn.Linear(256, 10)
+
+nn.Conv2d(1, 1, kernel_size=3)
+
+nn.MaxPool2d(2)
+
+nn.AvgPool2d(2)
+
+# 100通道数
+nn.BatchNorm1d(100)
 ```

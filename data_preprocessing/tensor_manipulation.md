@@ -1,13 +1,12 @@
 - [1. tensor\_manipulation](#1-tensor_manipulation)
   - [1.1. create](#11-create)
   - [1.2. calculate](#12-calculate)
-    - [multiple](#multiple)
-    - [other](#other)
+    - [1.2.1. multiple](#121-multiple)
+    - [1.2.2. other](#122-other)
   - [1.3. 维度操作](#13-维度操作)
   - [1.4. 逻辑运算符](#14-逻辑运算符)
   - [1.5. 转换为其他Python对象](#15-转换为其他python对象)
   - [1.6. 拷贝](#16-拷贝)
-    - [1.6.1. 原地操作变量](#161-原地操作变量)
     - [1.6.2. 拷贝](#162-拷贝)
 
 # 1. tensor_manipulation
@@ -45,7 +44,7 @@ torch.eye(3, 3)
 
 
 ### 随即
-# [0, 1]中随机采样
+# 均匀分布[0, 1]中随机采样
 torch.rand(3, 4)
 # rand-normal, 从均值为0、标准差为1的标准高斯分布（正态分布）中随机采样。
 torch.randn(3, 4)
@@ -125,21 +124,21 @@ X = torch.arange(36).reshape(4, 3, 3)
 
 X, X[-1], X[1:3], X[1:3, :], X[1,1]
 
-# 超出索引, 返回全0
+# 超出索引
 # X[5], X[5, :] 不行，当行必须是slice格式的，而不是index
-X[5:6], X[:, 7:8]
-# tensor([], size=(0, 2), dtype=torch.int64)
-# tensor([], size=(4, 0), dtype=torch.int64)
+print(X[5:6], X[:, 7:8])
+# tensor([], size=(0, 3, 3), dtype=torch.int64) 
+# tensor([], size=(4, 0, 3), dtype=torch.int64)
 
 # 效果一样
-x[0, 0, 0] == x[0][0][0]    # 拆分成index
+X[0, 0, 0] == X[0][0][0]    # 拆分成index
 X[1:3] == X[1:3, :]
 
 # slice的效果不同
-Y1 = X[1, :]
-# tensor([2, 3]), torch.Size([2]),
-Y2 = X[1:2, :]
-# tensor([[2, 3]]), torch.Size([1, 2]))
+X[1, :].shape
+# torch.Size([3, 3])
+X[1:2, :].shape
+# torch.Size([1, 3, 3])
 ```
 为多个元素赋值相同的值
 ```python
@@ -162,7 +161,7 @@ a = X+Y
 
 
 ## 1.2. calculate
-### multiple
+### 1.2.1. multiple
 element-wise
 ```python
 X = torch.arange(9).reshape((3, 3))
@@ -249,7 +248,7 @@ A@C     # [3], tensor([0.8935, 1.2776, 0.6071])
 ```
 
 
-### other
+### 1.2.2. other
 sum求和，降低维度
 ```python
 Z = torch.ones(3,4)
@@ -314,8 +313,10 @@ torch.argmax(a, dim=1)
 
 限定元素大小 [min, max]
 ```python
-X = torch.randint(20, (1, 10))
-X.clamp(min=0, max=9)
+input = torch.randint(20, (1, 10))
+output = input.clamp(min=0, max=9)
+# tensor([[15,  4,  8, 11, 12, 18, 11, 12,  8,  0]])
+# tensor([[9, 4, 8, 9, 9, 9, 9, 9, 8, 0]])
 ```
 
 [torch.max()](https://blog.csdn.net/ViatorSun/article/details/108909312): 三种形式
@@ -329,7 +330,12 @@ torch.abs()
 ## 1.3. 维度操作
 如果有4个维度，`dim=-1`, 等同`dim=3`。
 
-转置: 交换两个维度
+
+`.T`, `transpose()`, `permute()`: 基础是`permute()`
+
+torch的`transpose()`相当于numpy的`swapaxes()`, torch的`permute()`相当于numpy的`transpose()`
+
+> `.T` 和 `transpose()`
 ```python
 A = torch.arange(12).reshape(3, 4)
 
@@ -340,16 +346,17 @@ A.T
 A.transpose(0, 1) == A.transpose(1, 0)
 ```
 
-交换维度
+> permute
 ```python
 A = torch.arange(12).reshape(3, 4)
 
 A.permute(1, 0)
 
+X = torch.ones(B, H, W, C)
 # X: [B, H, W, C]，变换成Y: [B, C, H, W]
 X.permute(0, 3, 1, 2)
 ```
-张量的序列变张量
+> 张量的序列变张量 cat stack
 ```python
 X = torch.ones(3,4)
 Y = torch.ones(3,4)
@@ -360,29 +367,38 @@ a = torch.cat((X, Y), dim=0)    # [6, 4]
 b = torch.cat((X, Y), dim=1)    # [3, 8]
 
 # 元组，或者列表
-l = [X, Y]
-d = torch.cat(l, dim=0)         # [6, 4]
+d1 = torch.cat([X, Y], dim=0)   # [6, 4]
+d2 = torch.cat((X, Y), dim=0)   # [6, 4]
 ```
 ```python
 X = torch.ones(3,4)
 Y = torch.ones(3,4)
 
-l = [X, Y]
-tensor_0 = torch.stack(l, dim=0)    # [2, 3, 4]
-tensor_1 = torch.stack(l, dim=1)    # [3, 2, 4]
-tensor_2 = torch.stack(l, dim=2)    # [3, 4, 2]
+# 元组，或者列表
+tensor_0 = torch.stack([X, Y], dim=0)    # [2, 3, 4]
+tensor_1 = torch.stack([X, Y], dim=1)    # [3, 2, 4]
+tensor_2 = torch.stack([X, Y], dim=2)    # [3, 4, 2]
 
 # 提升最后一个维度: RGB图片，前面是xy坐标，最后一个是RGB通道；最后一个是样本特征features
-tensor_2 = torch.stack(l, dim=-1)    # [3, 4, 2]
+tensor_2 = torch.stack([X, Y], dim=-1)    # [3, 4, 2]
 ```
-张量升维，在哪个地方加一个维度。
+> 张量升维，在哪个地方加一个维度 unsqueeze squeeze
+
+`unsqueeze()`函数起升维的作用,参数表示在哪个地方加一个维度。
 ```python
 X=torch.arange(6).reshape(2, 3)
 X.unsqueeze(0)      # torch.Size([1, 2, 3])
 X.unsqueeze(1)      # torch.Size([2, 1, 3])
 X.unsqueeze(2)      # torch.Size([2, 3, 1])
 ```
-降维
+降维`squeeze()`
+- `dim=None`： 删除一个张量中所有维数为1的维度
+
+  例如，一个维度为 $(A \times 1 \times B \times C \times 1 \times D)$的张量调用squeeze方法后维度变为$(A \times B \times C \times D)$
+
+- 当给定dim参数后，squeeze操作只作用于给定维度。
+
+  如果输入input的形状为$(A \times 1 \times B)$, squeeze(input, 0)不改变这个张量, 但是squeeze(input, 1) 将把这个张量的形状变为$(A \times B)$.
 ```python
 x = torch.zeros(2, 1, 2, 1, 2)
 # @dim=None： 删除一个张量中所有维数为1的维度
@@ -422,12 +438,12 @@ X == torch.ones(6, 4)   # [3, 4] cannot match [6, 4]
 X = torch.arange(4).reshape(2,2)
 M = X > 1     # 想相反，~M
 
-# 运算快
+# 矩阵乘法运算快
 X * M
 # tensor([[0, 0],
 #         [2, 3]])
 
-# 运算慢
+# 索引运算慢
 X[M] = 0
 # tensor([[0, 1],
 #         [0, 0]])
@@ -438,8 +454,11 @@ X[M] = 0
 
 ```python
 # tensor -> numpy
-# Can't call numpy() on Tensor that requires grad. Use tensor.detach().numpy() instead. 
 A = torch.tensor(1).numpy()
+# Can't call numpy() on Tensor that requires grad. Use tensor.detach().numpy() instead. 
+# A = torch.tensor(1.0, requires_grad=True).numpy()   # 不行
+A = torch.tensor(1.0, requires_grad=True).detach().numpy()  # 需要detach()
+
 
 # numpy -> tensor
 B1 = torch.from_numpy(np.array(1.2))
@@ -457,44 +476,6 @@ a.item(), float(a), int(a)
 
 ## 1.6. 拷贝
 
-### 1.6.1. 原地操作变量
-原本是`Y = Y + X`
-```python
-X = torch.randn(3,4)
-Y = torch.randn(3,4)
-
-# Y = X+Y, 取消Y
-before1 = id(Y)
-Y = Y + X
-after1 = id(Y)
-
-# Z = X+Y, 取消Z
-Z = torch.zeros_like(Y)
-before2 = id(Z)
-Z = X + Y
-after2 = id(Z)
-
-before1 == after1, before2 == after2
-# (False, False)
-```
-`X[:] = X + Y`或`X += Y`来减少操作的内存开销。
-```python
-X = torch.randn(3,4)
-Y = torch.randn(3,4)
-
-# 方式1
-before1 = id(Y)
-Y += X
-after1 = id(Y)
-
-# 方式2
-Z = torch.zeros_like(Y)
-before2 = id(Z)
-Z[:] = X + Y
-after2 = id(Z)
-
-before1 == after1, before2 == after2
-```
 ### 1.6.2. 拷贝
 
 深拷贝

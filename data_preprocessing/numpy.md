@@ -4,7 +4,6 @@
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
 - [6. meshgrid](#6-meshgrid)
-- [7. norm](#7-norm)
 
 
 ## 1. np.random.choice()
@@ -293,51 +292,3 @@ print(coords)
 #  [0.5 1. ]
 #  [1.  1. ]]
 ```
-
-## 7. norm
-
-vector
-- p-范数: $\sqrt[ord]{\sum(|x|^{ord})}$，即`sum(abs(x)**ord)**(1./ord)`
-```python
-# 默认2范数
-np.linalg.norm(x)
-np.linalg.norm(x, 2)
-
-# 1范数
-np.linalg.norm(x, 1)
-
-# 3范数
-np.linalg.norm(x, 3)
-```
-- max(abs(x)): `np.linalg.norm(a, np.inf)`
-- min(abs(x)): `np.linalg.norm(a, -np.inf)`
-- sum(x != 0): `np.linalg.norm(a, 0)`
-
-
-2D matrix:
-- Frobenius norm
-
-```python
-np.linalg.norm(x)
-np.linalg.norm(x, 2)
-np.linalg.norm(x, 'fro')
-```
-
-- specifies the axis of x along which to compute the vector norms. 
-    沿着那个轴，就是消除那个轴
-    ![图 1](../images/b6d7d4266ce9f00f34ebfad9fb388225cf53f7e34272682241c4eb985529f086.png)  
-
-    ```python
-    import numpy as np
-
-    t = np.array([1,2,3,4,5,6,7,8]).reshape([2,4])
-    y = np.linalg.norm(t, axis=0)
-    print(y)
-    z = np.linalg.norm(t, axis=1)
-    print(z)
-
-    # [[1 2 3 4]
-    #  [5 6 7 8]]
-    # [5.09901951 6.32455532 7.61577311 8.94427191]
-    # [ 5.47722558 13.19090596]
-    ```
