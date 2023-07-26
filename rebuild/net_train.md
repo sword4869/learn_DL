@@ -27,6 +27,14 @@
 
 只是防止梯度传递，没有梯度只节省一点点内存，OOM还是会发生。
 
+PS: 写成函数的形式
+```python
+@torch.no_grad()
+def eval(args):
+    pass
+
+eval(args)
+```
 
 ### 1.2. loss 和 optimizer 的三者顺序
 

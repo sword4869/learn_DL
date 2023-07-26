@@ -9,8 +9,7 @@
 [Generative Adversarial Networks](https://arxiv.org/abs/1406.2661)
 ## 1. 网络结构
 
-![图 5](../../images/2124795424057f88c012dcd39a0171f30307d72d39f95a92b5be1a215e1cfbbd.png)  
-
+![图 5](../../images/2124795424057f88c012dcd39a0171f30307d72d39f95a92b5be1a215e1cfbbd.png) 
 
 噪声 $z\sim p_z$ , 真实图片 $x\sim p_{data}$ ，生成图片 $x=G(z)\sim p_g$ .
 
@@ -51,6 +50,7 @@ $\min_G\max_D$可以分开来看：
 
 
 或者我们可以直接理解
+![gan_architecture](https://easy-ai.oss-cn-shanghai.aliyuncs.com/2019-04-10-115913.jpg)
 - D的loss是 
     $-log(D(x)) - log(1-D(G(z))) $, 或者 $-log(D(x)) + log(D(G(z))) $
 - G的loss是 

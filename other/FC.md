@@ -4,3 +4,7 @@
 
 - 有FC和其他类型（conv、self-attention...）的网络，FC的层叫做FC（而不是MLP）
 - 全是FC的网络叫做MLP
+
+
+
+Feed-Forward Network (FFN)
