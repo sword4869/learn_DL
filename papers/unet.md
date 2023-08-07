@@ -1,6 +1,7 @@
 
 《2015. U-net: Convolutional networks for biomedical image segmentation》
 
+原本是用于医学图像分割。后来被用于图像分隔。现在是diffusion。
 
 ## 架构
 
