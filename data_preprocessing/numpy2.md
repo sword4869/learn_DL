@@ -19,7 +19,7 @@
 - [10. 线性代数](#10-线性代数)
 - [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
   - [11.1. seed()](#111-seed)
-  - [11.2. rand()](#112-rand)
+  - [11.2. rand()均匀分布](#112-rand均匀分布)
   - [11.3. randint()](#113-randint)
   - [11.4. randn()正态分布](#114-randn正态分布)
 - [12. 一个简单的随机漫步](#12-一个简单的随机漫步)
@@ -530,7 +530,7 @@ rng = np.random.RandomState(1234)
 print(rng.randn(10))
 ```
 
-### 11.2. rand()
+### 11.2. rand()均匀分布
 
 均匀分布，生成(0,1)之间的数据。
 
@@ -578,6 +578,50 @@ print(z2)
 [[1 7 7]
  [5 6 2]]
 '''
+```
+
+Examples
+
+```
+>>> np.random.randint(2, size=10)
+array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0]) # random
+>>> np.random.randint(1, size=10)
+array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+```
+
+Generate a 2 x 4 array of ints between 0 and 4, inclusive:
+
+```
+>>> np.random.randint(5, size=(2, 4))
+array([[4, 0, 2, 1], # random
+       [3, 2, 2, 0]])
+
+```
+
+Generate a 1 x 3 array with 3 different upper bounds
+
+```
+>>> np.random.randint(1, [3, 5, 10])
+array([2, 2, 9]) # random
+
+```
+
+Generate a 1 by 3 array with 3 different lower bounds
+
+```
+>>> np.random.randint([1, 5, 7], 10)
+array([9, 8, 7]) # random
+
+```
+
+Generate a 2 by 4 array using broadcasting with dtype of uint8
+
+```
+>>> np.random.randint([1, 3, 5, 7], [[10], [20]], dtype=np.uint8)
+array([[ 8,  6,  9,  7], # random
+       [ 1, 16,  9, 12]], dtype=uint8)
+
 ```
 
 ### 11.4. randn()正态分布

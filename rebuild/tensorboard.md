@@ -12,8 +12,9 @@
   - [3.3. net graph](#33-net-graph)
   - [3.4. 网络例子](#34-网络例子)
 - [4. share](#4-share)
-  - [4.1. dev](#41-dev)
-  - [4.2. ssh](#42-ssh)
+  - [4.1. 直接下载就行](#41-直接下载就行)
+  - [4.2. dev](#42-dev)
+  - [4.3. ssh](#43-ssh)
 
 ---
 
@@ -326,9 +327,13 @@ for epoch in range(num_epochs):
 writer.close()
 ```
 
-## 4. share 
+## 4. share
 
-### 4.1. dev
+### 4.1. 直接下载就行
+
+下载下来后，用本机的 tensorboard 打开即可。
+
+### 4.2. dev
 ```bash
 $ tensorboard dev upload --logdir runs \
 --name "My latest experiment" \ # optional
@@ -338,7 +343,7 @@ Uploaded TensorBoards are **public and visible to everyone**. Do not upload sens
 
 View your TensorBoard live at URL provided in your terminal. E.g. https://tensorboard.dev/experiment/AdYd1TgeTlaLWXx6I8JUbA
 
-### 4.2. ssh
+### 4.3. ssh
 
 A -> B(tensorboard)
 ```bash

@@ -35,3 +35,13 @@
   2）Hard Attention，这种方式是直接精准定位到某个key，其余key就都不管了，相当于这个key的概率是1，其余key的概率全部是0。因此这种对齐方式要求很高，要求一步到位，如果没有正确对齐，会带来很大的影响。另一方面，因为不可导，一般需要用强化学习的方法进行训练。（或者使用gumbel softmax之类的）
 
   3）Local Attention，这种方式其实是以上两种方式的一个折中，对一个窗口区域进行计算。先用Hard方式定位到某个地方，以这个点为中心可以得到一个窗口区域，在这个小区域内用Soft方式来算Attention。
+
+
+- cross-attention: High-resolution image synthesis with latent diffusion models.
+
+
+---
+
+因为矩阵乘法：K和V的第二个维度相同，Q和K的第一个维度相同。
+
+multihead-attention: 将通道拆分映射，64到8个8.

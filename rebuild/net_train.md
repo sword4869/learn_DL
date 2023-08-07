@@ -83,9 +83,9 @@ for batch in train_loader:
 ## 2. train_val
 
 ```python
-def train(train_loader, val_loader, model, config, device):
+def train(train_loader, val_loader, model):
     best_acc = 0.0
-    for epoch in range(config['num_epoch']):
+    for epoch in range(num_epoch):
         train_acc = 0.0
         train_loss = 0.0
         val_acc = 0.0
@@ -120,21 +120,21 @@ def train(train_loader, val_loader, model, config, device):
                 val_acc += (val_pred.cpu() == y.cpu()).sum().item() # get the index of the class with the highest probability
                 val_loss += batch_loss.item()
 
-            print(
-                f'[{epoch + 1:03d}/{num_epoch:03d}]',
-                f'Train Acc: {train_acc/len(train_loader.dataset):3.6f}',
-                f'Loss: {train_loss/len(train_loader):3.6f}',
-                f'| Val Acc: {val_acc/len(val_loader.dataset):3.6f}',
-                f'loss: {val_loss/len(val_loader):3.6f}'
-            )
+        print(
+            f'[{epoch + 1:03d}/{num_epoch:03d}]',
+            f'Train Acc: {train_acc/len(train_loader.dataset):3.6f}',
+            f'Loss: {train_loss/len(train_loader):3.6f}',
+            f'| Val Acc: {val_acc/len(val_loader.dataset):3.6f}',
+            f'loss: {val_loss/len(val_loader):3.6f}'
+        )
 
-            # if the model improves, save a checkpoint at this epoch
-            if val_acc > best_acc:
-                best_acc = val_acc
-                torch.save(model.state_dict(), config['model_path'])
-                print(f'saving model with acc {best_acc/len(val_loader.dataset):.3f}')
+        # if the model improves, save a checkpoint at this epoch
+        if val_acc > best_acc:
+            best_acc = val_acc
+            torch.save(model.state_dict(), model_path)
+            print(f'saving model with acc {best_acc/len(val_loader.dataset):.3f}')
 
-train(train_loader, val_loader, model, config, device)
+train(train_loader, val_loader, model, )
 ```
 
 ```python
@@ -155,7 +155,7 @@ def test(test_loader, model, device):
 # reload the best model
 del model
 model = Classifier().to(device)
-ckpt = torch.load(config['model_path'], map_location='cpu') 
+ckpt = torch.load(model_path, map_location='cuda:0') 
 model.load_state_dict(ckpt)
 predict = test(test_loader, model, device)
 ```
