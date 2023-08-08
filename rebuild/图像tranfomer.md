@@ -1,30 +1,4 @@
-```python
-import torchvision.transforms as transforms
 
-trans = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-])
-```
-    Compose(
-        Resize(size=(224, 224), interpolation=bilinear, max_size=None, antialias=None)
-        ToTensor()
-    )
-
-一般训练集用下data augmentation，动作多点，测试集自然不用那么多。
-```python
-transform_train = transforms.Compose([
-    transforms.RandomCrop(32, padding=4),
-    transforms.RandomHorizontalFlip(),
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-])
-
-transform_test = transforms.Compose([
-    transforms.ToTensor(),
-    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
-])
-```
 ```python
 transforms.Resize((224, 224))
 
@@ -40,4 +14,33 @@ transforms.ToTensor()
 transforms.ToPILImage()
 
 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+```
+## compose
+```python
+import torchvision.transforms as transforms
+
+trans = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+])
+```
+    Compose(
+        Resize(size=(224, 224), interpolation=bilinear, max_size=None, antialias=None)
+        ToTensor()
+    )
+
+## 例子
+一般训练集用下data augmentation，动作多点，测试集自然不用那么多。
+```python
+transform_train = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),
+    transforms.RandomHorizontalFlip(),
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
+
+transform_test = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
+])
 ```

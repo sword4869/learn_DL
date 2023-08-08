@@ -40,7 +40,7 @@
 
 > sqrt 
 
-```
+```python
 arr = np.arange(10)
 print(arr)
 #[0 1 2 3 4 5 6 7 8 9]
@@ -63,7 +63,7 @@ print(np.exp(arr))
 
 > maximum 
 
-```
+```python
 x = np.random.randn(4)
 y = np.random.randn(4)
 print(x)
@@ -80,7 +80,7 @@ print(np.maximum(x, y))
 
 > modf就是一个例子，它是Python内置函数divmod的矢量化版本，它会返回浮点数数组的小数部分（第一个返回的数组）和整数部分（第二个）： 
 
-```
+```python
 arr = np.random.randn(4) * 9
 print(arr)
 remainder, whole_part = np.modf(arr)
@@ -97,7 +97,7 @@ print(whole_part)
 
 > Ufuncs可以接受一个out可选参数，这样就能在数组原地进行操作： 
 
-```
+```python
 arr=np.random.randn(4)
 print(arr)
 # [-0.21348361 -0.81417907  1.03700407  0.72705193]
@@ -126,7 +126,7 @@ print(arr)
 > 
 > np.where的第二个和第三个参数不必是数组，它们都可以是标量值。
 
-```
+```python
 xarr = np.array([1.1, 1.2, 1.3, 1.4, 1.5])
 yarr = np.array([2.1, 2.2, 2.3, 2.4, 2.5])
 cond = np.array([True, False, True, True, False])
@@ -137,7 +137,7 @@ print(result)
 
 > 假设有一个由随机数据组成的矩阵，你希望将所有正值替换为2，将所有负值替换为－2。若利用np.where，则会非常简单： 
 
-```
+```python
 arr = np.random.randn(4, 4)
 print(arr)
 print(arr > 0)
@@ -160,7 +160,7 @@ print(np.where(arr > 0, 2, -2))
 
 >  使用np.where，可以将标量和数组结合起来。例如，我可用常数2替换arr中所有正的值
 
-```
+```python
 print(np.where(arr > 0, 2, arr))
 '''
 [[ 0.60592778 -1.12237571 -0.62943517  0.63504135]
@@ -182,7 +182,7 @@ print(np.where(arr > 0, 2, arr))
 
 ![](https://img-blog.csdnimg.cn/20200603223655496.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-```
+```python
 a = np.array([1,2])
 b = np.array([3,4])
  
@@ -204,7 +204,7 @@ np.mean((a - b) ** 2)
 
 > 既可以当做数组的实例方法调用，也可以当做顶级NumPy函数使用 
 
-```
+```python
 arr = np.random.randn(5, 4)
 print(arr)
 print(arr.mean())
@@ -224,7 +224,7 @@ print(np.mean(arr))
 
 ![](https://img-blog.csdnimg.cn/20190320193647802.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-```
+```python
 arr = np.arange(4).reshape((2,2))
 print(arr)
 print(arr.mean(axis=1))    #行，计算行的平均值
@@ -248,7 +248,7 @@ print(arr.sum(axis=0))     #列，计算每列的和
 
 > cumsum和cumprod之类的方法则不聚合，而是产生一个由中间结果组成的数组
 
-```
+```python
 arr = np.array([0, 1, 2, 3, 4, 5, 6, 7])
 print(arr.cumsum())
 #[ 0  1  3  6 10 15 21 28]
@@ -256,7 +256,7 @@ print(arr.cumsum())
 
 > axis可选参数与高维数组
 
-```
+```python
 arr = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
 print(arr)
 print(arr.cumsum(axis=0))        #列，计算每列的累计和
@@ -278,7 +278,7 @@ print(arr.cumprod(axis=1))       #行，计算每行的累计和
 
 > sum经常被用来对布尔型数组中的True值计数
 
-```
+```python
 import numpy as np
 arr=np.random.randn(5)
 print(arr)
@@ -293,13 +293,13 @@ print((arr>0).sum())
 > 
 > 这两个方法也能用于非布尔型数组，所有非0元素将会被当做True。
 
-```
+```python
 bools = np.array([False, False, True, False])
 print(bools.any())
 print(bools.all())
 ```
 
-```
+```python
 import numpy as np
 arr=np.random.randn(5)
 print(arr)
@@ -341,7 +341,7 @@ numpy.sort(a, axis, kind, order)
 
  例子：
 
-```
+```python
 a = np.array([[3,7],[9,1]])  
 print ('我们的数组是：')
 print (a) 
@@ -368,7 +368,7 @@ print (np.sort(a, axis =  0))
 
 numpy.argsort()函数对输入数组沿给定轴执行间接排序，并使用指定排序类型返回数据的索引数组。 这个索引数组用于构造排序后的数组。 
 
-```
+```python
 x = np.array([3,  1,  2])  
 print ('我们的数组是：')  
 print (x) 
@@ -407,7 +407,7 @@ for i in y:
 
 > np.unique，它用于找出数组中的唯一值并返回已排序的结果： 
 
-```
+```python
 names = np.array(['Bob', 'Joe', 'Will', 'Bob', 'Will', 'Joe', 'Joe'])
 print(np.unique(names))
 ints = np.array([3, 3, 3, 2, 2, 1, 1, 4, 4])
@@ -420,7 +420,7 @@ print(np.unique(ints))
 
 >  np.in1d用于测试一个数组中的值在另一个数组中的成员资格，返回一个布尔型数组
 
-```
+```python
 values = np.array([6, 0, 0, 3, 2, 5, 6])
 print(np.in1d(values, [2, 3, 6]))
 #[ True False False  True  True False  True]
@@ -434,21 +434,21 @@ NumPy能够读写磁盘上的文本数据或二进制数据。
 > 
 > 默认情况下，数组是以未压缩的原始二进制格式保存在扩展名为.npy的文件中的。如果文件路径末尾没有扩展名.npy，则该扩展名会被自动加上。
 
-```
+```python
 arr = np.arange(10)
 np.save('some_array', arr)
 ```
 
 > np.load读取磁盘上的数组 
 
-```
+```python
 print(np.load('some_array.npy'))
 #[0 1 2 3 4 5 6 7 8 9]
 ```
 
 >  np.savez可以将多个数组保存到一个未压缩文件中，将数组以关键字参数的形式传入即可
 
-```
+```python
 np.savez('array_archive.npz', a=arr, b=arr)
 arch = np.load('array_archive.npz')
 print(arch['b'])
@@ -457,7 +457,7 @@ print(arch['b'])
 
 > 如果要将数据压缩，可以使用numpy.savez\_compressed
 
-```
+```python
 np.savez_compressed('arrays_compressed.npz', a=arr, b=arr)
 ```
 
@@ -465,7 +465,7 @@ np.savez_compressed('arrays_compressed.npz', a=arr, b=arr)
 
 >  np.dot计算矩阵内积（点乘积）
 
-```
+```python
 arr1=np.array([[1],[2]])
 arr2=np.array([[3,4]])
 print(np.dot(arr1,arr2))
@@ -475,7 +475,7 @@ print(np.dot(arr1,arr2))
 '''
 ```
 
-```
+```python
 print(np.dot(arr1, arr2))
 '''
 [[3 4]
@@ -483,7 +483,7 @@ print(np.dot(arr1, arr2))
 '''
 ```
 
-```
+```python
 #@符（类似Python 3.5）也可以用作中缀运算符，进行矩阵乘法：
 arr1 = np.array([[0.05,0.1],[0.5,0.2]])
 arr2 = np.array([[0.05,0.1],[0.5,0.2]])
@@ -498,7 +498,7 @@ print(arr1@arr2)
 
 ![](https://img-blog.csdnimg.cn/20190324183349657.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-```
+```python
 import numpy as np
 arr = np.array([[0.05,0.1],[0.5,0.2]])
 print(np.linalg.inv(arr))
@@ -582,7 +582,7 @@ print(z2)
 
 Examples
 
-```
+```python
 >>> np.random.randint(2, size=10)
 array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0]) # random
 >>> np.random.randint(1, size=10)
@@ -592,16 +592,16 @@ array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
 Generate a 2 x 4 array of ints between 0 and 4, inclusive:
 
-```
+```python
 >>> np.random.randint(5, size=(2, 4))
 array([[4, 0, 2, 1], # random
        [3, 2, 2, 0]])
 
-```
+```python
 
 Generate a 1 x 3 array with 3 different upper bounds
 
-```
+```python
 >>> np.random.randint(1, [3, 5, 10])
 array([2, 2, 9]) # random
 
@@ -609,7 +609,7 @@ array([2, 2, 9]) # random
 
 Generate a 1 by 3 array with 3 different lower bounds
 
-```
+```python
 >>> np.random.randint([1, 5, 7], 10)
 array([9, 8, 7]) # random
 
@@ -617,7 +617,7 @@ array([9, 8, 7]) # random
 
 Generate a 2 by 4 array using broadcasting with dtype of uint8
 
-```
+```python
 >>> np.random.randint([1, 3, 5, 7], [[10], [20]], dtype=np.uint8)
 array([[ 8,  6,  9,  7], # random
        [ 1, 16,  9, 12]], dtype=uint8)
@@ -626,7 +626,7 @@ array([[ 8,  6,  9,  7], # random
 
 ### 11.4. randn()正态分布
 
-> randn(d1,d2...)。不是元组类型
+> randn(shape)
 
 ```python
 x=np.random.randn(5)
@@ -646,7 +646,7 @@ print(y)
 
 > 一个通过内置的random模块以纯Python的方式实现1000步的随机漫步：从0开始，步长1和－1出现的概率相等。
 
-```
+```python
 import random
 import matplotlib.pyplot as plt
 %matplotlib inline
@@ -673,7 +673,7 @@ plt.plot(walk[:100])
 
 > 用np.random模块一次性就能随机产生1000个结果
 
-```
+```python
 import numpy as np
 import matplotlib.pyplot as plt
 %matplotlib inline
@@ -691,7 +691,7 @@ plt.plot(walk)
 
 > 使用numpy模块，我们还可以统计一些数据
 
-```
+```python
 #最大值和最小值
 print(walk.min())
 print(walk.max())
@@ -710,7 +710,7 @@ print((np.abs(walk) >= 10).argmax())
 
 > 如果你希望模拟多个随机漫步过程（比如5000个），只需对上面的代码做一点点修改即可生成所有的随机漫步过程。只要给numpy.random的函数传入一个二元元组就可以产生一个二维数组，然后我们就可以一次性计算5000个随机漫步过程（一行一个）的累计和了：
 
-```
+```python
 nwalks = 5000
 nsteps = 1000
 draws = np.random.randint(0, 2, size=(nwalks, nsteps))
@@ -732,7 +732,7 @@ print(walks)
 
 > 现在，我们来计算所有随机漫步过程的最大值和最小值：
 
-```
+```python
 print(walks.max())
 print(walks.min())
 '''
@@ -743,7 +743,7 @@ print(walks.min())
 
 > 得到这些数据之后，我们来计算30或－30的最小穿越时间。这里稍微复杂些，因为不是5000个过程都到达了30。我们可以用any方法来对此进行检查：
 
-```
+```python
 hits30 = (np.abs(walks) >= 30).any(1)
 print(hits30)
 print(hits30.sum())
@@ -755,7 +755,7 @@ print(hits30.sum())
 
 > 然后我们利用这个布尔型数组选出那些穿越了30（绝对值）的随机漫步（行），并调用argmax在轴1上获取穿越时间：
 
-```
+```python
 #hits30意思是如果是False，那么肯定没有达到30，就跳过，这样比以此索引更高效
 crossing_times = (np.abs(walks[hits30]) >= 30).argmax(1)
 print(crossing_times.mean())
@@ -764,6 +764,6 @@ print(crossing_times.mean())
 
 > 用其他分布方式得到漫步数据。只需使用不同的随机数生成函数即可，如normal用于生成指定均值和标准差的正态分布数据：
 
-```
+```python
 steps = np.random.normal(loc=0, scale=0.25,size=(nwalks, nsteps))
 ```

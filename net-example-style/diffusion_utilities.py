@@ -14,12 +14,14 @@ class ResidualConvBlock(nn.Module):
     def __init__(
         self, in_channels: int, out_channels: int, is_res: bool = False
     ) -> None:
+        '''
+        is_res: Flag for whether or not to use residual connection
+        '''
         super().__init__()
 
         # Check if input and output channels are the same for the residual connection
         self.same_channels = in_channels == out_channels
 
-        # Flag for whether or not to use residual connection
         self.is_res = is_res
 
         # First convolutional layer
@@ -117,11 +119,11 @@ class UnetDown(nn.Module):
 
 class EmbedFC(nn.Module):
     def __init__(self, input_dim, emb_dim):
-        super(EmbedFC, self).__init__()
         '''
         This class defines a generic one layer feed-forward neural network for embedding input data of
         dimensionality input_dim to an embedding space of dimensionality emb_dim.
         '''
+        super().__init__()
         self.input_dim = input_dim
         
         # define the layers for the network
@@ -131,7 +133,6 @@ class EmbedFC(nn.Module):
             nn.Linear(emb_dim, emb_dim),
         ]
         
-        # create a PyTorch sequential model consisting of the defined layers
         self.model = nn.Sequential(*layers)
 
     def forward(self, x):

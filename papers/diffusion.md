@@ -71,6 +71,30 @@ The UNet can take in more information in the form of embeddings
 
 Each timestep is dependent on the previous one (Markovian)，
 
+
+
+
+
+
+The DDPM paper describes a corruption process that adds a small amount of noise for every 'timestep'. 
+
+Given $x_{t-1}$ for some timestep, we can get the next version $x_t$ with:
+
+$$q(\mathbf{x}_t \vert \mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t; \sqrt{1 - \beta_t} \mathbf{x}_{t-1}, \beta_t\mathbf{I}) \quad$$
+
+$$q(\mathbf{x}_{1:T} \vert \mathbf{x}_0) = \prod^T_{t=1} q(\mathbf{x}_t \vert \mathbf{x}_{t-1})$$
+
+- we take $x_{t-1}$, scale it by $\sqrt{1 - \beta_t}$ and add noise scaled by $\beta_t$. 
+- $\beta$ is defined for every timestep $t$ accoridng to some schedule, and determines how much noise is added per timestep. 
+
+Now, we don't necessariy want to do this operation 500 times to get $x_{500}$ so we have another formula to get $x_t$ for any t given $x_0$: <br><br>
+
+$$\begin{aligned}
+q(\mathbf{x}_t \vert \mathbf{x}_0) &= \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, \sqrt{(1 - \bar{\alpha}_t)} \mathbf{I})
+\end{aligned}, \text{where } \bar{\alpha}_t = \prod_{i=1}^T \alpha_i \text{ and } \alpha_i = 1-\beta_i$$
+
+- We can plot $\sqrt{\bar{\alpha}_t}$ (labelled as `sqrt_alpha_prod`) and $\sqrt{(1 - \bar{\alpha}_t)}$ (labelled as `sqrt_one_minus_alpha_prod`)
+
 ## DDIM
 
 ![Alt text](image-19.png)

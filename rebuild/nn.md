@@ -60,6 +60,15 @@ class ModelSequential(nn.Module):
             nn.Linear(84, classes)
         )
 
+        # l = [nn.Conv2d(3, 6, 5),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d(2, 2),
+        #     nn.Conv2d(6, 16, 5),
+        #     nn.ReLU(),
+        #     nn.MaxPool2d(2, 2)
+        # ]
+        # self.features = nn.Sequential(*l)         # 需要的不是列表
+
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size()[0], -1)
@@ -91,6 +100,20 @@ class ModelSequential(nn.Module):
 
             'fc3': nn.Linear(84, classes),
         }))
+```
+
+```python
+conv2 = nn.Sequential(
+    nn.Conv2d(4, 5, 3, 1, 1),   # 3x3 kernel with stride 1 and padding 1
+    nn.BatchNorm2d(5),          # Batch normalization
+    nn.GELU(),                  # GELU activation function
+)
+print(conv2[0])
+# Conv2d(4, 5, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+print(conv2[0].in_channels)
+# 4
+print(conv2[0].out_channels)
+# 5
 ```
 
 ### 2.2. ModuleDict
@@ -134,6 +157,9 @@ class ModuleList(nn.Module):
             [nn.Linear(W + W, W)] +
             [nn.Linear(W, W) for i in range(4)]
         )
+
+        # l = [nn.Linear(W + W, W)] + [nn.Linear(W, W) for i in range(4)]
+        # self.views_linears = nn.ModuleList(l)     # 需要的是列表
 
     def forward(self, inputs):
         h = inputs
