@@ -28,7 +28,7 @@ To the best of our knowledge, however, the Transformer is the first transduction
 
 #### 2.1.1. 公式
 
-![Alt text](image-4.png)
+![Alt text](diffusion/image-4.png)
 
 $$\displaystyle \mathrm{Attention}(q,K,V)=\sum_{i=1}^{N} \mathrm{softmax}\left(\dfrac{q \cdot K_i}{\sqrt{d_k}} \right) \cdot V_i =\mathrm{softmax} \left(\dfrac{\sum_{i=1}^{d_k} q_i k_i}{\sqrt{d_k}} \right) \cdot v$$
 
