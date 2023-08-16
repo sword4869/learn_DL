@@ -27,35 +27,36 @@ d1 = torch.device('cpu')
 d2 = torch.device('cuda')
 
 # 分配第二块GPU
-d4 = torch.device('cuda', 1)
 d3 = torch.device('cuda:1')
+d4 = torch.device('cuda', 1)
+
+d5 = torch.device(0)      # torch.device('0')不行; 没有 torch.device()
+d5 = torch.device(1)
 
 # 默认GPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# 第一块GPU
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+# 第二块GPU
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 ```
 
 ## 3. 默认GPU
-
-少用，容易出错。`device = torch.device("cuda" if torch.cuda.is_available() else "cpu")`换成`device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")`，结果就一半一半了。
-
-这个小细节很容易看错。
 
 ```python
 #### 修改默认gpu
 torch.cuda.set_device(1)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)       # 这里虽然输出 cuda，但并不表示 cuda:0，其实是 cuda:1
-# cuda
-
 X = torch.ones(2, 3).cuda()
 print(X.device)
 # cuda:1
+
+device = torch.device("cuda")
+print(device)       # 这里虽然输出 cuda，但并不表示 cuda:0，其实是 cuda:1
+# cuda
 X = torch.ones(2, 3).to(device)
 print(X.device)
 # cuda:1
+# 一个容易出错的细节：`device = torch.device("cuda")`换成`device = torch.device("cuda:0")`
+#   就只能是cuda:0了
 
 
 #### 还是可以指定
@@ -68,11 +69,11 @@ print(X.device)
 ```
 
 ```python
-# 效果一样，修改默认gpu
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 with torch.cuda.device(1):
     X = torch.ones(2, 3).cuda()
+    
+    # 效果一样，修改默认gpu
+    device = torch.device("cuda")
     X = torch.ones(2, 3).to(device)
 ```
 ## 4. 默认tensor类型
@@ -112,8 +113,7 @@ Y3 = Y.to('cpu')                    # cpu
 Y4 = Y.to(0)                        # cuda:0
 Y5 = Y.to('cuda')                   # cuda:1
 Y6 = Y.to('cuda:0')                 # cuda:0
-Y7 = Y.to(torch.device('cuda:0'))   # cuda:0
-Y8 = Y.to(torch.device('cuda'))     # cuda:1
+Y7 = Y.to(torch.device('cuda:0'))   # torch.device 类型
 ```
 
 ```python
@@ -139,15 +139,13 @@ Y2 = Y.cuda()                         # cuda:1
 Y3 = Y.cuda(0)                        # cuda:0
 Y4 = Y.cuda('cuda')                   # cuda:1
 Y5 = Y.cuda('cuda:0')                 # cuda:0
-Y6 = Y.cuda(torch.device('cuda:0'))   # cuda:0
-Y7 = Y.cuda(torch.device('cuda'))     # cuda:1
+Y6 = Y.cuda(torch.device('cuda:0'))   # torch.device 类型
 ```
 ### 5.3. 张量初始化设备
 
 只有张量有这个属性，网络不能这样指定
 ```python
-# 可以直接写，['cpu', 'cuda', 'cuda:0', 'cuda:1']
-# 不能，device='0'
+# 可以直接写，['cpu', 0, 'cuda', 'cuda:0', torch.device类型]
 X = torch.ones(2, 3, device='cpu')
 Y = torch.ones(2, 3, device=torch.device('cpu'))
 ```

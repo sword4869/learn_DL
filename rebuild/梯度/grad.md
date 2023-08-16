@@ -59,4 +59,4 @@ X.grad.zero_()
 
 [detach, detach_](https://blog.csdn.net/qq_27825451/article/details/95498211)
 
-[在模型中时开时关detach()而不能阻止权重更新](../unsolvable/net_recurring_detach.ipynb)
+[在模型中时开时关detach()而不能阻止权重更新](../%E6%95%B0%E6%8D%AE%E9%9B%86/unsolvable/net_recurring_detach.ipynb)
