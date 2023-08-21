@@ -299,10 +299,10 @@ from torch.utils.data.distributed import DistributedSampler
 
 from tqdm import tqdm
 
-class RandomDataset(Dataset):
-    def __init__(self, length, feature):
+class RangeDataset(Dataset):
+    def __init__(self, length):
         self.len = length
-        self.data = torch.randn(length, feature)
+        self.data = torch.arange(0, length, dtype=torch.float32)
 
     def __getitem__(self, index):
         return self.data[index]
@@ -343,24 +343,26 @@ def train(rank):
     model = DDP(model, device_ids=[rank])
 
     # DataLoader
-    rand_dataset = RandomDataset(length=10, feature=5)
+    rand_dataset = RangeDataset(length=10)
     rand_distributed_sampler = DistributedSampler(rand_dataset, rank=rank, shuffle=True)
     # `sampler`和`shuffle`是互斥的，或者说 sampler 中自己就已经 shuffle了，所以不用 dataloader 再shuffle
     rand_dataloader = DataLoader(rand_dataset, batch_size=5, sampler=rand_distributed_sampler)
     
-    # 因为是同步的进度，所以只显示一个进程的进度条就行
-    pbar = tqdm(rand_dataloader) if rank == 0 else rand_dataloader
-    for data in pbar:
-        inputs = data.to(rank)
-        outputs = model(inputs)
+    for epoch in range(10):
+        rand_distributed_sampler.set_epoch(epoch)
+        # 因为是同步的进度，所以只显示一个进程的进度条就行
+        pbar = tqdm(rand_dataloader) if rank == 0 else rand_dataloader
+        for data in pbar:
+            inputs = data.to(rank)
+            outputs = model(inputs)
 
-    loss_fn = nn.MSELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-    labels = torch.randn(outputs.shape).to(rank)
-    loss = loss_fn(outputs, labels)
-    loss.backward()
-    optimizer.step()
-    optimizer.zero_grad()
+        loss_fn = nn.MSELoss()
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+        labels = torch.randn(outputs.shape).to(rank)
+        loss = loss_fn(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
 
 
 if __name__ == "__main__":
