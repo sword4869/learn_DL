@@ -10,21 +10,31 @@
 ## 1. Overview
 
 Stable diffusion 并不是单个模型，而是由三个模型组合起来的。
+
 ![Alt text](image-20.png)
 
 - Text Encoder (pre-tained 好的Clip中的Encoder)
+
     作为unet的条件
+
     Input: text.
-    Output: token embeddings vectors, 77 token each in 768 dimensions.
+
+    Output: **token embeddings vectors**, **77 tokens** each in 768 dimensions.
 
 - Image Information Creator (ldm中的 UNet + Scheduler)
+
     gradually denoising process information in the information (latent) space.
+    
     Input: token embeddings and a random noise tensor.
+
     Output: A processed information tensor (4,64,64)
 
 - Autoencoder Decoder (ldm中的Decoder)
+    
     paints the final image.
+    
     Input:  A processed information tensor (4,64,64)
+    
     Output: The resulting image (3, 512, 512).
 
 A processed information tensor 就是中间产物。
