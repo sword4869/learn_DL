@@ -9,6 +9,9 @@
 
 
 ---
+
+<https://huggingface.co/docs/accelerate/index>
+
 This repository is tested on Python 3.7+ and PyTorch 1.4.0+
 ```python
 pip install accelerate

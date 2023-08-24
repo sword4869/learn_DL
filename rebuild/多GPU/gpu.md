@@ -3,8 +3,7 @@
 - [3. 默认GPU](#3-默认gpu)
 - [4. 默认tensor类型](#4-默认tensor类型)
 - [5. 迁移](#5-迁移)
-  - [5.1. to](#51-to)
-  - [5.2. cuda](#52-cuda)
+  - [5.1. to() 和 cuda()](#51-to-和-cuda)
   - [5.3. 张量初始化设备](#53-张量初始化设备)
 
 ---
@@ -98,7 +97,7 @@ print(net(X).device)
 ```
 ## 5. 迁移
 
-### 5.1. to
+### 5.1. to() 和 cuda()
 ```python
 torch.cuda.set_device(1)
 
@@ -118,11 +117,10 @@ Y7 = Y.to(torch.device('cuda:0'))   # torch.device 类型
 
 ```python
 net = nn.Sequential(nn.Linear(3, 1))
-# 没有 net.device, 只能从模型参数看出模型在哪里
+# 没有 `net.device`, 只能从模型参数看出模型在哪里
 print(net[0].weight.data.device)
 # cpu
 ```
-### 5.2. cuda
 
 除了无参是默认GPU和没有`cuda('cpu')`，其他效果一样
 
@@ -141,6 +139,26 @@ Y4 = Y.cuda('cuda')                   # cuda:1
 Y5 = Y.cuda('cuda:0')                 # cuda:0
 Y6 = Y.cuda(torch.device('cuda:0'))   # torch.device 类型
 ```
+PS: 张量和模型还有个区别是返回值的写法
+- 张量必须`a = a.to(0)`
+- 模型可以直接 `model.to(0)` 和 `model = model.to(0)`
+```python
+>>> import torch
+>>> a = torch.randn(2,2)
+>>> a.cuda()                                      # 临时而已
+tensor([[ 0.6088, -2.2590],
+        [ 0.0765,  0.4449]], device='cuda:0')
+>>> a
+tensor([[ 0.6088, -2.2590],
+        [ 0.0765,  0.4449]])
+        
+>>> model = torch.nn.Linear(2,2)
+>>> model.cuda()                                  # 已经在GPU上
+Linear(in_features=2, out_features=2, bias=True)
+>>> model.weight.data.device
+device(type='cuda', index=0)
+```
+
 ### 5.3. 张量初始化设备
 
 只有张量有这个属性，网络不能这样指定

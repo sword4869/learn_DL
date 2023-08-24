@@ -12,6 +12,8 @@
 # 1. tensor_manipulation
 
 ## 1.1. create
+
+[注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
 ```python
 import torch
 
@@ -50,12 +52,12 @@ torch.rand(3, 4)
 torch.randn(3, 4)
 
 # 限定元素大小 [min, max)
-torch.randint(10, 12, (3, 4))
+torch.randint(10, 12, (3, 4))   
 # 默认最小0
-torch.randint(2, (3, 4))
+torch.randint(2, (3,))    # 不同于 numpy， size 只接受元组类型
 
 # normal
-torch.normal(0, 1, (3,3 ))
+torch.normal(0, 1, (3, 3))
 
 
 # Python列表
@@ -64,20 +66,33 @@ torch.tensor([[2, 1, 4, 3], [1, 2, 3, 4], [4, 3, 2, 1]])
 
 浮点数
 ```python
-# 整数默认torch.int64
-a = torch.tensor(12).dtype
-# 直接tensor，浮点数默认torch.float32
-a2 = torch.tensor(12.1).dtype
-# 转化来，浮点数默认torch.float64
-import numpy as np
-a3 = torch.tensor(np.array([1.2])).dtype
+# 直接tensor，浮点数默认 torch.float32
+a1 = torch.tensor(12.1)
+
+# 转化整数为浮点数 torch.float32
+a2 = torch.tensor(12).float()
+
+# 转化 numpy ，浮点数默认 torch.float64
+a3 = torch.tensor(np.array([1.2]))
 
 
 ### 所以，一般在转化时，指定float32
 # 方式1
-b = torch.tensor(12, dtype=torch.float32)
+b = torch.tensor(np.array([1.2]), dtype=torch.float32)
 # 方式2
-c = torch.tensor(12).float()
+c = torch.tensor(np.array([1.2])).float()
+```
+
+整数
+```python
+# 整数默认torch.int64
+a1 = torch.tensor(12).dtype
+
+# 转化浮点数为整数 torch.int64
+a2 = torch.tensor(12.1).long()
+
+# 转化 numpy ，浮点数默认 torch.int32
+a3 = torch.tensor(np.array([12]))
 ```
 
 维度

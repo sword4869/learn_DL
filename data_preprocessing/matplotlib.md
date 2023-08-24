@@ -210,7 +210,18 @@ ax.plot([3, 2, 1], [0, 0.5, 0.2])
 ax.legend(['f(x)', 'g(x)'])
 ```
 
+
 ![图 6](../images/3508117f5066f473a4ddb017022c0ea0b2b6b5dbdf96f2521152d43a9149096a.png)  
+
+在plot中指定label
+```python
+plt.plot(noise_scheduler.alphas_cumprod.cpu() **
+         0.5, label=r"${\sqrt{\bar{\alpha}_t}}$")
+plt.plot((1 - noise_scheduler.alphas_cumprod.cpu()) **
+         0.5, label=r"$\sqrt{(1 - \bar{\alpha}_t)}$")
+plt.legend(fontsize="x-large")
+```
+![图 4](../images/fe918dd79dceb603337b2e19910ea46033297bf2be563c9da0a4f59c111a169f.png)  
 
 ### 3.4. 网格
 

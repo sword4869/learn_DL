@@ -204,3 +204,10 @@ nn.AvgPool2d(2)
 # 100通道数
 nn.BatchNorm1d(100)
 ```
+
+```python
+import torch.nn.functional as F
+
+input_normed = F.normalize(image_features.unsqueeze(1), dim=2)
+embed_normed = F.normalize(text_features.unsqueeze(0), dim=2)
+```

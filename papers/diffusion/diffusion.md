@@ -35,6 +35,11 @@ Latent Diffusion Models (LDM)
 
 ![Alt text](./image-10.png)
 
+<p align="center">
+    <img src="https://user-images.githubusercontent.com/10695622/174349667-04e9e485-793b-429a-affe-096e8199ad5b.png" width="800"/>
+    <br>
+    <em> Figure from DDPM paper (https://arxiv.org/abs/2006.11239). </em>
+<p>
 
 ---
 
@@ -124,7 +129,31 @@ Noise sample 减去 神经网络预测出来的 Predicted Noise, 得到 更清�
 - $\alpha_t = 1-\beta_t$
 - 连乘 $\displaystyle \bar{\alpha_t} = \prod^T_{t=1}{\alpha_t} = \prod^T_{t=1}{1-\beta_t} = ({1-\beta_1})({1-\beta_2})...({1-\beta_t})$
   
-We can plot $\sqrt{\bar{\alpha}_t}$ (labelled as `sqrt_alpha_prod`) and $\sqrt{(1 - \bar{\alpha}_t)}$ (labelled as `sqrt_one_minus_alpha_prod`)
+```python
+from diffusers import DDPMScheduler
+import matplotlib.pyplot as plt
+
+scheduler = DDPMScheduler(num_train_timesteps=1000)
+alphas = scheduler.alphas
+betas = scheduler.betas
+alphas_cumprod = scheduler.alphas_cumprod
+sqrt_alphas_cumprod = scheduler.alphas_cumprod.sqrt()
+sqrt_one_minus_alphas_cumprod = (1 - scheduler.alphas_cumprod) ** 0.5
+
+plt.plot([1 for _ in scheduler.timesteps], label="no scaling")
+plt.plot(betas, label=r"$\beta_t$")
+plt.plot(alphas, label=r"$\alpha_t$")
+plt.plot(alphas_cumprod, label=r"$\bar{\alpha}_t$")
+plt.plot(sqrt_alphas_cumprod, label=r"${\sqrt{\bar{\alpha}_t}}$")
+plt.plot(sqrt_one_minus_alphas_cumprod, label=r"$\sqrt{(1 - \bar{\alpha}_t)}$", color='black')
+plt.legend(fontsize="x-large")
+```
+![图 5](../../images/2a810e2633583ebc19fba7b4a9d27d283f8fbaa1390bd80f4bb6d51fcec5770e.png)  
+
+
+这个可以配合 guidance `x = (x.detach() + cond_grad * scheduler.alphas_cumprod.sqrt()`, `scheduler.alphas_cumprod.sqrt()`就是系数:
+- 对于 shape 的指导，你可能希望大部分效果集中在早期步骤
+- 对于 texture 的指导，你可能更希望它们只在生成过程结束时发挥作用。
 
 
 ## 4. UNet

@@ -12,7 +12,7 @@ torch.optim.SGD(model.parameters(), lr=lr)
 
 # Adam优化器的主要吸引力在于它对初始学习率不那么敏感。
 torch.optim.Adam(model.parameters(), lr=lr, betas=(0.9, 0.999))
-torch.optim.AdamW(model.parameters(), lr=lr)
+torch.optim.AdamW(model.parameters(), lr=lr, betas=(0.9, 0.999))
 ```
 
 ## 2. lr_scheduler
