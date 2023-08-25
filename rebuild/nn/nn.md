@@ -8,7 +8,7 @@
 
 ---
 
-![图 1](../images/30d123dcbd3ce0d2f99b6eb220eb45323eab6673f7ac1195cd18084fdc3f21de.png)  
+![图 1](../../images/30d123dcbd3ce0d2f99b6eb220eb45323eab6673f7ac1195cd18084fdc3f21de.png)  
 
 ## 1. 父类的8个属性
 `nn.Module` 有 8 个属性，都是`OrderDict`(有序字典)。在 LeNet 的`__init__()`方法中会调用父类`nn.Module`的`__init__()`方法，创建这 8 个属性。
@@ -203,11 +203,15 @@ nn.AvgPool2d(2)
 
 # 100通道数
 nn.BatchNorm1d(100)
+
+nn.Embedding(num_classes, class_emb_size)
 ```
 
 ```python
 import torch.nn.functional as F
 
-input_normed = F.normalize(image_features.unsqueeze(1), dim=2)
-embed_normed = F.normalize(text_features.unsqueeze(0), dim=2)
+input_normed = F.normalize(image_features, dim=2)
+
+def F_normalize(x, dim):
+    return x / torch.norm(x, dim=dim, keepdim=True)
 ```

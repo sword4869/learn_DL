@@ -1,5 +1,13 @@
 - [1. np.random.choice()](#1-nprandomchoice)
 - [2. 增加维度与删除维度](#2-增加维度与删除维度)
+  - [2.1. 增加维度 np.newaxis, None, np.expand\_dims](#21-增加维度-npnewaxis-none-npexpand_dims)
+  - [2.2. 广播](#22-广播)
+    - [2.2.1. 计算shape](#221-计算shape)
+    - [2.2.2. 修正shape](#222-修正shape)
+      - [torch.Tensor.expand](#torchtensorexpand)
+  - [2.3. np.repeat](#23-nprepeat)
+    - [2.3.1. torch.Tensor.repeat](#231-torchtensorrepeat)
+  - [2.4. np.squeeze](#24-npsqueeze)
 - [3. np.concatenate](#3-npconcatenate)
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
@@ -17,26 +25,132 @@ replace:True表示可以取相同数字，False表示不可以取相同数字
 ```
 
 ## 2. 增加维度与删除维度
-> 增加维度 
 
-np.newaxis 
-- <https://zhuanlan.zhihu.com/p/356601576>
-- 是切片
-- `np.newaxis` 等价于 `None`
-- `y[:, np.newaxis, :] == y[...,  np.newaxis, :]`, [4,1,3]
-- `y[:, np.newaxis, :].shape`, [4, 1 ,3]; `y[:, np.newaxis, :].shape`, [4, 3, 1]
+### 2.1. 增加维度 np.newaxis, None, np.expand_dims
 
-np.expand_dims
-
-np.broadcast_to
+- `np.newaxis, None`
+    
+    是切片, <https://zhuanlan.zhihu.com/p/356601576>
+    
 ```python
-x = np.array([1, 2, 3])
-# 规定广播行为是复制行(3,)→(N, 3)
-y = np.broadcast_to(x, (4, 3))
-# 不能复制列(3,)→(3, N)
-# y = np.broadcast_to(x, (x.shape[0], 4))
+>>> np.newaxis is None             # `np.newaxis` 等价于 `None`
+True
+
+>>> x = np.array([1, 2])
+>>> x[np.newaxis, :].shape
+(1, 2)
+>>> x[:, None].shape               
+(2, 1)
+
+>>> y = np.array([[1, 2],[3, 4]])
+>>> y[:, :, None].shape            # 多个连续的`:` 等于 `...`
+(2, 2, 1)
+>>> y[..., None].shape
+(2, 2, 1)
+```
+- `np.expand_dims(a, axis)`
+  
+    要插入`None`到哪些轴
+
+```python
+>>> x = np.array([1, 2])                  # [2]
+>>> np.expand_dims(x, axis=1).shape       # 插入一个轴，那么有两个轴, 01
+(2, 1)
+>>> np.expand_dims(x, axis=0).shape
+(1, 2)
+>>> np.expand_dims(x, axis=(0, 1)).shape  # 插入两个轴，那么有三个轴, 012
+(1, 1, 2)
+>>> np.expand_dims(x, axis=(1, 0)).shape
+(1, 1, 2)
+>>> np.expand_dims(x, axis=(2, 0)).shape
+(1, 2, 1)
+>>> np.expand_dims(x, axis=(0, 2)).shape
+(1, 2, 1)
 ```
 
+### 2.2. 广播
+- 得到的数组将具有与具有最大维度数的输入数组相同的维度数 ndim = max ndim
+- 其中每个维度的大小是输入数组中对应维度的
+- 它从尾部（即最右侧）尺寸开始，然后向左移动。
+  
+  即 ndim 较小的数组会在前面追加一个长度为 1 的维度。
+- 注意：缺失的尺寸假定为1，即被扩散的轴必须是1
+
+#### 2.2.1. 计算shape 
+
+`numpy.broadcast_shapes(*args)`
+```python
+>>> np.broadcast_shapes((3,1),(3,))
+(3, 3)
+# 3 x 1
+#     3
+# 3 x 3
+>>> np.broadcast_shapes((1,3),(3,))
+(1, 3)
+# 1 x 3
+#     3
+# 1 x 3
+```
+`numpy.broadcast` 类，传入参数是 init 函数
+```python
+>>> x = np.array([[1], [2], [3]])
+>>> y = np.array([4, 5, 6])
+>>> np.broadcast(x, y)
+<numpy.broadcast object at 0x000001F6B7D09D00>
+>>>
+>>> np.broadcast(x, y).shape
+(3, 3)
+>>> np.broadcast(x, y).ndim
+2
+```
+
+!!! note
+       ```python
+       >>> np.broadcast_shapes((4,),(2,))
+       ValueError: shape mismatch: objects cannot be broadcast to a single shape.  
+       Mismatch is between arg 0 with shape (4,) and arg 1 with shape (2,).
+
+       >>> np.broadcast_shapes((4,3),(3))
+       (4, 3)
+       >>> np.broadcast_shapes((4,3),(1,3))
+       (4, 3)
+       >>> np.broadcast_shapes((4,3),(2,3))
+       ValueError: shape mismatch: objects cannot be broadcast to a single shape.  
+       Mismatch is between arg 0 with shape (4, 3) and arg 1 with shape (2, 3).
+       ```
+#### 2.2.2. 修正shape
+`numpy.broadcast_to(array, shape, subok=False)`
+```python
+>>> x = np.array([1, 2, 3])
+>>> np.broadcast_to(x, (4, 3))
+array([[1, 2, 3],
+       [1, 2, 3],
+       [1, 2, 3],
+       [1, 2, 3]])
+```
+`numpy.broadcast_arrays(*args, subok=False)`
+```python
+>>> x = np.array([[1,2,3]])        # (1, 3)
+>>> y = np.array([[4],[5]])        # (2, 1)
+>>> np.broadcast_arrays(x, y)
+[array([[1, 2, 3],
+       [1, 2, 3]]), array([[4, 4, 4],
+       [5, 5, 5]])]
+>>> np.broadcast_arrays(x, y)[0].shape
+(2, 3)
+>>> np.broadcast_arrays(x, y)[1].shape
+(2, 3)
+```
+##### torch.Tensor.expand
+`torch.Tensor.expand(*sizes)`
+```python
+>>> x = torch.Tensor([[1], [2], [3]])            # [3, 1]
+>>> x.expand(3,4)                                # [3, 4]
+tensor([[1., 1., 1., 1.],
+        [2., 2., 2., 2.],
+        [3., 3., 3., 3.]])
+```
+### 2.3. np.repeat
 `numpy.repeat(a, repeats, axis=None)` or `Ndarry.repeat(repeats, axis=None)`:
 - `axis`: 默认`None`展平数组
 ```python
@@ -56,6 +170,15 @@ array([[1, 2],
 array([[1, 2, 2],
        [3, 4, 4]])
 ```
+
+例子：
+```python
+>>> a = np.array([1,2,3,4])
+>>> np.expand_dims(a, 0).repeat(1000, axis=0).shape # [4]->[1,4]->[1000,4]
+(1000, 4)
+```
+
+#### 2.3.1. torch.Tensor.repeat
 `torch.Tensor.repeat()`: 先补全维度 [1, 1, ..., 原本的维度], 再对每个维度分别复制(a,b,...)次。而且不是像`numpy.repeat()`每个元素分别复制，其是整块复制（可以理解为先从最后一维度复制，复制好后再重复前一维度）
 ```python
 >>> a = torch.tensor([1,2])        # [2]
@@ -75,10 +198,36 @@ tensor([[1, 2, 1, 2, 1, 2],
 # 再是前一维度复制2次
 ```
 
-> 删除维度 
+### 2.4. np.squeeze
 
-np.squeeze
-- <https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html>
+删除维度 
+
+`numpy.squeeze(a, axis=None)`
+
+```python
+>>> x = np.array([[[0], [1], [2]]])
+>>> x.shape
+(1, 3, 1)
+>>> np.squeeze(x).shape
+(3,)
+>>> np.squeeze(x, axis=0).shape
+(3, 1)
+>>> np.squeeze(x, axis=1).shape
+Traceback (most recent call last):
+...
+ValueError: cannot select an axis to squeeze out which has size not equal to one
+>>> np.squeeze(x, axis=2).shape
+(1, 3)
+>>> x = np.array([[1234]])
+>>> x.shape
+(1, 1)
+>>> np.squeeze(x)
+array(1234)  # 0d array
+>>> np.squeeze(x).shape
+()
+>>> np.squeeze(x)[()]
+1234
+```
 
 ## 3. np.concatenate
 
