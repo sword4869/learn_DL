@@ -104,7 +104,7 @@ True
 2
 ```
 
-!!! note
+!!! note 缺失的尺寸假定为1，即被扩散的轴必须是1
        ```python
        >>> np.broadcast_shapes((4,),(2,))
        ValueError: shape mismatch: objects cannot be broadcast to a single shape.  
@@ -141,6 +141,20 @@ array([[1, 2, 3],
 >>> np.broadcast_arrays(x, y)[1].shape
 (2, 3)
 ```
+
+!!! note 不匹配尾部
+
+       ```python
+       # 我们想要 (3, 28, 28)
+       >>> y = np.array([4,5,6])   # [3]
+       >>> np.broadcast_to(y, (3, 28, 28))                  
+       ValueError: operands could not be broadcast together with remapped shapes [original->remapped]: (3,)  and requested shape (3,28,28)
+
+       >>> np.broadcast_to(y.reshape(3, 1, 1), (3, 28, 28))
+       >>> np.broadcast_to(y[..., None, None], (3, 28, 28))
+       ```
+
+
 ##### torch.Tensor.expand
 `torch.Tensor.expand(*sizes)`
 ```python

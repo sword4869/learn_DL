@@ -4,6 +4,7 @@
   - [2.2. device](#22-device)
   - [2.3. checkpoints](#23-checkpoints)
 - [3. launch code](#3-launch-code)
+  - [config](#config)
   - [3.1. CLI](#31-cli)
   - [3.2. notebook](#32-notebook)
 
@@ -62,8 +63,8 @@ for batch in training_dataloader:
 Then call `accelerator.prepare()` passing in the **PyTorch objects** that you would normally train with. This will return the same objects, but they will be on the correct device and distributed if needed. Also note that you don't need to call `model.to(device)` or `inputs.to(device)` anymore, as this is done automatically by `accelerator.prepare()`.
 ### 2.2. device
 
-1. 可以删除对模型和输入数据的调用`.to(device)`或`.cuda()`。加速器对象将为您处理此问题，并将所有这些对象放置在适合您的设备上。
-2. 或者，可以把这些`.to(device)`调用留给别人，但你应该使用加速器对象提供的设备：accelerator.device。
+1. 可以删除**对模型和输入数据的调用**`.to(device)`或`.cuda()`。加速器对象将将其放置在适合您的设备上。当然可以继续保留。
+2. **但是其他对象还需要**`.to(device)`，但你应该使用加速器对象提供的设备：accelerator.device。
     ```python
     # - device = 'cuda'
     device = accelerator.device
@@ -81,6 +82,22 @@ accelerator.load_state("checkpoint_dir")
 
 
 ## 3. launch code
+
+PS：还可以像原来那样直接运行 `python xxx.py`
+
+### config
+
+```bash
+# no config
+`--num_processes` was set to a value of `2`
+        More than one GPU was found, enabling multi-GPU training.
+        If this was unintended please pass in `--num_processes=1`.
+`--num_machines` was set to a value of `1`
+`--mixed_precision` was set to a value of `'no'`
+`--dynamo_backend` was set to a value of `'no'`
+To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
+```
+
 ### 3.1. CLI
 ```bash
 # pass in additional arguments and parameters to your script afterwards like normal!

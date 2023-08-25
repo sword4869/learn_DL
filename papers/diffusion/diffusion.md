@@ -134,6 +134,7 @@ from diffusers import DDPMScheduler
 import matplotlib.pyplot as plt
 
 scheduler = DDPMScheduler(num_train_timesteps=1000)
+# scheduler = DDPMScheduler(num_train_timesteps=1000, beta_schedule='squaredcos_cap_v2')
 alphas = scheduler.alphas
 betas = scheduler.betas
 alphas_cumprod = scheduler.alphas_cumprod
@@ -147,8 +148,10 @@ plt.plot(alphas_cumprod, label=r"$\bar{\alpha}_t$")
 plt.plot(sqrt_alphas_cumprod, label=r"${\sqrt{\bar{\alpha}_t}}$")
 plt.plot(sqrt_one_minus_alphas_cumprod, label=r"$\sqrt{(1 - \bar{\alpha}_t)}$", color='black')
 plt.legend(fontsize="x-large")
-```
-![图 5](../../images/2a810e2633583ebc19fba7b4a9d27d283f8fbaa1390bd80f4bb6d51fcec5770e.png)  
+``` 
+![图 1](../../images/be2356ab8c22a49aa1ac66ff9c7de96e1ada1f5cb44cc93cf6f7834e21422f01.png)  
+
+![图 2](../../images/054907334bd962c16464f3b9a3467e9da6bfbad24babd0b2a4538cce8988ac85.png)  
 
 
 这个可以配合 guidance `x = (x.detach() + cond_grad * scheduler.alphas_cumprod.sqrt()`, `scheduler.alphas_cumprod.sqrt()`就是系数:

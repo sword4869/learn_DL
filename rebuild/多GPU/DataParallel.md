@@ -296,8 +296,8 @@ from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
-
 from tqdm import tqdm
+
 
 class RangeDataset(Dataset):
     def __init__(self, length):
@@ -314,7 +314,10 @@ class RangeDataset(Dataset):
 class Model(nn.Module):
     def __init__(self, input_size, output_size):
         super().__init__()
-        self.fc = nn.Linear(input_size, output_size)
+        self.fc = nn.Sequential(
+            nn.Linear(input_size, 1000000),
+            nn.Linear(1000000, output_size)
+        )
 
     def forward(self, input):
         output = self.fc(input)
@@ -322,6 +325,9 @@ class Model(nn.Module):
 
 
 def demo_basic(rank, world_size):
+    '''
+    rank: 与 `dist.get_rank()` 值一致, 所以 train(rank) 不用参数的rank, 用 `dist.get_rank()` 也行
+    '''
     # 当前设备
     print(f"Running basic DDP example on rank {rank}.")
 
@@ -340,30 +346,28 @@ def demo_basic(rank, world_size):
 def train(rank):
     # create model and move it to GPU with id rank
     model = Model(5, 2).to(rank)
-    model = DDP(model, device_ids=[rank])
+    model = DDP(model, device_ids=[rank])   # <<<
 
     # DataLoader
-    rand_dataset = RangeDataset(length=10)
-    rand_distributed_sampler = DistributedSampler(rand_dataset, rank=rank, shuffle=True)
+    rand_dataset = RangeDataset(length=10000)
+    rand_distributed_sampler = DistributedSampler(
+        rand_dataset, rank=rank, shuffle=True)    # <<<
     # `sampler`和`shuffle`是互斥的，或者说 sampler 中自己就已经 shuffle了，所以不用 dataloader 再shuffle
-    rand_dataloader = DataLoader(rand_dataset, batch_size=5, sampler=rand_distributed_sampler)
-    
+    rand_dataloader = DataLoader(
+        rand_dataset, batch_size=5, sampler=rand_distributed_sampler)      # <<<
+    loss_fn = nn.MSELoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
     for epoch in range(10):
-        rand_distributed_sampler.set_epoch(epoch)
+        rand_distributed_sampler.set_epoch(epoch)       # <<<
         # 因为是同步的进度，所以只显示一个进程的进度条就行
-        pbar = tqdm(rand_dataloader) if rank == 0 else rand_dataloader
-        for data in pbar:
+        for data in tqdm(rand_dataloader, disable=(rank!=0)):
             inputs = data.to(rank)
             outputs = model(inputs)
-
-        loss_fn = nn.MSELoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-        labels = torch.randn(outputs.shape).to(rank)
-        loss = loss_fn(outputs, labels)
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-
+            labels = torch.randn(outputs.shape).to(rank)
+            loss = loss_fn(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
 if __name__ == "__main__":
     if torch.cuda.device_count() > 1:
@@ -525,47 +529,120 @@ if __name__ == "__main__":
 ```
 #### 2.2.2. torchrun
 
-torchrun 就是所说的 Elastic Launch.
 
 <https://pytorch.org/docs/stable/distributed.elastic.html>
 
 <https://pytorch.org/docs/stable/elastic/run.html#launcher-api>
 
-执行方式:
-```bash
-# torchrun 可以替换成 python -m torch.distributed.run ，是其打包好的console script
-# 但后者已经是 deprecated 版本
-torchrun --参数 脚本名.py
-```
 
-好处：
+torchrun 就是所说的 Elastic Launch. 好处：
 - Worker failures are handled gracefully by restarting all workers.
 - Worker `RANK` and `WORLD_SIZE` are assigned automatically.
 - Number of nodes is allowed to change between minimum and maximum sizes (elasticity).
 
-参数：
+
+执行方式:
 ```bash
-torchrun
-    --rdzv-backend=c10d
-    --rdzv-endpoint=localhost:0
-    --nnodes=1
-    --nproc-per-node=$NUM_TRAINERS
-    YOUR_TRAINING_SCRIPT.py (--arg1 ... train script args...)
+# torchrun 可以替换成 python -m torch.distributed.run 或者 python -m torch.distributed.launch，是其打包好的console script
+# torchrun 的参数与 torch.distributed.run 和 torch.distributed.launch 一样
+# torch.distributed.run 和 torch.distributed.launch 已经是 deprecated 版本
+torchrun --torchrun参数 脚本名.py --脚本参数
+
+options:
+  -h, --help            show this help message and exit
+
+
+  --nnodes NNODES       
+        Number of nodes, or the range of nodes in form <minimum_nodes>:<maximum_nodes>.
+  --node-rank NODE_RANK, --node_rank NODE_RANK
+        Rank of the node for multi-node distributed training.
+  --nproc-per-node NPROC_PER_NODE, --nproc_per_node NPROC_PER_NODE
+        Number of workers per node; supported values: [auto, cpu, gpu, int].
+        每个node上的GPU数
+  
+
+  --rdzv-conf RDZV_CONF, --rdzv_conf RDZV_CONF
+        Additional rendezvous configuration (<key1>=<value1>,<key2>=<value2>,...).
+  --standalone          
+        Start a local standalone rendezvous backend that is represented by a C10d 
+            TCP store on port 29400. 
+        Useful when launching single-node, multi-worker job. 
+        If specified --rdzv-backend, --rdzv-endpoint, --rdzv-id are auto-assigned; 
+            any explicitly set values are ignored.
+  --rdzv-backend RDZV_BACKEND, --rdzv_backend RDZV_BACKEND
+        Rendezvous backend.
+        [c10d]
+  --rdzv-endpoint RDZV_ENDPOINT, --rdzv_endpoint RDZV_ENDPOINT
+        Rendezvous backend endpoint; usually in form <host>:<port>.
+  --rdzv-id RDZV_ID, --rdzv_id RDZV_ID
+        User-defined group id.
+
+
+  --master-addr MASTER_ADDR, --master_addr MASTER_ADDR
+        Address of the master node (rank 0) that only used for static rendezvous.
+        master_addr is only used for static rdzv_backend and when 
+            rdzv_endpoint is not specified. rdzv_endpoint 设置了就不用设置这个了。
+        It should be either the IP address or the hostname of rank 0. 
+        For single node multi-proc training the --master-addr can simply 
+            be `127.0.0.1` or `localhost`; IPv6 should have the pattern `[0:0:0:0:0:0:0:1]`.
+  --master-port MASTER_PORT, --master_port MASTER_PORT
+        Port on the master node (rank 0) to be used for communication 
+            during distributed training. 
+        It is only used for static rendezvous.
+  --local-addr LOCAL_ADDR, --local_addr LOCAL_ADDR
+        Address of the local node. 
+        If specified, will use the given address for connection. 
+        Else, will look up the local node address instead. 
+        Else, it will be default to local machine's FQDN.
+
+
+  -r REDIRECTS, --redirects REDIRECTS
+        Redirect std streams into a log file in the log directory 
+        (e.g. [-r 3] redirects both stdout+stderr for all workers, 
+        [-r 0:1,1:2] redirects stdout for local rank 0 and stderr for local rank 1).
+        Note: Redirects are currently not supported in Windows or MacOs.
+  -t TEE, --tee TEE     
+        Tee std streams into a log file and also to console (see --redirects for format).
+  --log-dir LOG_DIR, --log_dir LOG_DIR
+        Base directory to use for log files (e.g. /var/log/torch/elastic). 
+        The same directory is re-used for multiple runs (a unique job-level
+            sub-directory is created with rdzv_id as the prefix).   
+
+
+  --max-restarts MAX_RESTARTS, --max_restarts MAX_RESTARTS
+        Maximum number of worker group restarts before failing.
+  --monitor-interval MONITOR_INTERVAL, --monitor_interval MONITOR_INTERVAL
+        Interval, in seconds, to monitor the state of workers.
+  --start-method {spawn,fork,forkserver}, --start_method {spawn,fork,forkserver}
+        Multiprocessing start method to use when creating workers.
+  --role ROLE           
+        User-defined role for the workers.
+
+
+  -m, --module          
+        Change each process to interpret the launch script as a Python module,
+            executing with the same behavior as 'python -m'.
+  --no-python, --no_python
+        Skip prepending the training script with 'python' - just execute it 
+            directly. 
+        Useful when the script is not a Python script.
+  --run-path, --run_path
+        Run the training script with runpy.run_path in the same interpreter. 
+        Script must be provided as an abs path (e.g. /abs/path/script.py). 
+        Takes precedence over --no-python.
+
+  training_script ...
 ```
-- `nnodes`: 节点数量
-- `nproc_per_node=NUM_GPUS_YOU_HAVE`：每个node上的GPU数
 
 
-可以直接写，不需要`if __name__=="__main__":`包裹起来
-
-    
-> 例子
+> 例子: 可以直接写，不需要`if __name__=="__main__":`包裹起来
 ```python
 import torch
 import torch.distributed as dist
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
-
+from torch.utils.data import DataLoader, Dataset
+from torch.utils.data.distributed import DistributedSampler
 
 class ToyModel(nn.Module):
     def __init__(self):
@@ -577,11 +654,25 @@ class ToyModel(nn.Module):
     def forward(self, x):
         return self.net2(self.relu(self.net1(x)))
 
+class RangeDataset(Dataset):
+    def __init__(self, length):
+        self.len = length
+        self.data = torch.arange(0, length, dtype=torch.float32)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return self.len
 
 dist.init_process_group(backend="gloo")
 rank = dist.get_rank()
 print(f"Start running basic DDP example on rank {rank}.")
 
+rand_dataset = RangeDataset(length=10)
+rand_distributed_sampler = DistributedSampler(rand_dataset, rank=rank, shuffle=True)    # <<<
+# `sampler`和`shuffle`是互斥的，或者说 sampler 中自己就已经 shuffle了，所以不用 dataloader 再shuffle
+rand_dataloader = DataLoader(rand_dataset, batch_size=5, sampler=rand_distributed_sampler)      # <<<
 # create model and move it to GPU with rank
 model = ToyModel().to(rank)
 model = DDP(model, device_ids=[rank])
@@ -595,15 +686,62 @@ labels = torch.randn(20, 5).to(rank)
 loss_fn(outputs, labels).backward()
 optimizer.step()
 ```
-
 ```bash
-$ torchrun --nnodes=1 --nproc_per_node=2 --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=localhost:29400 elastic_ddp.py
+# on 1 machine with 2 GPUs
+$ torchrun --nproc_per_node=2 elastic_ddp.py
+
+$ torchrun \
+    --nnodes=1 \
+    --nproc_per_node=2 \
+    --standalone \
+    elastic_ddp.py
+
+$ torchrun \
+    --nnodes=1 \
+    --nproc_per_node=2 \
+    --rdzv_id=100 \
+    --rdzv_backend=c10d \
+    --rdzv_endpoint=127.0.0.1:29400 \
+    elastic_ddp.py
+
 NOTE: Redirects are currently not supported in Windows or MacOs.
 master_addr is only used for static rdzv_backend and when rdzv_endpoint is not specified.
 WARNING:torch.distributed.run:
 *****************************************
 Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed.
 *****************************************
-Start running basic DDP example on rank 1.
-Start running basic DDP example on rank 0.
+Let's use 2 GPUs!
+Let's use 2 GPUs!
 ```
+
+```bash
+# on 2 machines, each with 2 GPUs
+M1$ torchrun \
+    --nnodes=2 \
+    --node_rank 0 \
+    --nproc_per_node=2 \
+    --master_addr 192.168.0.1 \
+    xxx.py
+
+M2$ torchrun \
+    --nnodes=2 \
+    --node_rank 1 \
+    --nproc_per_node=2 \
+    --master_addr 192.168.0.1 \
+    xxx.py
+```
+
+PS: 
+- `--local_rank`脚本参数同 `dist.get_rank()` 一个效果
+```bash
+rank = dist.get_rank()
+print(f"Start running basic DDP example on rank {rank} {os.environ['LOCAL_RANK']}.")
+# Start running basic DDP example on rank 1 1.
+# Start running basic DDP example on rank 0 0.
+
+$ python -m torch.distributed.launch --nproc_per_node=2 xxx.py --local_rank=0,1
+```
+
+- 报错 `[W ..\torch\csrc\distributed\c10d\socket.cpp:601] [c10d] The IPv6 network addresses of (eleven.pc.nchu.edu.cn, 11749) cannot be retrieved (gai error: 11001 - 不知道这样的主机。 ).`
+  
+    这是 win11 的network adapter 问题，换 win10 或 linux 就好。
