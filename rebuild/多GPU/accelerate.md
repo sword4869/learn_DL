@@ -2,7 +2,9 @@
 - [2. migrate code](#2-migrate-code)
   - [2.1. basic](#21-basic)
   - [2.2. device](#22-device)
+  - [Accelerator](#accelerator)
   - [2.3. checkpoints](#23-checkpoints)
+  - [logger](#logger)
 - [3. launch code](#3-launch-code)
   - [config](#config)
   - [3.1. CLI](#31-cli)
@@ -70,6 +72,26 @@ Then call `accelerator.prepare()` passing in the **PyTorch objects** that you wo
     device = accelerator.device
     ```
 
+### Accelerator
+
+```python
+accelerator = Accelerator(
+    gradient_accumulation_steps=args.gradient_accumulation_steps,
+    mixed_precision=args.mixed_precision,
+    log_with=args.report_to,
+    project_config=accelerator_project_config,
+)
+```
+
+`gradient_accumulation_steps`: [OOM](./OOM.md#gradient_accumulation_steps)
+
+
+```python
+if accelerator.is_local_main_process:
+
+if accelerator.is_main_process:
+```
+
 ### 2.3. checkpoints
 存`accelerator.prepare(...)`的一堆东西，由于其是自定义内容和顺序的，所以是 saving/loading everything.
 
@@ -80,12 +102,32 @@ accelerator.save_state("checkpoint_dir")
 accelerator.load_state("checkpoint_dir")
 ```
 
+### logger
+
+```python
+from accelerate.logging import get_logger
+logger = get_logger(__name__, log_level="INFO")
+
+logger.info(accelerator.state, main_process_only=False)
+```
+
+
 
 ## 3. launch code
 
 PS：还可以像原来那样直接运行 `python xxx.py`
 
 ### config
+These configs are saved to a `default_config.yaml` file in your cache folder for Accelerate.
+
+This cache folder is located at (with decreasing order of priority):
+
+- The content of your environment variable `HF_HOME` suffixed with accelerate.
+- If it does not exist, the content of your environment variable `XDG_CACHE_HOME` suffixed with huggingface/accelerate.
+- If this does not exist either, the folder `~/.cache/huggingface/accelerate`.
+
+To have multiple configurations, the flag `--config_file` can be passed to the accelerate launch command paired with the location of the custom yaml.
+`accelerate launch --config_file {path/to/config/my_config_file.yaml} {script_name.py} {--arg1} {--arg2} ...`
 
 ```bash
 # no config

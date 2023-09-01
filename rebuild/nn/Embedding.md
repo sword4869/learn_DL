@@ -1,7 +1,10 @@
 
 A simple lookup table (即根据 indice 查其`weight`) that stores embeddings of a fixed dictionary and size (即`num_embeddings, embedding_dim`). 
 
-This module is often used to store word embeddings and retrieve them using indices. The input to the module is a list of indices, and the output is the corresponding word embeddings.
+
+indices $\to$ word embedding(float vector)
+- This module is often used to store word embeddings and retrieve them using indices. 
+- The input to the module is a list of indices, and the output is the corresponding word embeddings.
 
 PS: 与`nn.Linear`等价的情况：
     

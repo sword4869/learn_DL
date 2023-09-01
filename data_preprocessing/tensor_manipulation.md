@@ -13,7 +13,7 @@
 
 ## 1.1. create
 
-[注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
+
 ```python
 import torch
 
@@ -94,6 +94,27 @@ a2 = torch.tensor(12.1).long()
 # 转化 numpy ，浮点数默认 torch.int32
 a3 = torch.tensor(np.array([12]))
 ```
+
+[`torch.tensor()`注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
+```python
+>>> torch.tensor([1,2,3]).dtype
+torch.int64
+>>> torch.tensor([1.,2.,3.]).dtype
+torch.float32
+
+# 整型
+>>> torch.LongTensor([1,2,3])
+tensor([1, 2, 3])       # torch.int64
+
+# 浮点型
+>>> torch.FloatTensor([1,2,3])
+tensor([1., 2., 3.])    # torch.float32
+>>> torch.Tensor([1,2,3])
+tensor([1., 2., 3.])    # torch.float32
+>>> type(torch.Tensor([1,2,3])) == type(torch.FloatTensor([1,2,3]))
+True
+```
+
 
 维度
 

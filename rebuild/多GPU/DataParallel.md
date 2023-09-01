@@ -371,7 +371,7 @@ def train(rank):
 
 if __name__ == "__main__":
     if torch.cuda.device_count() > 1:
-        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        print("This machine has", torch.cuda.device_count(), "GPUs!")
 
     world_size = 2
     mp.spawn(demo_basic, args=(world_size,), nprocs=world_size, join=True)
@@ -554,11 +554,13 @@ options:
 
   --nnodes NNODES       
         Number of nodes, or the range of nodes in form <minimum_nodes>:<maximum_nodes>.
+        一共有几个node
   --node-rank NODE_RANK, --node_rank NODE_RANK
         Rank of the node for multi-node distributed training.
+        本node的序号
   --nproc-per-node NPROC_PER_NODE, --nproc_per_node NPROC_PER_NODE
         Number of workers per node; supported values: [auto, cpu, gpu, int].
-        每个node上的GPU数
+        本node上的GPU数
   
 
   --rdzv-conf RDZV_CONF, --rdzv_conf RDZV_CONF
@@ -637,22 +639,17 @@ options:
 
 > 例子: 可以直接写，不需要`if __name__=="__main__":`包裹起来
 ```python
+import os
+
 import torch
 import torch.distributed as dist
+import torch.multiprocessing as mp
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.distributed import DistributedSampler
+from tqdm import tqdm
 
-class ToyModel(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.net1 = nn.Linear(10, 10)
-        self.relu = nn.ReLU()
-        self.net2 = nn.Linear(10, 5)
-
-    def forward(self, x):
-        return self.net2(self.relu(self.net1(x)))
 
 class RangeDataset(Dataset):
     def __init__(self, length):
@@ -665,43 +662,67 @@ class RangeDataset(Dataset):
     def __len__(self):
         return self.len
 
-dist.init_process_group(backend="gloo")
+
+class Model(nn.Module):
+    def __init__(self, input_size, output_size):
+        super().__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(input_size, 1000000),
+            nn.Linear(1000000, output_size)
+        )
+
+    def forward(self, input):
+        output = self.fc(input)
+        return output
+
+
+def train(rank):
+    # create model and move it to GPU with id rank
+    model = Model(5, 2).to(rank)
+    model = DDP(model, device_ids=[rank])   # <<<
+
+    # DataLoader
+    rand_dataset = RangeDataset(length=10000)
+    rand_distributed_sampler = DistributedSampler(
+        rand_dataset, rank=rank, shuffle=True)    # <<<
+    # `sampler`和`shuffle`是互斥的，或者说 sampler 中自己就已经 shuffle了，所以不用 dataloader 再shuffle
+    rand_dataloader = DataLoader(
+        rand_dataset, batch_size=5, sampler=rand_distributed_sampler)      # <<<
+    loss_fn = nn.MSELoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
+    for epoch in range(10):
+        rand_distributed_sampler.set_epoch(epoch)       # <<<
+        # 因为是同步的进度，所以只显示一个进程的进度条就行
+        for data in tqdm(rand_dataloader, disable=(rank!=0)):
+            inputs = data.to(rank)
+            outputs = model(inputs)
+            labels = torch.randn(outputs.shape).to(rank)
+            loss = loss_fn(outputs, labels)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
+
+
+if torch.cuda.device_count() > 1:
+    print("This machine", torch.cuda.device_count(), "GPUs!")
+
+# init_process_group
+dist.init_process_group("gloo")
 rank = dist.get_rank()
 print(f"Start running basic DDP example on rank {rank}.")
 
-rand_dataset = RangeDataset(length=10)
-rand_distributed_sampler = DistributedSampler(rand_dataset, rank=rank, shuffle=True)    # <<<
-# `sampler`和`shuffle`是互斥的，或者说 sampler 中自己就已经 shuffle了，所以不用 dataloader 再shuffle
-rand_dataloader = DataLoader(rand_dataset, batch_size=5, sampler=rand_distributed_sampler)      # <<<
-# create model and move it to GPU with rank
-model = ToyModel().to(rank)
-model = DDP(model, device_ids=[rank])
-
-loss_fn = nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
-
-optimizer.zero_grad()
-outputs = model(torch.randn(20, 10))
-labels = torch.randn(20, 5).to(rank)
-loss_fn(outputs, labels).backward()
-optimizer.step()
+train(rank)
+# destroy_process_group
+dist.destroy_process_group()
 ```
 ```bash
 # on 1 machine with 2 GPUs
 $ torchrun --nproc_per_node=2 elastic_ddp.py
 
-$ torchrun \
-    --nnodes=1 \
-    --nproc_per_node=2 \
-    --standalone \
-    elastic_ddp.py
+$ torchrun --nnodes=1 --nproc_per_node=2 --standalone elastic_ddp.py
 
-$ torchrun \
-    --nnodes=1 \
-    --nproc_per_node=2 \
-    --rdzv_id=100 \
-    --rdzv_backend=c10d \
-    --rdzv_endpoint=127.0.0.1:29400 \
+$ torchrun --nnodes=1 --nproc_per_node=2 \
+    --rdzv_id=100 --rdzv_backend=c10d --rdzv_endpoint=127.0.0.1:29400 \
     elastic_ddp.py
 
 NOTE: Redirects are currently not supported in Windows or MacOs.
@@ -715,31 +736,28 @@ Let's use 2 GPUs!
 ```
 
 ```bash
-# on 2 machines, each with 2 GPUs
-M1$ torchrun \
-    --nnodes=2 \
-    --node_rank 0 \
-    --nproc_per_node=2 \
-    --master_addr 192.168.0.1 \
-    xxx.py
+# on 2 machines, A with 2 GPUS, B with 1 GPU.
+M1$ torchrun --nnodes=2 --node_rank=0 --nproc_per_node=2 \
+        --master_addr=192.168.0.1 elastic_ddp.py
 
-M2$ torchrun \
-    --nnodes=2 \
-    --node_rank 1 \
-    --nproc_per_node=2 \
-    --master_addr 192.168.0.1 \
-    xxx.py
+M2$ torchrun --nnodes=2 --node_rank=1 --nproc_per_node=1 \
+        --master_addr=192.168.0.1 elastic_ddp.py
 ```
 
 PS: 
 - `--local_rank`脚本参数同 `dist.get_rank()` 一个效果
 ```bash
+dist.init_process_group("gloo")
 rank = dist.get_rank()
+# os.environ['LOCAL_RANK'] 只在 dist.init_process_group("gloo") 初始化后才生效不报错
+# 随便定义 os.environ['num_epoch'] 传进去是不行的
 print(f"Start running basic DDP example on rank {rank} {os.environ['LOCAL_RANK']}.")
+
 # Start running basic DDP example on rank 1 1.
 # Start running basic DDP example on rank 0 0.
 
-$ python -m torch.distributed.launch --nproc_per_node=2 xxx.py --local_rank=0,1
+# python -m torch.distributed.launch --nproc_per_node=2 xxx.py --local_rank=0,1
+$ torchrun --nproc_per_node=2 elastic_ddp.py --local_rank=0,1
 ```
 
 - 报错 `[W ..\torch\csrc\distributed\c10d\socket.cpp:601] [c10d] The IPv6 network addresses of (eleven.pc.nchu.edu.cn, 11749) cannot be retrieved (gai error: 11001 - 不知道这样的主机。 ).`

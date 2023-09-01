@@ -204,3 +204,78 @@ dataset
 dataset = load_dataset('./dataset', split="train")
 ```
 
+```python
+
+def prepare_dataloader(image_size=32, batch_size=64):
+    # dataset = load_dataset("huggan/smithsonian_butterflies_subset", split="train")
+    dataset = load_dataset(r"C:\Users\lab\Downloads\sketch", split="train")
+
+    # Or load images from a local folder
+    # dataset = load_dataset("imagefolder", data_dir="path/to/folder")
+
+    # Define data augmentations
+    preprocess = transforms.Compose(
+        [
+            transforms.Resize((image_size, image_size)),  # Resize
+            transforms.RandomHorizontalFlip(),  # Randomly flip (data augmentation)
+            transforms.ToTensor(),  # Convert to tensor (0, 1)
+            transforms.Normalize([0.5], [0.5]),  # Map to (-1, 1)
+        ]
+    )
+
+    def transform(examples):
+        images = [preprocess(image.convert("RGB"))
+                  for image in examples["image"]]
+        return {"images": images}
+
+    dataset.set_transform(transform)
+
+    # Create a dataloader from the dataset to serve up the transformed images in batches
+    train_dataloader = torch.utils.data.DataLoader(
+        dataset, batch_size=batch_size, shuffle=True
+    )
+    return train_dataloader
+
+
+def train(train_dataloader, model, optimizer, loss_function, scheduler, num_epoch=30):
+    '''
+    model: pipe.unet
+    scheduler: ddpm scheduler
+    '''
+
+    losses = []
+    model.train()
+    for epoch in range(num_epoch):
+        for batch in tqdm(train_dataloader):
+            clean_images = batch["images"].to(device)
+            # Sample noise to add to the images
+            noise = torch.randn(clean_images.shape).to(device)
+            bs = clean_images.shape[0]
+
+            # Sample a random timestep for each image
+            timesteps = torch.randint(
+                0, scheduler.num_train_timesteps, (bs,), device=device
+            ).long()        # B 个
+
+            # Add noise to the clean images according to the noise magnitude at each timestep
+            # clean_images(BCHW), noise(BCHW), timesteps(B), noisy_images(BCHW) 都是 B 个
+            noisy_images = scheduler.add_noise(clean_images, noise, timesteps)
+
+            # Get the model prediction
+            breakpoint()
+            noise_pred = model(noisy_images, timesteps, return_dict=False)[0]
+
+            # Calculate the loss
+            loss = loss_function(noise_pred, noise)
+            loss.backward()
+            losses.append(loss.item())
+            optimizer.step()
+            optimizer.zero_grad()
+
+        if (epoch + 1) % 5 == 0:
+            loss_last_epoch = sum(
+                losses[-len(train_dataloader):]) / len(train_dataloader)
+            print(f"Epoch:{epoch+1}, loss: {loss_last_epoch}")
+
+
+```
