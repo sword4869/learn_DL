@@ -2,13 +2,13 @@
 - [2. migrate code](#2-migrate-code)
   - [2.1. basic](#21-basic)
   - [2.2. device](#22-device)
-  - [Accelerator](#accelerator)
-  - [2.3. checkpoints](#23-checkpoints)
-  - [logger](#logger)
+  - [2.3. Accelerator](#23-accelerator)
+  - [2.4. checkpoints](#24-checkpoints)
+  - [2.5. logger](#25-logger)
 - [3. launch code](#3-launch-code)
-  - [config](#config)
-  - [3.1. CLI](#31-cli)
-  - [3.2. notebook](#32-notebook)
+  - [3.1. config](#31-config)
+  - [3.2. CLI](#32-cli)
+  - [3.3. notebook](#33-notebook)
 
 
 ---
@@ -72,7 +72,7 @@ Then call `accelerator.prepare()` passing in the **PyTorch objects** that you wo
     device = accelerator.device
     ```
 
-### Accelerator
+### 2.3. Accelerator
 
 ```python
 accelerator = Accelerator(
@@ -92,17 +92,17 @@ if accelerator.is_local_main_process:
 if accelerator.is_main_process:
 ```
 
-### 2.3. checkpoints
+### 2.4. checkpoints
 存`accelerator.prepare(...)`的一堆东西，由于其是自定义内容和顺序的，所以是 saving/loading everything.
 
 从而，
 
 ```python
-accelerator.save_state("checkpoint_dir")
-accelerator.load_state("checkpoint_dir")
+accelerator.save_state(f"checkpoint-{global_step}")
+accelerator.load_state(f"checkpoint-{global_step}")
 ```
 
-### logger
+### 2.5. logger
 
 ```python
 from accelerate.logging import get_logger
@@ -117,7 +117,7 @@ logger.info(accelerator.state, main_process_only=False)
 
 PS：还可以像原来那样直接运行 `python xxx.py`
 
-### config
+### 3.1. config
 These configs are saved to a `default_config.yaml` file in your cache folder for Accelerate.
 
 This cache folder is located at (with decreasing order of priority):
@@ -130,17 +130,21 @@ To have multiple configurations, the flag `--config_file` can be passed to the a
 `accelerate launch --config_file {path/to/config/my_config_file.yaml} {script_name.py} {--arg1} {--arg2} ...`
 
 ```bash
-# no config
+accelerate launch \
+  --mixed_precision="fp16" \
+  --num_machines=1 --num_processes=4 --multi_gpu\
+  xxx.py
+
+
+`--num_machines` was set to a value of `1`
 `--num_processes` was set to a value of `2`
         More than one GPU was found, enabling multi-GPU training.
         If this was unintended please pass in `--num_processes=1`.
-`--num_machines` was set to a value of `1`
 `--mixed_precision` was set to a value of `'no'`
 `--dynamo_backend` was set to a value of `'no'`
-To avoid this warning pass in values for each of the problematic parameters or run `accelerate config`.
 ```
 
-### 3.1. CLI
+### 3.2. CLI
 ```bash
 # pass in additional arguments and parameters to your script afterwards like normal!
 accelerate launch {script_name.py} --arg1 --arg2 ...
@@ -151,7 +155,7 @@ For example, here is how to use accelerate launch with a single GPU:
 CUDA_VISIBLE_DEVICES="0" accelerate launch {script_name.py} --arg1 --arg2 ...
 ```
 
-### 3.2. notebook
+### 3.3. notebook
 Accelerate also provides a `notebook_launcher` function you can use in a notebook to launch a distributed training. This is especially useful for Colab or Kaggle notebooks with a TPU backend. Just define your training loop in a `training_function` then in your last cell, add:
 ```python
 from accelerate import notebook_launcher

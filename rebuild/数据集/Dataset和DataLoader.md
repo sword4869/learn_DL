@@ -66,8 +66,6 @@ The `batch_size` and `drop_last` arguments essentially are used to construct a `
 互斥：
 - `sampler`; `shuffle`
 - `batch_sampler`; `batch_size`, `shuffle`, `sampler`, `drop_last`.
-
-
 - `collate_fn`
 
 	merges a list of samples(using the indices from sampler) to form a mini-batch of Tensor(s).
@@ -90,7 +88,11 @@ The `batch_size` and `drop_last` arguments essentially are used to construct a `
 
 
 `num_workers`:
-- Single-process data loading (default `0`, 只在main process加载), Multi-process data loading(`num_workers`取正整数时, 会创建`num_workers`个 worker process)
+- **Single-process data loading** (default `0`, 只在main process加载), 
+  	
+	**Multi-process data loading**(`num_workers`取正整数时, 会创建`num_workers`个 worker process)
+
+	问题，1个main process 和 1 个 workder process, 那么效率一样不一样？
 - 消耗CPU内存。overall memory usage is `num_workers` * `size of parent process`
 - 具体创建多进程的时间：each time an iterator of a DataLoader is created, 比如调用`enumerate(dataloader)`，都会创建 `num_workers` 个 worker processes
 - 具体销毁多进程时间：When `persistent_workers=False`, Workers are shut down once the end of the iteration is reached, or when the iterator becomes garbage collected. When `persistent_workers=True`, the dataloader will not shutdown the worker processes after a dataset has been consumed once. This allows to maintain the workers Dataset instances alive.

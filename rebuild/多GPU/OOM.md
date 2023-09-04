@@ -1,8 +1,8 @@
 - [1. torch.cuda.OutOfMemoryError: CUDA out of memory](#1-torchcudaoutofmemoryerror-cuda-out-of-memory)
 - [2. cache技巧](#2-cache技巧)
-- [gradient\_accumulation\_steps](#gradient_accumulation_steps)
-  - [manually](#manually)
-  - [accelerate](#accelerate)
+- [3. gradient\_accumulation\_steps](#3-gradient_accumulation_steps)
+  - [3.1. manually](#31-manually)
+  - [3.2. accelerate](#32-accelerate)
 
 
 ---
@@ -16,7 +16,7 @@ Tried to allocate 14.14 GiB
 80.00 MiB reserved in total by PyTorch)
 ```
 
-![图 6](../images/25e84d781bb54fea8f7d152c8ce7ad9b479d0d3030ccb6f1b046305015b25f20.png)  
+![图 6](../../images/25e84d781bb54fea8f7d152c8ce7ad9b479d0d3030ccb6f1b046305015b25f20.png)  
 
 - Total Capacity: 11GB
   - reserved by pytorch: 80MB
@@ -29,6 +29,10 @@ Tried to allocate 14.14 GiB
 ①强制清空pytorch cache，扩展free space。对应代码就是
 ```python
 # 放在申请操作处前
+# `del` 只能删除内存里的变量
+# GPU上的只能通过 `torch.cuda.empty_cache()`
+
+del pipeline
 torch.cuda.empty_cache()
 ```
 
@@ -77,15 +81,7 @@ for x,y in DataLoder:
 4. 激活函数，`nn.ReLU(inplace=True)`
 
 
-PS：`del` 只能删除内存里的变量, GPU上的只能通过 `torch.cuda.empty_cache()`
-```python
-import gc
-
-del train, train_label, train_x, train_y, val_x, val_y
-gc.collect()
-```
-
-## gradient_accumulation_steps
+## 3. gradient_accumulation_steps
 
 我们有时被迫在训练过程中使用更小的 batch_size，这可能会导致收敛速度减慢和精度降低————解法就是梯度累计。 
 
@@ -94,7 +90,7 @@ gc.collect()
 
 若是显存不够，我们需要减小 batch size ，我们设置gradient_accumulation_steps=2，那么我们新的 batch size=10/2=5，我们需要运行两次，才能在内存中放入10条数据，**梯度更新的次数不变为100次**，那么我们的train steps=200
 
-### manually
+### 3.1. manually
 
 ```python
 train_dataloader_10 = torch.utils.data.DataLoader(
@@ -143,7 +139,7 @@ def train_gradient_accumulation_steps(data_loader=train_dataloader_5):
 
     For instance, **batch normalization** is performed on a batch level and therefore may yield slightly different results when using the same effective batch size with and without gradient accumulation. This means that you should not expect to see a 100% match between the results.
 
-### accelerate
+### 3.2. accelerate
 Accelerator is able to keep track of the batch number you are on and it will automatically know whether to step through the prepared optimizer and how to adjust the loss.
 
 ```python
