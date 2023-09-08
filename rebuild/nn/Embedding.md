@@ -8,7 +8,7 @@ indices $\to$ word embedding(float vector)
 
 PS: 与`nn.Linear`等价的情况：
     
-如果 `nn.Linear(num_embeddings, embedding_dim)` 的输入 `x` 是 one-hot 向量，且 `nn.Linear(x)` 是没有 bias 的, 那么 $f(x)=x * w^{T}$ 就相当于 取对应的 `weight`.
+如果 `nn.Linear(num_embeddings, embedding_dim)` 的输入 `x` 是 one-hot 向量，且 `nn.Linear(x)` 是没有 bias 的, 那么 $f(x)=x * w^{T}$ 就相当于 取对应的 `weight`(shape is `(embedding_dim, num_embeddings)`) 的转置.
 
 ## Embedding
 ```python

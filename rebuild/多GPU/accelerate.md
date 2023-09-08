@@ -4,6 +4,8 @@
   - [2.2. device](#22-device)
   - [2.3. Accelerator](#23-accelerator)
   - [2.4. checkpoints](#24-checkpoints)
+    - [用于 training 的保存和恢复](#用于-training-的保存和恢复)
+    - [同 torch.save](#同-torchsave)
   - [2.5. logger](#25-logger)
 - [3. launch code](#3-launch-code)
   - [3.1. config](#31-config)
@@ -93,6 +95,9 @@ if accelerator.is_main_process:
 ```
 
 ### 2.4. checkpoints
+
+#### 用于 training 的保存和恢复
+
 存`accelerator.prepare(...)`的一堆东西，由于其是自定义内容和顺序的，所以是 saving/loading everything.
 
 从而，
@@ -102,6 +107,53 @@ accelerator.save_state(f"checkpoint-{global_step}")
 accelerator.load_state(f"checkpoint-{global_step}")
 ```
 
+> 会保存随机状态 `random_states_0.pkl`, 所以适合 train, 不适合 inference
+
+```python
+from accelerate import Accelerator
+import torch
+
+accelerator = Accelerator()
+checkpoint_path = './check'
+accelerator.print(torch.randn((1, 4)))
+accelerator.print(torch.randn((1, 4)))
+accelerator.save_state(checkpoint_path)     <<<
+
+$ python t.py
+tensor([[1.7642, 0.3760, 1.3258, 0.7158]])
+$ python t.py
+tensor([[-0.9458, -2.2758,  0.3105, -0.7734]])
+```
+`load_state()` 前的还是随机，`load_state()`后的就是 checkpoint 定死的随机状态。
+```python
+from accelerate import Accelerator
+import torch
+
+accelerator = Accelerator()
+checkpoint_path = './check'
+accelerator.print(torch.randn((1, 4)))
+accelerator.load_state(checkpoint_path)     <<<
+accelerator.print(torch.randn((1, 4)))
+accelerator.print(torch.randn((1, 4)))
+
+'''
+$ python t.py
+tensor([[ 0.3128,  0.5455, -0.3177,  0.1281]])
+tensor([[-1.6668,  0.4297,  0.6978, -0.3600]])  # 不变
+tensor([[ 0.0186, -0.3621,  0.4523,  0.7063]])  # 不变
+$ python t.py
+tensor([[-0.9458, -2.2758,  0.3105, -0.7734]])
+tensor([[-1.6668,  0.4297,  0.6978, -0.3600]])  # 不变
+tensor([[ 0.0186, -0.3621,  0.4523,  0.7063]])  # 不变
+'''
+```
+#### 同 torch.save
+
+accelerate没有load，用torch的load
+```python
+accelerator.save(my_model.state_dict(), 'aa.bin')
+my_model = torch.load('aa.bin')
+```
 ### 2.5. logger
 
 ```python
