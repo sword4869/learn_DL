@@ -66,25 +66,82 @@ The `batch_size` and `drop_last` arguments essentially are used to construct a `
 互斥：
 - `sampler`; `shuffle`
 - `batch_sampler`; `batch_size`, `shuffle`, `sampler`, `drop_last`.
-- `collate_fn`
 
-	merges a list of samples(using the indices from sampler) to form a mini-batch of Tensor(s).
 
-	从数据集中获得的每个样本都作为参数传递给`collegel_fn`函数进行处理。
 
-	loading from a map-style dataset is roughly equivalent with:
-	```python
-	for indices in batch_sampler:
-		yield collate_fn([dataset[i] for i in indices])
-	```
+> `collate_fn`: merges a list of samples(using the indices from sampler) to form a mini-batch of Tensor(s).
 
-	loading from an iterable-style dataset is roughly equivalent with:
+从数据集中获得的每个样本都作为参数传递给`collegel_fn`函数进行处理。
 
-	```python
-	dataset_iter = iter(dataset)
-	for indices in batch_sampler:
-		yield collate_fn([next(dataset_iter) for _ in indices])
-	```
+loading from a map-style dataset is roughly equivalent with:
+```python
+for indices in batch_sampler:
+	yield collate_fn([dataset[i] for i in indices])
+```
+
+loading from an iterable-style dataset is roughly equivalent with:
+
+```python
+dataset_iter = iter(dataset)
+for indices in batch_sampler:
+	yield collate_fn([next(dataset_iter) for _ in indices])
+```
+
+```python
+
+import torch
+from torch import nn
+from torch.utils.data import DataLoader, Dataset
+
+
+class RangeDataset(Dataset):
+    def __init__(self, length):
+        self.len = length
+        self.data = torch.arange(0, length, dtype=torch.float32)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return self.len
+    
+def collate_fn(batch):
+    '''
+    batch是从Dataset里直接获取的 batch_size 个元素的 list
+    我们在 for 循环里对其每个元素作出处理后，再用 torch.stack 将 list 转化为 (N, shape) 的形式。
+    比如, N个CHW 变成 NCHW
+    '''
+    batch = torch.stack([item + 1 for item in batch])
+    return batch
+
+# DataLoader
+rand_dataset = RangeDataset(length=20)
+rand_dataloader = DataLoader(
+    rand_dataset, 
+    batch_size=5,
+    collate_fn=collate_fn
+)
+
+for batch in rand_dataloader:
+    print(batch)
+'''
+tensor([1., 2., 3., 4., 5.])
+tensor([ 6.,  7.,  8.,  9., 10.])
+tensor([11., 12., 13., 14., 15.])
+tensor([16., 17., 18., 19., 20.])
+'''
+```
+```python
+def collate_fn(batch):
+    '''
+    Dataset元素是字典
+    '''
+    pixel_values = torch.stack([example["pixel_values"] for example in batch])
+    pixel_values = pixel_values.to(memory_format=torch.contiguous_format).float()
+    input_ids = torch.stack([example["input_ids"] for example in batch])
+    embedding = torch.stack([example["embedding"] for example in batch])
+    return {"pixel_values": pixel_values, "input_ids": input_ids, "embedding": embedding} 
+```
 
 
 `num_workers`:

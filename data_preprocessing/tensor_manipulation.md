@@ -64,6 +64,16 @@ torch.normal(0, 1, (3, 3))
 torch.tensor([[2, 1, 4, 3], [1, 2, 3, 4], [4, 3, 2, 1]])
 ```
 
+```python
+# 清零
+>>> X.zero_()
+tensor([[0., 0., 0.],
+        [0., 0., 0.]])
+>>> X
+tensor([[0., 0., 0.],
+        [0., 0., 0.]])
+```
+
 浮点数
 ```python
 # 直接tensor，浮点数默认 torch.float32
@@ -347,7 +357,7 @@ torch.argmax(a, dim=0)
 torch.argmax(a, dim=1)
 ```
 
-限定元素大小 [min, max]
+限定元素大小 clip/clamp [min, max]
 ```python
 input = torch.randint(20, (1, 10))
 output = input.clamp(min=0, max=9)

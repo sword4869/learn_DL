@@ -1,3 +1,4 @@
+You are responsible for calling `model.eval()` and `model.train()` if your model relies on modules such as `torch.nn.Dropout` and `torch.nn.BatchNorm2d` that may behave differently depending on training mode, for example, to avoid updating your BatchNorm running **statistics on validation data**.
 ## Welford算法小记
 
 

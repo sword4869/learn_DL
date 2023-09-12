@@ -193,9 +193,12 @@ array([[1, 2, 2],
 ```
 
 #### 2.3.1. torch.Tensor.repeat
-`torch.Tensor.repeat()`: 
+`torch.Tensor.repeat(*sizes)`: 
 
-先补全维度 [1, 1, ..., 原本的维度], 再对每个维度分别复制(a,b,...)次。
+要求`*sizes` 对齐 tensor变量的n_dim.
+
+- 先补全维度 [1, 1, ..., 原本的维度], 
+- 再对每个维度分别复制(a,b,...)次。
 
 而且不是像`numpy.repeat()`每个元素分别复制，其是整块复制（可以理解为**先从最后一维度复制**，复制好后再重复前一维度）
 
@@ -218,6 +221,12 @@ tensor([[1, 2, 1, 2, 1, 2],
         [3, 4, 3, 4, 3, 4]])
 # 先是最后一维度复制3次，[[1, 2, 1, 2, 1, 2], [3, 4, 3, 4, 3, 4]]
 # 再是前一维度复制2次
+```
+
+```python
+def noise_like(shape, device):
+    repeat_noise = lambda: torch.randn((1, *shape[1:]), device=device).repeat(shape[0], *((1,) * (len(shape) - 1)))
+    return repeat_noise()
 ```
 
 ### 2.4. np.squeeze

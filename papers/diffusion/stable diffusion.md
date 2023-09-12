@@ -1,3 +1,4 @@
+- [条件 diffusion](#条件-diffusion)
 - [1. Overview](#1-overview)
 - [2. Component](#2-component)
   - [2.1. VAE](#21-vae)
@@ -12,6 +13,14 @@
 
 
 ---
+
+## 条件 diffusion
+
+                
+`model_pred = unet(noisy_latents, timesteps, encoder_hidden_states).sample`
+- `noisy_latents, timesteps` 是标准的unet输入，
+- 而 `encoder_hidden_states` 是额外的条件。
+
 ## 1. Overview
 
 Stable diffusion 并不是单个模型，而是由三个模型组合起来的。
