@@ -1,8 +1,8 @@
 - [1. 里程碑](#1-里程碑)
-- [2. 训练/加噪/扩散/forward](#2-训练加噪扩散forward)
+- [2. 训练/加噪/扩散/forward/q](#2-训练加噪扩散forwardq)
   - [2.1. toy understanding](#21-toy-understanding)
   - [2.2. 实际上](#22-实际上)
-- [3. Sampling 推理/生成/去噪](#3-sampling-推理生成去噪)
+- [3. 推理/生成/去噪/Sampling/p](#3-推理生成去噪samplingp)
   - [3.1. toy understanding](#31-toy-understanding)
   - [3.2. 实际上](#32-实际上)
   - [scheduler](#scheduler)
@@ -43,7 +43,7 @@ Latent Diffusion Models (LDM)
 
 ---
 
-## 2. 训练/加噪/扩散/forward
+## 2. 训练/加噪/扩散/forward/q
 
 ### 2.1. toy understanding
 
@@ -82,14 +82,22 @@ noisy image = image + ground truth noise (Label)
 
 ![Alt text](image-31.png)
 
-$$L_{DM}=\mathbb{E}_{x,\epsilon\sim\mathcal{N}(0,1),t}\Big[\|\epsilon-\epsilon_{\theta}(x_{t},t)\|_{2}^{2}\Big]$$
+$$L=\mathbb{E}_{x,\epsilon\sim\mathcal{N}(0,1),t}\Big[\|\epsilon-\epsilon_{\theta}(x_{t},t)\|_{2}^{2}\Big]$$
 - noise amount 即时间步 timestep。$t \in[1,2,3,...,T]$.
 - $\epsilon$ 是 ground truth noise 
 - $\epsilon_\theta$ 是unet, $\epsilon_\theta(x_t,t)$ 得到 predicted noise
 - $x_t = \sqrt{\bar{\alpha}_{t}}x_{0}+\sqrt{1-\bar{\alpha}_{t}}\epsilon$ : noisy image 由 原始图片 $x_0$ 和 噪声 $\epsilon$ 加权求和得到。
 
+也有另一种写法，示意，训练还是如上：
 
-## 3. Sampling 推理/生成/去噪
+$$\mathbb{E}_{t,\epsilon,x_0}[w(\lambda_t)\|x_0-\hat{x}_\theta(x_t,t)\|_2^2]$$
+
+- $x_0$: 原始图片
+- $x_t$: 加噪的图片
+- $\hat{x}_\theta$: denotes the learned denoising model.
+- $w(\lambda_t)$: 依赖于时间步长的加权常数
+
+## 3. 推理/生成/去噪/Sampling/p
 
 ![Alt text](image-25.png)
 

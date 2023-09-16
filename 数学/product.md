@@ -99,3 +99,7 @@ $$\displaystyle {u\wedge v=-(v\wedge u)}$$
 
 
 In connection with the cross product, the exterior product of vectors can be used in arbitrary dimensions (with a bivector or 2-form result) and is independent of the orientation of the space.
+
+## Hadamard product
+
+element-wise, 按元素相乘

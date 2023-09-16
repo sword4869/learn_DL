@@ -225,7 +225,7 @@ X + Y
 X - Y
 X / Y
 X * Y   # element-wise, 按元素相乘，即Hadamard product
-torch.mul(X, Y)
+torch.mul(X, Y)   # 也是element-wise
 X ** Y  # 求幂运算
 torch.exp(X)  # e^x
 ```
@@ -280,6 +280,14 @@ torch.matmul(X, Y)
 
 # (3)
 X@Y
+```
+
+batch甚至更多都可以, 只要保证最后两个维度匹配就行。
+```python
+>>> X = torch.randn(2,3,4,5)
+>>> Y = torch.randn(2,3,5,6)
+>>> (X@Y).shape
+torch.Size([2, 3, 4, 6])
 ```
 
 > 和向量乘就是向量，和矩阵乘就是矩阵

@@ -1,7 +1,6 @@
 - [1. 目标](#1-目标)
 - [2. 结构](#2-结构)
   - [2.1. scaled dot-product attention](#21-scaled-dot-product-attention)
-    - [2.1.1. 公式](#211-公式)
     - [2.1.2. scaled dot-product attention 和 additive attention, dot-product attention 的区别](#212-scaled-dot-product-attention-和-additive-attention-dot-product-attention-的区别)
     - [2.1.3. mask](#213-mask)
   - [2.2. FC: Position-wise Feed-Forward Networks](#22-fc-position-wise-feed-forward-networks)
@@ -26,32 +25,6 @@ To the best of our knowledge, however, the Transformer is the first transduction
 
 《Attention Is All You Need》中的attention。
 
-#### 2.1.1. 公式
-
-![Alt text](diffusion/image-4.png)
-
-$$\displaystyle \mathrm{Attention}(q,K,V)=\sum_{i=1}^{N} \mathrm{softmax}\left(\dfrac{q \cdot K_i}{\sqrt{d_k}} \right) \cdot V_i =\mathrm{softmax} \left(\dfrac{\sum_{i=1}^{d_k} q_i k_i}{\sqrt{d_k}} \right) \cdot v$$
-
-
-$$\mathrm{Attention}(Q,K,V)=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{d_k}} \right)V$$
-
-
-
-一组键值对 key-value pairs (每个key向量的维度是 $d_k$, 每个value向量的维度是 $d_v$) 和 一个查询 query（向量的维度也该是 $d_k$）。 
-
-在实践中，我们同时计算一组查询的注意力函数，将其打包 pack 到矩阵 Q 中。键和值也打包到矩阵 K 和 V 中。
-
-![图 3](../images/5b5e965981e60e4e428f916d7e5f977ffbb6c0e3cd72841fc5d377a23b0070f5.png)  
-
-![Attention Is All You Need - Fig.2](../images/1aabed171f536e1da66cf090575508e6c864434342dfd92b92a5390d4959cf7d.png)  
-
-
-第一步： query 和 key 进行点积运算，然后缩放，得到权值 s
-
-第二步：将权值进行归一化，得到直接可用的权重 a
-
-第三步：将权重 a 和 value 进行加权求和
-
 #### 2.1.2. scaled dot-product attention 和 additive attention, dot-product attention 的区别
 
 ![Attention Is All You Need - Section 3.2.1](../images/e6e13bb69156ae74326053a92d86c58a46c7f64e630cccd432bf98ff24b6cd59.png)  
@@ -61,6 +34,18 @@ $$\mathrm{Attention}(Q,K,V)=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{d_k}} \rig
 
 
 #### 2.1.3. mask
+
+
+![Attention Is All You Need - Fig.2](../images/1aabed171f536e1da66cf090575508e6c864434342dfd92b92a5390d4959cf7d.png)  
+
+
+第一步： query 和 key 相乘，然后缩放，得到权值 s
+
+第二步：是否mask
+
+第三步：将权值进行归一化，得到直接可用的权重 a
+
+第四步：将权重 a 和 value 进行加权求和
 
 ![Attention Is All You Need - Section 3.2.3](../images/6194361e817193c87728a1748176113ccc609c8f50937c1bbf112a863455ac05.png)  
 

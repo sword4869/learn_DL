@@ -4,10 +4,11 @@
   - [2.2. 广播](#22-广播)
     - [2.2.1. 计算shape](#221-计算shape)
     - [2.2.2. 修正shape](#222-修正shape)
-      - [torch.Tensor.expand](#torchtensorexpand)
+      - [2.2.2.1. torch.Tensor.expand](#2221-torchtensorexpand)
   - [2.3. np.repeat](#23-nprepeat)
     - [2.3.1. torch.Tensor.repeat](#231-torchtensorrepeat)
   - [2.4. np.squeeze](#24-npsqueeze)
+  - [2.5. 应用维度](#25-应用维度)
 - [3. np.concatenate](#3-npconcatenate)
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
@@ -155,7 +156,7 @@ array([[1, 2, 3],
        ```
 
 
-##### torch.Tensor.expand
+##### 2.2.2.1. torch.Tensor.expand
 `torch.Tensor.expand(*sizes)`
 ```python
 >>> x = torch.Tensor([[1], [2], [3]])            # [3, 1]
@@ -258,6 +259,53 @@ array(1234)  # 0d array
 ()
 >>> np.squeeze(x)[()]
 1234
+```
+
+### 2.5. 应用维度
+
+```python
+>>> arr = np.arange(4).reshape((2,2))
+>>> arr
+array([[0, 1],
+       [2, 3]])
+>>> arr.sum()
+6
+>>> arr.sum(axis=0)
+array([2, 4])
+>>> arr.sum(axis=1)
+array([1, 5])
+>>> arr.sum(axis=0, keepdims=True)
+array([[2, 4]])
+```
+
+```python
+>>> arr = np.arange(24).reshape((2,3,4))
+>>> arr
+array([[[ 0,  1,  2,  3],
+        [ 4,  5,  6,  7],
+        [ 8,  9, 10, 11]],
+
+       [[12, 13, 14, 15],
+        [16, 17, 18, 19],
+        [20, 21, 22, 23]]])
+        
+# (1) arr[0] + arr[1] 
+# (2) arr[0, :, :] + arr[1, :, :]
+# (3) 
+# output_shape = arr.shape[:axis] + arr.shape[axis+1:]
+# output = np.zeros(output_shape)
+# for i in range(arr.shape[axis]): 
+#      output += arr[i, :, :]      # 这里i还需要变动位置
+>>> arr.sum(axis=0)
+array([[12, 14, 16, 18],
+       [20, 22, 24, 26],
+       [28, 30, 32, 34]])
+>>> arr.sum(axis=1)
+array([[12, 15, 18, 21],
+       [48, 51, 54, 57]])
+>>> arr.sum(axis=2)
+array([[ 6, 22, 38],
+       [54, 70, 86]])
 ```
 
 ## 3. np.concatenate

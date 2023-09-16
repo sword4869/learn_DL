@@ -19,8 +19,8 @@
 - [10. 线性代数](#10-线性代数)
 - [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
   - [11.1. seed()](#111-seed)
-  - [11.2. rand()均匀分布](#112-rand均匀分布)
-  - [11.3. randint()](#113-randint)
+  - [11.2. rand() 连续均匀分布](#112-rand-连续均匀分布)
+  - [11.3. randint() 离散均匀分布](#113-randint-离散均匀分布)
   - [11.4. randn()正态分布](#114-randn正态分布)
 - [12. 一个简单的随机漫步](#12-一个简单的随机漫步)
 - [13. 通过内置的random模块以纯Python的方式](#13-通过内置的random模块以纯python的方式)
@@ -530,9 +530,9 @@ rng = np.random.RandomState(1234)
 print(rng.randn(10))
 ```
 
-### 11.2. rand()均匀分布
+### 11.2. rand() 连续均匀分布
 
-均匀分布，生成(0,1)之间的数据。
+均匀分布，生成`[0, 1)`之间的数据。
 
 ```python
 print(np.random.rand())
@@ -553,9 +553,9 @@ print(np.random.rand(2,3)-0.5)
 '''
 ```
 
-### 11.3. randint()
+### 11.3. randint() 离散均匀分布
 
-> randint给定上下限范围内的选取整数 
+> randint给定上下限范围 `[low, high)` 内的选取整数 
 
 ```python
 import numpy as np
