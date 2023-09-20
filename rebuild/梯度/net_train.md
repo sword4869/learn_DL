@@ -1,7 +1,7 @@
 - [1. Net](#1-net)
   - [1.1. model 加载梯度与否](#11-model-加载梯度与否)
     - [1.1.1. 只关乎BN和Dropout](#111-只关乎bn和dropout)
-      - [1.1.1.1. torch.no\_grad()](#1111-torchno_grad)
+    - [1.1.2. torch.no\_grad()](#112-torchno_grad)
   - [1.2. loss 和 optimizer 的三者顺序](#12-loss-和-optimizer-的三者顺序)
   - [1.3. 训练、验证、测试](#13-训练验证测试)
 - [2. train\_val](#2-train_val)
@@ -11,7 +11,7 @@
 
 ### 1.1. model 加载梯度与否
 
-![图 7](../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
+![图 7](../../images/87519e852836e4157f551b99c9be7374a8c0ad88f64b40b2c727bd90a0b4d521.png)  
 
 #### 1.1.1. 只关乎BN和Dropout
 
@@ -23,7 +23,7 @@
 
 也就是说，没有用BN和Dropout的架构，就不用写这个。
 
-##### 1.1.1.1. torch.no_grad()
+#### 1.1.2. torch.no_grad()
 
 只是防止梯度传递，没有梯度只节省一点点内存，OOM还是会发生。
 
@@ -69,15 +69,107 @@ for batch in train_loader:
     optimizer.zero_grad()
 ```
 
+!!! note: `optimizer.zero_grad()`放在最后不会对第一个batch造成影响！
+
+    因为现在的pytorch，模型（新创立的、load pretrained）参数的**梯度**初始化就是`None`, `optimizer.zero_grad()`也是把模型参数的梯度置`None`。所以没有区别。
+
+    PS：[detach能够阻断梯度回传.md](./detach能够阻断梯度回传.md)这篇文章也是如此，pytorch更新后，就没有梯度问题了。
+
+    PS：
+    <details>
+    <summary> code </summary>
+
+    ```python
+    import torch
+    from torch import nn
+    from torch.utils.data import DataLoader, Dataset
+    from tqdm import tqdm
+    from accelerate.utils import set_seed
+
+    set_seed(42)
+
+    class RangeDataset(Dataset):
+        def __init__(self, length):
+            self.len = length
+            self.data = torch.arange(0, length, dtype=torch.float32)
+
+        def __getitem__(self, index):
+            return self.data[index]
+
+        def __len__(self):
+            return self.len
+
+
+    class Model(nn.Module):
+        def __init__(self, input_size, output_size):
+            super().__init__()
+            self.fc = nn.Sequential(
+                nn.Linear(input_size, 1000),
+                nn.Linear(1000, output_size)
+            )
+
+        def forward(self, input):
+            output = self.fc(input)
+            return output
+
+
+    def train(rank):
+        # create model and move it to GPU with id rank
+        model = Model(5, 2).to(rank)
+        # DataLoader
+        rand_dataset = RangeDataset(length=100)
+        rand_dataloader = DataLoader(
+            rand_dataset, batch_size=5)      # <<<
+        loss_fn = nn.MSELoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=2e-4)
+        for data in tqdm(rand_dataloader, disable=(rank!=0)):
+            inputs = data.to(rank)
+            outputs = model(inputs)
+            labels = torch.randn(outputs.shape).to(rank)
+            loss = loss_fn(outputs, labels)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        print(model.fc[0].weight)       # 看看输出，保证不是nan，训练炸了
+        print(model.fc[0].weight.grad)  # 看看输出，保证不是nan，训练炸了
+        torch.save(model.state_dict(), f'./model_{rank}.pth')
+
+
+    def train2(rank):
+        # create model and move it to GPU with id rank
+        model = Model(5, 2).to(rank)
+        ckpt = torch.load("model_0.pth", map_location="cpu")
+        model.load_state_dict(ckpt)
+
+        # DataLoader
+        rand_dataset = RangeDataset(length=100)
+        rand_dataloader = DataLoader(
+            rand_dataset, batch_size=5)      # <<<
+        loss_fn = nn.MSELoss()
+        # 因为是同步的进度，所以只显示一个进程的进度条就行
+        for data in tqdm(rand_dataloader, disable=(rank!=0)):
+            inputs = data.to(rank)
+            outputs = model(inputs)
+            labels = torch.randn(outputs.shape).to(rank)
+            loss = loss_fn(outputs, labels)
+            print(model.fc[0].weight)
+            print(model.fc[0].weight.grad)      # None
+            return
+    train(0)
+    train2(0)
+    ```
+
+    </details>
+
 ### 1.3. 训练、验证、测试
 
-![图 5](../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
+![图 5](../../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
 
 
-![图 4](../images/77bdacd36dfa57e1f72fe6bc5641e2113c9104ec83594fe69cf14081d8c2bea8.png)  
+![图 4](../../images/77bdacd36dfa57e1f72fe6bc5641e2113c9104ec83594fe69cf14081d8c2bea8.png)  
 
 
-![图 6](../images/9c5c01f071d2528b0b0b415fad698050d815069f68811e78b415d5f4ae393816.png)  
+![图 6](../../images/9c5c01f071d2528b0b0b415fad698050d815069f68811e78b415d5f4ae393816.png)  
 
 
 ## 2. train_val

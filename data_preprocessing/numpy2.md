@@ -530,6 +530,69 @@ rng = np.random.RandomState(1234)
 print(rng.randn(10))
 ```
 
+> 一样不一样
+
+```python
+import numpy as np
+
+np.random.seed(5)
+'''
+########### 不开全局seed，每次no_set_seed()结果不一样
+#  ***** no set seed result *****  
+# 0.8707323061773764
+# 0.20671915533942642
+# 0.9186109079379216
+#  ***** set seed result ***** 
+# 0.22199317108973948
+# 0.22199317108973948
+
+ ***** no set seed result *****
+0.24323782742310252
+0.13809838472493674
+0.7398114249472899
+ ***** set seed result *****
+0.22199317108973948
+0.22199317108973948
+0.22199317108973948
+
+########### 开全局seed，每次no_set_seed()结果一样
+#  ***** no set seed result *****
+# 0.22199317108973948
+# 0.8707323061773764
+# 0.20671915533942642
+#  ***** set seed result *****
+# 0.22199317108973948
+# 0.22199317108973948
+
+ ***** no set seed result *****  
+0.22199317108973948
+0.8707323061773764
+0.20671915533942642
+ ***** set seed result *****
+0.22199317108973948
+0.22199317108973948
+0.22199317108973948
+'''
+
+def no_set_seed():
+    n = 0
+    while (n < 3):
+        n += 1
+        print(np.random.random())
+
+def set_seed():
+    n = 0
+    while (n < 3):
+        np.random.seed(5)
+        n += 1
+        print(np.random.random())
+
+print(" ***** no set seed result *****  ")
+no_set_seed()
+print(" ***** set seed result ***** ")
+set_seed()
+```
+
 ### 11.2. rand() 连续均匀分布
 
 均匀分布，生成`[0, 1)`之间的数据。
