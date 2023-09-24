@@ -59,9 +59,9 @@ transforms.Normalize(
 
 # 所以网络输出对应要反归一化, 而不是普通的 clip(0, 1)
 # [-1 * 0.5 + 0.5, 1 * 0.5 + 0.5] -> [0, 1]
-image = transforms.ToPILImage()(image.clip(-1, 1) * 0.5 + 0.5)
+image = transforms.ToPILImage()( (image * 0.5 + 0.5).clip(0,1) )
 # [(-1 + 1) / 2, (1 + 1) / 2] -> [0, 1]
-# image = transforms.ToPILImage()((image.clip(-1, 1) + 1) /2)
+# image = transforms.ToPILImage()( ((image + 1) / 2).clip(0,1) )
 ```
 - `image`: 直接输出原本 `[-1, 1]`
     

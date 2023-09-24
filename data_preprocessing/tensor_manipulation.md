@@ -30,18 +30,21 @@ torch.arange(0.7, 4.7)
 # tensor([0.7000, 1.7000, 2.7000, 3.7000])
 
 
+### full
 
-### 全0
+torch.full([3, 4], 0)
+
+# 全0
 # torch.zeros((2, 3, 4)),元组格式也行
 torch.zeros(2, 3, 4)
 torch.zeros(X.shape)
 torch.zeros_like(X)
 
-### 全1
+# 全1
 torch.ones(2, 3, 4)
 torch.ones_like(X)
 
-### 单位矩阵
+# 单位矩阵
 torch.eye(3, 3)
 
 
@@ -107,10 +110,12 @@ a3 = torch.tensor(np.array([12]))
 
 [`torch.tensor()`注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
 ```python
->>> torch.tensor([1,2,3]).dtype
-torch.int64
->>> torch.tensor([1.,2.,3.]).dtype
+>>> torch.tensor([1.,2.,3.]).dtype                  # 默认浮点数是 torch.float32
 torch.float32
+>>> torch.tensor([1,2,3]).dtype                     # 默认整数是 torch.int64
+torch.int64
+>>> torch.tensor([1,2,3], dtype=torch.int).dtype    # torch.int 是 torch.int32
+torch.int32
 
 # 整型
 >>> torch.LongTensor([1,2,3])

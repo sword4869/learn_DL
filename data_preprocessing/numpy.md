@@ -13,6 +13,7 @@
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
 - [6. meshgrid](#6-meshgrid)
+  - [torch.meshgrid](#torchmeshgrid)
 
 
 ## 1. np.random.choice()
@@ -558,3 +559,11 @@ print(coords)
 #  [0.5 1. ]
 #  [1.  1. ]]
 ```
+### torch.meshgrid
+
+`torch.meshgrid(*tensors, indexing='ij')`
+
+一样，只不过torch的默认值是 `ij` matrix indexing.
+
+<https://blog.csdn.net/weixin_39504171/article/details/106356977>
+<https://pytorch.org/docs/stable/generated/torch.meshgrid.html>

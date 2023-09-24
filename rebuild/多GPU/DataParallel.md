@@ -59,6 +59,13 @@ net = nn.DataParallel(net)
 
 - 送到哪个GPU上无所谓, 反正都会再复制到**所有指定的**GPU `device_ids` 上.
 
+> 反warp
+
+```python
+net_warped = nn.DataParallel(net)
+net = net_warped.module
+```
+
 > 例子
 
 
