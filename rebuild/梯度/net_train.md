@@ -3,7 +3,8 @@
     - [1.1.1. 只关乎BN和Dropout](#111-只关乎bn和dropout)
     - [1.1.2. torch.no\_grad()](#112-torchno_grad)
   - [1.2. loss 和 optimizer 的三者顺序](#12-loss-和-optimizer-的三者顺序)
-  - [1.3. 训练、验证、测试](#13-训练验证测试)
+  - [1.3. optimizer报错](#13-optimizer报错)
+  - [1.4. 训练、验证、测试](#14-训练验证测试)
 - [2. train\_val](#2-train_val)
 
 ---
@@ -160,8 +161,128 @@ for batch in train_loader:
     ```
 
     </details>
+### 1.3. optimizer报错
+- `loss.backward()`: 计算model参数的grad
+- `optimizer.step()`: optimizer更新自己的state, 还根据model参数的grad更新其data
+- `optimizer.zero_grad()`：model参数的grad置None
+- `model.load_state_dict()`: 只恢复model的data，而model参数的grad还是None
+    
+    调整model参数顺序没影响，其是通过参数的名字来对应的。
 
-### 1.3. 训练、验证、测试
+- `optimizer.load_state_dict()`: optimizer恢复自己的state，还恢复其param_groups（包括lr、weight_decay等）
+
+    optimizer的state是对应model的参数，shape一致。但一一对应不是通过参数的名字，而是`0,1,2`的顺序。所以当model的参数顺序变化时，其对应错误。
+    ```
+    RuntimeError: The size of tensor a (2) must match the size of tensor b (3) at non-singleton dimension 1
+    ```
+
+<details>
+<summary> 调整参数顺序，Model和Model2，optimizer训练时报错 </summary>
+```python
+from ast import mod
+import torch
+from torch import nn
+import torch.nn.functional as F
+from torch.utils.data import DataLoader, Dataset
+from tqdm import tqdm
+from accelerate.utils import set_seed
+
+set_seed(42)
+
+class RangeDataset(Dataset):
+    def __init__(self, length):
+        self.len = length
+        self.data = torch.arange(length * 2).reshape(-1,2).float()
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def __len__(self):
+        return self.len
+
+
+class Model(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear1 = nn.Linear(2, 3)
+        self.linear2 = nn.Linear(3, 4)
+
+    def forward(self, input):
+        output = self.linear1(input)
+        output = self.linear2(output)
+        return output
+    
+class Model2(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.linear2 = nn.Linear(3, 4)
+        self.linear1 = nn.Linear(2, 3)
+
+    def forward(self, input):
+        output = self.linear1(input)
+        output = self.linear2(output)
+        return output
+
+def show(optimizer, model):
+    print(optimizer.state_dict()['state'])  # 有值
+    print(dict(model.named_parameters()))
+    print(model.linear1.weight.data) 
+    print(model.linear1.weight.grad) 
+    print('-'*10)
+
+def train(rank):
+    model = Model().to(rank)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=1)
+
+    for i, data in enumerate(rand_dataloader):
+        inputs = data.to(rank)
+        outputs = model(inputs)
+        labels = torch.randn(outputs.shape).to(rank)
+        loss = F.mse_loss(outputs, labels)
+
+        show(optimizer, model)
+        loss.backward()
+        show(optimizer, model)
+        optimizer.step()
+        show(optimizer, model)
+        optimizer.zero_grad()
+        show(optimizer, model)
+        print('*'*10)
+        if i == 1:
+            break
+    torch.save(model.state_dict(), f'./model_{rank}.pth')
+    torch.save(optimizer.state_dict(), f'./optimizer_{rank}.pth')
+
+
+def train2(rank):
+    model = Model2().to(rank)
+    ckpt = torch.load("model_0.pth", map_location="cpu")
+    model.load_state_dict(ckpt)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=1)
+    show(optimizer, model)
+    ckpt = torch.load("optimizer_0.pth", map_location="cpu")
+    optimizer.load_state_dict(ckpt)
+    show(optimizer, model)
+
+    for data in tqdm(rand_dataloader):
+        inputs = data.to(rank)
+        outputs = model(inputs)
+        labels = torch.randn(outputs.shape).to(rank)
+        loss = F.mse_loss(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        show(optimizer, model)
+        optimizer.zero_grad()
+rand_dataset = RangeDataset(length=100)
+rand_dataloader = DataLoader(rand_dataset, batch_size=5)
+train(0)
+print('!'*20)
+train2(0)
+```
+</details>
+### 1.4. 训练、验证、测试
 
 ![图 5](../../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  
 

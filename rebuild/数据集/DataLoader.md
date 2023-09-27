@@ -87,6 +87,91 @@ for i, (X, y) in enumerate(test_dataloader):
     break
 ```
 
+```python
+rand_dataset = RandomDataset(length=10, feature=3)
+rand_loader = DataLoader(rand_dataset, batch_size=3, shuffle=False)
+for datc in rand_loader:
+    inputs = data.to(device)
+    print('a', inputs)
+
+# 先list化，才能index
+rand_loader = list(rand_loader)     # 但是list这步巨慢
+for i in range(len(rand_loader)):
+    inputs = rand_loader[i].to(device)
+    print('b', inputs)
+
+# 直接dataset，但是不是batch了
+for i in range(len(rand_dataset)):
+    inputs = rand_dataset[i].to(device)
+    print('c', inputs)
+
+'''
+c tensor([[0., 1., 2.],
+        [3., 4., 5.],
+        [6., 7., 8.]], device='cuda:0')
+c tensor([[ 9., 10., 11.],
+        [12., 13., 14.],
+        [15., 16., 17.]], device='cuda:0')
+c tensor([[18., 19., 20.],
+        [21., 22., 23.],
+        [24., 25., 26.]], device='cuda:0')
+c tensor([[27., 28., 29.]], device='cuda:0')
+
+b tensor([[0., 1., 2.],
+        [3., 4., 5.],
+        [6., 7., 8.]], device='cuda:0')
+b tensor([[ 9., 10., 11.],
+        [12., 13., 14.],
+        [15., 16., 17.]], device='cuda:0')
+b tensor([[18., 19., 20.],
+        [21., 22., 23.],
+        [24., 25., 26.]], device='cuda:0')
+b tensor([[27., 28., 29.]], device='cuda:0')
+
+c tensor([0., 1., 2.], device='cuda:0')
+c tensor([3., 4., 5.], device='cuda:0')
+c tensor([6., 7., 8.], device='cuda:0')
+c tensor([ 9., 10., 11.], device='cuda:0')
+c tensor([12., 13., 14.], device='cuda:0')
+c tensor([15., 16., 17.], device='cuda:0')
+c tensor([18., 19., 20.], device='cuda:0')
+c tensor([21., 22., 23.], device='cuda:0')
+c tensor([24., 25., 26.], device='cuda:0')
+c tensor([27., 28., 29.], device='cuda:0')
+'''
+```
+```python
+# np 和 torch 都会自动防止索引超限
+batch_size = 3
+for i in range(0, len(rand_dataset), batch_size):
+    inputs = rand_dataset[i: i + batch_size ]
+    print('d', inputs)
+
+'''
+d [[0 1 2]
+ [3 4 5]
+ [6 7 8]]
+d [[ 9 10 11]
+ [12 13 14]
+ [15 16 17]]
+d [[18 19 20]
+ [21 22 23]
+ [24 25 26]]
+d [[27 28 29]]
+
+d tensor([[0., 1., 2.],
+        [3., 4., 5.],
+        [6., 7., 8.]], device='cuda:0')
+d tensor([[ 9., 10., 11.],
+        [12., 13., 14.],
+        [15., 16., 17.]], device='cuda:0')
+d tensor([[18., 19., 20.],
+        [21., 22., 23.],
+        [24., 25., 26.]], device='cuda:0')
+d tensor([[27., 28., 29.]], device='cuda:0')
+'''
+```
+
 ## batch_size
 
 小的 batch_size 可能会导致收敛速度减慢和精度降低.
