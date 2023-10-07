@@ -96,6 +96,10 @@ runs
 
 ### 2.2. 有参的
 
+```python
+writer = SummaryWriter(logdir)
+```
+
 是创建在指定文件夹下, 只显示一个最新的记录.
 ```bash
 logs
@@ -178,7 +182,24 @@ for i in range(100):
                        i)
 writer.close()
 ```
-![图 1](../images/cc2f602a18cbdec5c172a7330c4f4856efa1d6f86ae02d869fb73eb2ac1f9153.png)  
+
+![图 1](../images/cc2f602a18cbdec5c172a7330c4f4856efa1d6f86ae02d869fb73eb2ac1f9153.png) 
+
+```python
+log_values = {
+    'loss': loss.item(),
+    'loss_coarse': loss_coarse.item(),
+    'loss_fine': loss_fine.item(),
+    'psnr_coarse': psnr_coarse.item(),
+    'psnr_fine': psnr_fine.item(),
+}
+writer.add_scalars('train', log_values, global_step)
+```
+![Alt text](../images/image-25.png)
+
+![Alt text](../images/image-24.png)
+
+每个可以单独开关。
 
 ### 3.2. images
 

@@ -162,8 +162,10 @@ for batch in train_loader:
 
     </details>
 ### 1.3. optimizer报错
-- `loss.backward()`: 计算model参数的grad
-- `optimizer.step()`: optimizer更新自己的state, 还根据model参数的grad更新其data
+- `loss.backward()`: 计算model参数的grad. 
+    
+    梯度可累加，gradient_accumulation_steps
+- `optimizer.step()`: optimizer更新自己的state, 还根据model参数的grad更新model参数的data
 - `optimizer.zero_grad()`：model参数的grad置None
 - `model.load_state_dict()`: 只恢复model的data，而model参数的grad还是None
     
@@ -178,6 +180,7 @@ for batch in train_loader:
 
 <details>
 <summary> 调整参数顺序，Model和Model2，optimizer训练时报错 </summary>
+
 ```python
 from ast import mod
 import torch

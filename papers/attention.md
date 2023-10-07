@@ -1,8 +1,8 @@
 - [1. intro](#1-intro)
+  - [1.1. 直观理解](#11-直观理解)
+  - [1.2. 矩阵乘法](#12-矩阵乘法)
 - [2. self-attention](#2-self-attention)
-  - [2.1. 矩阵乘法](#21-矩阵乘法)
-  - [2.2. 向量运算的方式](#22-向量运算的方式)
-  - [2.3. code](#23-code)
+  - [2.1. code](#21-code)
 - [3. multihead-attention](#3-multihead-attention)
   - [3.1. code](#31-code)
 - [4. LinearAttention](#4-linearattention)
@@ -10,93 +10,6 @@
 
 ---
 
-## 1. intro
-
-向量到向量：考虑整个sequence的向量，得到一个向量。
-
-![图 13](../images/2afdf6a0f53c75a985e4a23d250de2935c33c6247a6617122746998fcd4523b1.png)  
-
-
-注意力函数可以描述为将一个查询 query 和一组键值对 key-value pairs 映射到一个输出 output，其中 query, keys, values, and output 都是向量。
-
-输出计算为值的加权和，其中分配给每个值的权重是通过查询与对应关键字的 兼容性函数compatibility function 来计算的。
-
-
-
-![图 1](../images/0b8fc09d4d8cd419f06330026c7b0c3e64eee2c751f8d81ccb65f41e30957baa.png)  
-
-
-## 2. self-attention
-### 2.1. 矩阵乘法
-
-$$\mathrm{Attention}(Q,K,V)=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{d_k}} \right)V$$
-
-QKV本质：矩阵乘法(ab)(bc)(cd)
-
-- a是Q的个数，b是Q和K的维度，c是K和V的个数，d是V的个数
-- 两种方式
-  - $(QK^\top)V$: 转置K，那么Q(ab),K(cb),V(cd)
-  - $(Q^\top K)V$: 转置Q，那么Q(ba),K(bc),V(cd)
-
-在self-attention中，a等于c。
-
-softmax是对最后一个维度，即c. 因为是对c个v进行加权求和。
-
-### 2.2. 向量运算的方式
-
-![Alt text](../images/image-20.png)
-
-![Alt text](../images/image-18.png)
-![Alt text](../images/image-19.png)
-
-![Alt text](../images/image-16.png)
-![Alt text](../images/image-17.png)
-
-![图 3](../images/5b5e965981e60e4e428f916d7e5f977ffbb6c0e3cd72841fc5d377a23b0070f5.png)  
-
-
-
-### 2.3. code
-
-```python
-from torch import nn
-import torch
-
-
-class Self_Attention(nn.Module):
-    def __init__(self, input_dim, dk, dv):
-        super().__init__()
-        self.q = nn.Linear(input_dim, dk)
-        self.k = nn.Linear(input_dim, dk)
-        self.v = nn.Linear(input_dim, dv)
-        self.scale = dk ** 0.5
-
-    def forward(self, x):
-        # x: [b, nq, input_dim]
-        Q = self.q(x)  # [b, nq, dk]
-        K = self.k(x)  # [b, nk, dk]
-        V = self.v(x)  # [b, nv, dv]
-
-        # [b, nq, nk]
-        attn = (Q @ K.transpose(-2, -1)) / self.scale
-        attn = attn.softmax(dim=-1)
-
-        # [b, nq, dv]
-        output = attn @ V
-        return output
-    
-X = torch.randn(4,3,2)  # b,nq,input_dim
-model = Self_Attention(input_dim=2, dk=5, dv=5)
-model(X).shape
-# torch.Size([4, 3, 5])
-```
-
-
-
-
-
-- scaled dot-product attention
-  《Attention Is All You Need》中的attention。
 
 
 - 根据Attention的计算区域，可以分成以下几种：
@@ -111,6 +24,104 @@ model(X).shape
 - cross-attention: High-resolution image synthesis with latent diffusion models.
 
 
+## 1. intro
+
+### 1.1. 直观理解
+
+向量到向量：**考虑整个sequence的向量，得到一个向量**。
+
+![图 13](../images/2afdf6a0f53c75a985e4a23d250de2935c33c6247a6617122746998fcd4523b1.png)  
+
+
+注意力函数可以描述为将一个查询 query 和一组键值对 key-value pairs 映射到一个输出 output，其中 query, keys, values, and output 都是向量。
+
+输出计算为**值 V 的加权和**，其中分配给每个值的权重是通过查询与对应关键字的 兼容性函数compatibility function 来计算的。
+
+
+![图 1](../images/0b8fc09d4d8cd419f06330026c7b0c3e64eee2c751f8d81ccb65f41e30957baa.png)  
+
+
+### 1.2. 矩阵乘法
+
+QKV本质：矩阵乘法(ab)(bc)(cd)
+
+- a是Q的个数，b是Q和K的维度，c是K和V的个数，d是V的个数
+- 两种方式
+  - $(QK^\top)V$: 转置K，那么Q(ab),K(cb),V(cd)
+  - $(Q^\top K)V$: 转置Q，那么Q(ba),K(bc),V(cd)
+
+在self-attention中，a等于c。
+
+
+
+## 2. self-attention
+
+《Attention Is All You Need》中的attention。即 dot-product attention / softmax attention
+
+![Alt text](../images/image-20.png)
+
+Given an input sequence $X:=[\boldsymbol{x}_1,\cdots,\boldsymbol{x}_N]^\top\in\mathbb{R}^{N\times D_x}$, 
+
+project X into three different subspaces Q,K,V: $\mathbf{Q}=X\mathbf{W}_Q^\top;\mathbf{K}=\mathbf{X}\mathbf{W}_K^\top;\mathbf{V}=\mathbf{X}\mathbf{W}_V^\top$ . 其中$\mathbf{W}_Q,\mathbf{W}_K\in\mathbb{R}^{D\times D_x}, \mathbf{W}_V\in\mathbb{R}^{D_v\times D_x}$ , $D$ 是Q和K的维度 $D = D_q = D_k$ 。
+
+$\mathbf{Q} :=[{q_1},\cdots,{q_N}]^\top, q_i \in \R^{D};\mathbf{K}:=[k_1,\cdots,k_N]^\top,k_i \in \R^{D}; \mathbf{V}:=[v_1,\cdots,v_N]^\top, v_i \in \R^{D_v}$
+
+![Alt text](../images/image-18.png)
+![Alt text](../images/image-19.png)
+
+![Alt text](../images/image-16.png)
+![Alt text](../images/image-17.png)
+
+![图 3](../images/5b5e965981e60e4e428f916d7e5f977ffbb6c0e3cd72841fc5d377a23b0070f5.png)  
+
+$$H=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{D}} \right)V=AV$$
+
+$$h_i=\sum_{j=1}^N\text{softmax}{ \left ( q _ i ^ \top k _ j / \sqrt D \right ) }\mathbf{v}_j:=\sum_{j=1}^Na_{ij}\mathbf{v}_j.$$
+
+The output sequence $\mathbf{H}:=[h_1,\cdots,h_N]^\top $. 
+
+The matrix $\mathrm{A}\in\mathbb{R}^{N\times N}$ and its component $a_{\boldsymbol{i}j}\text{ for }i,j=1,\cdots,N$ are the attention matrix and attention scores, respectively.
+
+softmax function is applied to each row of the matrix $\left(\dfrac{QK^T}{\sqrt{D}} \right)$, 即矩阵的最后一个维度, 对N个$v_{i}$进行加权求和.
+
+
+
+### 2.1. code
+
+```python
+from torch import nn
+import torch
+
+
+class Self_Attention(nn.Module):
+    def __init__(self, Dx, D, Dv):
+        super().__init__()
+        self.q = nn.Linear(Dx, D)
+        self.k = nn.Linear(Dx, D)
+        self.v = nn.Linear(Dx, Dv)
+        self.scale = D ** 0.5
+
+    def forward(self, x):
+        # x: [b, N, Dx]
+        Q = self.q(x)  # [b, N, D]
+        K = self.k(x)  # [b, N, D]
+        V = self.v(x)  # [b, N, Dv]
+
+        # [b, N, N]
+        attn = (Q @ K.transpose(-2, -1)) / self.scale
+        attn = attn.softmax(dim=-1)
+
+        # [b, N, Dv]
+        output = attn @ V
+        return output
+    
+X = torch.randn(4,3,2)  # b,N,Dx
+model = Self_Attention(Dx=2, D=5, Dv=5)
+model(X).shape
+# torch.Size([4, 3, 5])
+```
+
+
 ## 3. multihead-attention
 
 - 将通道拆分映射，64到8个8.
@@ -121,6 +132,8 @@ model(X).shape
 
 
 ![Alt text](../images/image-21.png)
+
+the projection matrix for the concated output: $\mathbf{MultiHead}(\{\mathbf{H}\}_{h=1}^H)=\mathbf{Concat}(\mathbf{H}^{(1)},\ldots,\mathbf{H}^{(H)})\mathbf{W}_O^{\top}$
 
 ### 3.1. code
 

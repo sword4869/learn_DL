@@ -107,8 +107,6 @@ a2 = torch.tensor(12.1).long()
 # 转化 numpy ，浮点数默认 torch.int32
 a3 = torch.tensor(np.array([12]))
 ```
-
-[`torch.tensor()`注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
 ```python
 >>> torch.tensor([1.,2.,3.]).dtype                  # 默认浮点数是 torch.float32
 torch.float32
@@ -116,6 +114,20 @@ torch.float32
 torch.int64
 >>> torch.tensor([1,2,3], dtype=torch.int).dtype    # torch.int 是 torch.int32
 torch.int32
+```
+
+[`torch.tensor()`注意不要写成 torch.Tensor()](https://blog.csdn.net/weixin_42018112/article/details/91383574)
+```python
+### 参数类型的不同
+# 随机数字
+>>> torch.Tensor(2)
+tensor([-1.4648e+01,  6.2454e-39])
+>>> torch.Tensor([2])
+tensor([2.])
+>>> torch.Tensor(2,3)
+tensor([[1.8217e-35, 0.0000e+00, 1.9274e-38],
+        [0.0000e+00, 0.0000e+00, 0.0000e+00]])
+
 
 # 整型
 >>> torch.LongTensor([1,2,3])
@@ -127,6 +139,22 @@ tensor([1., 2., 3.])    # torch.float32
 >>> torch.Tensor([1,2,3])
 tensor([1., 2., 3.])    # torch.float32
 >>> type(torch.Tensor([1,2,3])) == type(torch.FloatTensor([1,2,3]))
+True
+
+# TypeError: new(): data must be a sequence (got float)
+>>> x = 2.1
+>>> torch.Tensor(x) # 报错
+>>> torch.Tensor([x])
+```
+torch.Tensor是类型
+```python
+>>> isinstance(1, torch.Tensor)
+False
+>>> isinstance(torch.tensor(1), torch.Tensor)
+True
+>>> isinstance(torch.LongTensor(1), torch.Tensor)
+True
+>>> isinstance(torch.LongTensor([1]), torch.Tensor)
 True
 ```
 
