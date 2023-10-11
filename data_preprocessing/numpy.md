@@ -9,11 +9,16 @@
     - [2.3.1. torch.Tensor.repeat](#231-torchtensorrepeat)
   - [2.4. np.squeeze](#24-npsqueeze)
   - [2.5. 应用维度](#25-应用维度)
+  - [2.6. einops](#26-einops)
+    - [2.6.1. einops](#261-einops)
+    - [2.6.2. torch.einsum](#262-torcheinsum)
 - [3. np.concatenate](#3-npconcatenate)
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
+  - [5.1. torch.linspace](#51-torchlinspace)
 - [6. meshgrid](#6-meshgrid)
-  - [torch.meshgrid](#torchmeshgrid)
+  - [6.1. torch.meshgrid](#61-torchmeshgrid)
+- [7. np.take / ndarray.take](#7-nptake--ndarraytake)
 
 
 ## 1. np.random.choice()
@@ -309,6 +314,120 @@ array([[ 6, 22, 38],
        [54, 70, 86]])
 ```
 
+### 2.6. einops
+
+#### 2.6.1. einops
+
+numpy.ndarray, tensorflow, pytorch, 或者 list.
+
+```python
+from einops import repeat, reduce, rearrange
+repeat(timesteps, 'b -> b d', d=dim)
+```
+```python
+# list of 32 images in "h w c" format
+>>> images = [torch.randn(30, 40, 3) for _ in range(32)]
+
+# 即 torch.stack(images), output is a single array
+>>> rearrange(images, 'b h w c -> b h w c').shape
+(32, 30, 40, 3)
+
+# stack 且 reordered axes to "b c h w"
+>>> rearrange(images, 'b h w c -> b c h w').shape
+(32, 3, 30, 40)
+
+# concatenate images along height (vertical axis), 960 = 32 * 30
+>>> rearrange(images, 'b h w c -> (b h) w c').shape
+(960, 40, 3)
+
+# concatenated images along horizontal axis, 1280 = 32 * 40
+>>> rearrange(images, 'b h w c -> h (b w) c').shape
+(30, 1280, 3)
+
+# flattened each image into a vector, 3600 = 30 * 40 * 3
+>>> rearrange(images, 'b h w c -> b (c h w)').shape
+(32, 3600)
+
+# split each image into 4 smaller (top-left, top-right, bottom-left, bottom-right), 128 = 32 * 2 * 2
+>>> rearrange(images, 'b (h1 h) (w1 w) c -> (b h1 w1) h w c', h1=2, w1=2).shape
+(128, 15, 20, 3)
+
+# space-to-depth operation
+>>> rearrange(images, 'b (h h1) (w w1) c -> b h w (c h1 w1)', h1=2, w1=2).shape
+(32, 15, 20, 12)
+```
+
+
+#### 2.6.2. torch.einsum
+
+> 矩阵的乘积
+
+两个矩阵, $A \in \mathbb{R}^{I \times K}$, $B \in \mathbb{R}^{K \times J}$ ，两个矩阵的乘积 $C \in \mathbb{R}^{I \times J}$
+
+用爱因斯坦求和约定可以如下表示：
+
+$$ C_{ij} = (AB)_{ij}= \sum_{k=1}^{K}A_{ik} B_{kj} $$
+
+```python
+>>> a = torch.arange(4).reshape(2,2)
+>>> b = torch.arange(4,8).reshape(2,2)
+>>> a
+tensor([[0, 1],
+        [2, 3]])
+>>> b
+tensor([[4, 5],
+        [6, 7]])
+>>> torch.einsum('ij,jk->ik', a, b)
+tensor([[ 6,  7],
+        [26, 31]])
+>>> a @ b
+tensor([[ 6,  7],
+        [26, 31]])
+```
+
+$A B^\top$
+
+```python
+>>> torch.einsum('ik,jk->ij', a, b)
+tensor([[ 5,  7],
+        [23, 33]])
+>>> a @ b.t()
+tensor([[ 5,  7],
+        [23, 33]])
+```
+
+$A^\top B$
+```python
+>>> torch.einsum('ki,kj->ij', a, b)
+tensor([[12, 14],
+        [22, 26]])
+>>> a.t() @ b
+tensor([[12, 14],
+        [22, 26]])
+```
+> 求和
+
+```python
+>>> torch.einsum('ij->', a)
+tensor(6)
+
+# 行求和
+>>> torch.einsum('ij->i', a)
+tensor([1, 5])
+
+# 列求和
+>>> torch.einsum('ij->j', a)
+tensor([2, 4])
+```
+
+> 转置
+
+```python
+>>> torch.einsum('ij->ji', a)
+tensor([[0, 2],
+        [1, 3]])
+```
+
 ## 3. np.concatenate
 
 The arrays must have the same shape, except in the dimension corresponding to axis (the first, by default).
@@ -409,15 +528,32 @@ array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])
 >>> np.linspace(1, 10, 10, endpoint=False)
 array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 ```
-间隔是 ( stop - start ) / (num - 1).
 
+
+- 前者：
+       
+    $(\text{start}, \text{start} + \dfrac{\text{end} - \text{start}}{\text{steps} - 1}, \ldots, \text{start} + (\text{steps} - 2) * \dfrac{\text{end} - \text{start}}{\text{steps} - 1}, \text{end})$
+- 后者：
+    
+    $(\text{start}, \text{start} + \dfrac{\text{end} - \text{start}}{\text{steps}}, \ldots, \text{start} + (\text{steps} - 2) * \dfrac{\text{end} - \text{start}}{\text{steps}}, \text{start} + (\text{steps} - 1) * \dfrac{\text{end} - \text{start}}{\text{steps}})$
+
+例子：
 - `array([ 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
+
 `np.linspace(1, 10, 10)`
 
 - `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 10.])`
+
 `np.linspace(0, 10, 10 + 1)`
 - `array([ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.])`
-`np.linspace(0, 10, 10 + 1)[:-1]` or `np.linspace(0, 10, 10, endpoint=False)`
+
+`np.linspace(0, 9, 10)` or `np.linspace(0, 10, 10 + 1)[:-1]` or `np.linspace(0, 10, 10, endpoint=False)`
+
+### 5.1. torch.linspace
+
+`torch.linspace(start, end, steps, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)`
+
+只有包含 start 和 stop, [start, stop] 的模式了。
 
 ## 6. meshgrid
 
@@ -433,7 +569,11 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 3. meshgrid函数的输出：K个K维矩阵, 分别表示第一维度、第二维度……第K维度。
 
 
-> `indexing='xy'`: Cartesian indexing. M个横坐标，N个纵坐标。返回成数组自然是N行M列
+> `indexing='xy'`: 
+> - Cartesian indexing. 
+> - M个横坐标，N个纵坐标。返回成数组自然是M列N行
+> - 逐行
+
 - In the 2-D case ：inputs length (M, N), outputs shape (N, M) 
 - In the N-D case : inputs length (M, N, P3, P4, ..., PK), outputs shape (N, M, P3, P4, ..., PK)
 
@@ -442,31 +582,154 @@ import numpy as np
 
 # 横坐标3个，纵坐标2个
 nx, ny = (3, 2)
-x = np.linspace(0, 1, nx)
-y = np.linspace(0, 1, ny)
+x = np.linspace(0, 1, nx)   # 3个
+y = np.linspace(0, 1, ny)   # 2个
 
 # input length (3, 2)， 横坐标3个，纵坐标2个
 # output shape (2, 3)， 2行3列
 xv, yv = np.meshgrid(x, y)
-# xv：坐标矩阵的横坐标, 自然每行都相同
-# array([[0. , 0.5, 1. ],
-#        [0. , 0.5, 1. ]])
-# yv：坐标矩阵的纵坐标： 自然每列都相同
-# array([[0.,  0.,  0.],
-#        [1.,  1.,  1.]])
-'''
 
-import matplotlib.pyplot as plt
-plt.plot(xv, yv, marker='o', color='k', linestyle='none')
-plt.show()
+# 逐行，自然横坐标xv, 行内递增，每行都相同；纵坐标yv，每行都是同一个纵坐标，每行递增
+>>> xv
+array([[0. , 0.5, 1. ],
+        [0. , 0.5, 1. ]])
+>>> yv 
+array([[0.,  0.,  0.],
+       [1.,  1.,  1.]])
+
 ```
 ![图 1](../images/073851869c3c51c1573feb5ffb0eaf6291ce47e200b5f0f40f7962839233a39e.png)  
 
-> `indexing='ij'`: matrix indexing. M行N列的矩阵
-- In the 2-D case ：inputs length (M, N), outputs shape (M, N) 
+```python
+############# indexing='xy': x个横坐标，y个纵坐标；x列y行
+>>> nx, ny = 3, 2
+>>> np.meshgrid(np.linspace(0, 1, nx), np.linspace(0, 1, ny), indexing='xy')
+[array([[0. , 0.5, 1. ],
+       [0. , 0.5, 1. ]]), array([[0., 0., 0.],
+       [1., 1., 1.]])]
+>>> coords = np.stack(np.meshgrid(np.linspace(0, 1, nx), np.linspace(0, 1, ny), indexing='xy'), -1)
+# 将x坐标和y坐标拼接起来: [2, 3, 2], [y个纵坐标, x个横坐标, xy坐标]
+>>> coords
+array([[[0. , 0. ],
+        [0.5, 0. ],
+        [1. , 0. ]],
+
+       [[0. , 1. ],
+        [0.5, 1. ],
+        [1. , 1. ]]])
+# 将坐标串联起来: 逐行，x从小到大，y再从小到大
+>>> coords.reshape([-1, coords.shape[-1]])
+array([[0. , 0. ],
+       [0.5, 0. ],
+       [1. , 0. ],
+       [0. , 1. ],
+       [0.5, 1. ],
+       [1. , 1. ]])
+```
+
+> `indexing='ij'`: 
+> - matrix indexing. 
+> - M行N列的矩阵
+> - 逐列
+
 - In the N-D case : inputs length (M, N, P3, P4, ..., PK), outputs shape (M, N, P3, P4, ..., PK)
 
+```python
+import numpy as np
 
+x = np.linspace(0, 1, 4)
+y = np.linspace(0, 1, 3)
+z = np.linspace(0, 1, 2)
+
+xv, yv, zv = np.meshgrid(x, y, z, indexing='ij')
+print(xv.shape)
+print(yv.shape)
+print(zv.shape)
+# (4, 3, 2)
+# (4, 3, 2)
+# (4, 3, 2)
+
+
+############## xv只在dim=0即x轴变，yv只在dim=1即y轴变, ...; 其他轴都是同一个数
+>>> xv
+array([[[0.        , 0.        ],
+        [0.        , 0.        ],
+        [0.        , 0.        ]],
+
+       [[0.33333333, 0.33333333],
+        [0.33333333, 0.33333333],
+        [0.33333333, 0.33333333]],
+
+       [[0.66666667, 0.66666667],
+        [0.66666667, 0.66666667],
+        [0.66666667, 0.66666667]],
+
+       [[1.        , 1.        ],
+        [1.        , 1.        ],
+        [1.        , 1.        ]]])
+>>> yv
+array([[[0. , 0. ],
+        [0.5, 0.5],
+        [1. , 1. ]],
+
+       [[0. , 0. ],
+        [0.5, 0.5],
+        [1. , 1. ]],
+
+       [[0. , 0. ],
+        [0.5, 0.5],
+        [1. , 1. ]],
+
+       [[0. , 0. ],
+        [0.5, 0.5],
+        [1. , 1. ]]])
+>>> zv
+array([[[0., 1.],
+        [0., 1.],
+        [0., 1.]],
+
+       [[0., 1.],
+        [0., 1.],
+        [0., 1.]],
+
+       [[0., 1.],
+        [0., 1.],
+        [0., 1.]],
+
+       [[0., 1.],
+        [0., 1.],
+        [0., 1.]]])
+>>> xv[0, :, :], xv[1, :, :]
+(array([[0., 0.],
+       [0., 0.],
+       [0., 0.]]), array([[0.33333333, 0.33333333],
+       [0.33333333, 0.33333333],
+       [0.33333333, 0.33333333]]))
+>>> yv[:, 0, :], yv[:, 1, :]
+(array([[0., 0.],
+       [0., 0.],
+       [0., 0.],
+       [0., 0.]]), array([[0.5, 0.5],
+       [0.5, 0.5],
+       [0.5, 0.5],
+       [0.5, 0.5]]))
+>>> zv[:,:,0], zv[:,:,1]
+(array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]))
+
+######## 所以，等同于对一维数组扩展维度
+>>> from einops import repeat
+>>> xv2 = repeat(np.linspace(0, 1, 4), 'x -> x 3 2')
+>>> yv2 = repeat(np.linspace(0, 1, 3), 'y -> 4 y 2')
+>>> zv2 = repeat(np.linspace(0, 1, 2), 'z -> 4 3 z')
+```
+
+- In the 2-D case ：inputs length (M, N), outputs shape (M, N) 
 ```python
 import numpy as np
 
@@ -478,15 +741,52 @@ y = np.linspace(0, 1, ny)
 # input length (3, 2)， 矩阵是3行2列
 # output shape (3, 2)， 矩阵是3行2列
 xv, yv = np.meshgrid(x, y, indexing='ij')
-# xv：矩阵， 每列都相同
-# [[0.  0. ]
-#  [0.5 0.5]
-#  [1.  1. ]]
-# yv：矩阵， 每行都相同
-# [[0. 1.]
-#  [0. 1.]
-#  [0. 1.]]
+
+# 逐列：自然横坐标xv每行都是同一个数，纵坐标yv每行都相同。
+# 逐列：自然横坐标xv, 每行都是同一个横坐标，每行递增；纵坐标yv，行内递增，每行都相同
+>>> xv
+[[0.  0. ]
+ [0.5 0.5]
+ [1.  1. ]]
+>>> yv
+[[0. 1.]
+ [0. 1.]
+ [0. 1.]]
 ```
+![Alt text](../images/image-26.png)
+```python
+############# indexing='ij': i行j列
+>>> nx, ny = 3, 2
+>>> np.meshgrid(np.linspace(0, 1, nx), np.linspace(0, 1, ny), indexing='ij')
+[array([[0. , 0. ],
+       [0.5, 0.5],
+       [1. , 1. ]]), array([[0., 1.],
+       [0., 1.],
+       [0., 1.]])]
+>>> coords = np.stack(np.meshgrid(np.linspace(0, 1, nx), np.linspace(0, 1, ny), indexing='ij'), -1)
+# [3, 2, 2], [j个横坐标, i个纵坐标, xy坐标]
+>>> coords
+array([[[0. , 0. ],
+        [0. , 1. ]],
+
+       [[0.5, 0. ],
+        [0.5, 1. ]],
+
+       [[1. , 0. ],
+        [1. , 1. ]]])
+# 将坐标串联起来: 逐列，y从小到大，x再从小到大
+>>> coords.reshape([-1, coords.shape[-1]])
+array([[0. , 0. ],
+       [0. , 1. ],
+       [0.5, 0. ],
+       [0.5, 1. ],
+       [1. , 0. ],
+       [1. , 1. ]])
+```
+
+
+
+> 例子
 
 例子1： for
 ```python
@@ -529,37 +829,8 @@ plt.show()
 ```
 ![图 1](../images/f2379011d0512af6b34b11062fd7ef5655d00e009c9776fff346b7bd2a73d227.png)  
 
-例子3： 
 
-```python
-nx, ny = 3, 2
-coords = np.stack(
-    np.meshgrid(
-        np.linspace(0, 1, nx), 
-        np.linspace(0, 1, ny),
-    ), -1)
-
-print(coords)
-# [[[0.  0. ]
-#   [0.5 0. ]
-#   [1.  0. ]]
-
-#  [[0.  1. ]
-#   [0.5 1. ]
-#   [1.  1. ]]]
-
-
-coords = coords.reshape([-1, coords.shape[-1]])
-# 逐行，x从小到大，y再从小到大。
-print(coords)
-# [[0.  0. ]
-#  [0.5 0. ]
-#  [1.  0. ]
-#  [0.  1. ]
-#  [0.5 1. ]
-#  [1.  1. ]]
-```
-### torch.meshgrid
+### 6.1. torch.meshgrid
 
 `torch.meshgrid(*tensors, indexing='ij')`
 
@@ -567,3 +838,50 @@ print(coords)
 
 <https://blog.csdn.net/weixin_39504171/article/details/106356977>
 <https://pytorch.org/docs/stable/generated/torch.meshgrid.html>
+
+## 7. np.take / ndarray.take
+
+`numpy.take(a, indices, axis=None, out=None, mode='raise')[source]
+`
+- `axis`
+   
+   The axis over which to select values. By default, **the flattened input** array is used.
+
+`np.take(arr, indices, axis=3)` is equivalent to `arr[:,:,:,indices,...]`.
+
+```python
+>>> a = [4, 3, 5, 7, 6, 8]
+>>> np.take(a, [0, 1, 4])
+array([4, 3, 6])
+>>> np.array(a)[[0, 1, 4]]         # 等价
+array([4, 3, 6])
+>>> np.take(a, [[0, 1], [2, 3]])
+array([[4, 3],
+       [5, 7]])
+>>> np.array(a)[[[0, 1], [2, 3]]]  # 等价
+array([[4, 3],
+       [5, 7]])
+```
+```python
+>>> b = [[ 3,  4,  5], [ 6,  7,  8], [ 9, 10, 11]]
+>>> np.take(b, [2, 1, 0, 4])     # flatten
+array([[5, 4, 3, 7]])
+
+>>> np.take(b, [2, 1, 0], axis=0)  # 整行
+array([[ 9, 10, 11],
+       [ 6,  7,  8],
+       [ 3,  4,  5]])
+>> np.array(b)[[2,1,0], :]         # 等价
+array([[ 9, 10, 11],
+       [ 6,  7,  8],
+       [ 3,  4,  5]])
+
+>>> np.take(b, [2, 1, 0], axis=1)  # 整列
+array([[ 5,  4,  3],
+       [ 8,  7,  6],
+       [11, 10,  9]])
+>> np.array(b)[:, [2,1,0]]         # 等价
+array([[ 5,  4,  3],
+       [ 8,  7,  6],
+       [11, 10,  9]])
+```

@@ -7,7 +7,8 @@
   - [1.4. 逻辑运算符](#14-逻辑运算符)
   - [1.5. 转换为其他Python对象](#15-转换为其他python对象)
   - [1.6. 拷贝](#16-拷贝)
-    - [1.6.2. 拷贝](#162-拷贝)
+    - [1.6.1. 拷贝](#161-拷贝)
+  - [1.7. torch.gather / torch.Tensor.gather](#17-torchgather--torchtensorgather)
 
 # 1. tensor_manipulation
 
@@ -563,7 +564,7 @@ a.item(), float(a), int(a)
 
 ## 1.6. 拷贝
 
-### 1.6.2. 拷贝
+### 1.6.1. 拷贝
 
 深拷贝
 ```python
@@ -577,3 +578,63 @@ Y = X
 Y[1:2] = 2
 ```
 
+## 1.7. torch.gather / torch.Tensor.gather
+
+> `torch.gather(input, dim, index, *, sparse_grad=False, out=None) → Tensor`
+
+将dim维度的索引改成index, i和j根据是index的shape来
+
+```python
+for i in out.shape[0]:
+    for j in out.shape[1]:
+        out[i][j] = input[index[i][j]][j]  # if dim == 0
+        out[i][j] = input[i][index[i][j]]  # if dim == 1
+
+out[i][j][k] = input[index[i][j][k]][j][k]  # if dim == 0
+out[i][j][k] = input[i][index[i][j][k]][k]  # if dim == 1
+out[i][j][k] = input[i][j][index[i][j][k]]  # if dim == 2
+```
+
+(1) `output.shape = index.shape` 确定最后输出的output的shape必须与index的相同
+
+(2) 对output所有值的索引，按shape方式排出来，也就是`[[(0,0),(0,1),(0,2)]]`
+
+(3) 还是对output，拿index里的值替换上面dim指定位置，dim=0替换行，dim=1即替换列。这里dim=1, 变成`[[(0,2),(0,1),(0,0)]]`
+
+(4) 按这个索引获取tensor_0相应位置的值，填进去就好了，得到torch.tensor([[5,4,3]])
+
+https://zhuanlan.zhihu.com/p/352877584
+
+![Alt text](../images/image-3-1.png)
+
+```python
+>>> tensor_0 = torch.tensor([4, 3, 5, 7, 6, 8])
+>>> tensor_0.gather(dim=0, index=torch.tensor([0, 1, 4]))
+tensor([4, 3, 6])
+```
+
+```python
+>>> tensor_0 = torch.tensor([[ 3,  4,  5], [ 6,  7,  8], [ 9, 10, 11]])
+>>> tensor_0.gather(dim=0, index=torch.tensor([[2, 1, 0]]))
+tensor([[9, 7, 5]])
+>>> tensor_0.gather(dim=1, index=torch.tensor([[2, 1, 0]]))
+tensor([[5, 4, 3]])
+>>> tensor_0.gather(dim=0, index=torch.tensor([[2], [1], [0]]))
+tensor([[9],
+        [6],
+        [3]])
+>>> tensor_0.gather(dim=1, index=torch.tensor([[2], [1], [0]]))
+tensor([[5],
+        [7],
+        [9]])
+>>> torch.gather(tensor_0, 0, torch.tensor([[0, 0], [1, 0]]))
+tensor([[3, 4],
+        [6, 4]])
+>>> torch.gather(tensor_0, 1, torch.tensor([[0, 0], [1, 0]]))
+tensor([[3, 3],
+        [7, 6]])
+>>> tensor_0.gather(dim=0, index=torch.tensor([[2, 1], [1, 1], [0, 1]]))
+tensor([[9, 7],
+        [6, 7],
+        [3, 7]])
+```
