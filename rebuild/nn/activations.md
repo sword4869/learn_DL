@@ -1,6 +1,10 @@
 Sigmoid: [0, 1]
+
 Tanh: [-1, 1]
+
 ReLU: $[0, \infty]$
+
+softplus: $\mathbf{f}(x) = \log(1 + e^ \mathbf{x})$
 
 ReLU相比sigmoid的指数运算很贵，而不需要指数运算的ReLU很快。
 
