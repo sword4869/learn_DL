@@ -62,9 +62,11 @@ QKV本质：矩阵乘法(ab)(bc)(cd)
 
 Given an input sequence $X:=[\boldsymbol{x}_1,\cdots,\boldsymbol{x}_N]^\top\in\mathbb{R}^{N\times D_x}$, 
 
-project X into three different subspaces Q,K,V: $\mathbf{Q}=X\mathbf{W}_Q^\top;\mathbf{K}=\mathbf{X}\mathbf{W}_K^\top;\mathbf{V}=\mathbf{X}\mathbf{W}_V^\top$ . 其中$\mathbf{W}_Q,\mathbf{W}_K\in\mathbb{R}^{D\times D_x}, \mathbf{W}_V\in\mathbb{R}^{D_v\times D_x}$ , $D$ 是Q和K的维度 $D = D_q = D_k$ 。
+project X into three different subspaces Q,K,V: $\mathbf{Q}=X\mathbf{W}_Q^\top;\mathbf{K}=\mathbf{X}\mathbf{W}_K^\top;\mathbf{V}=\mathbf{X}\mathbf{W}_V^\top$ . 其中$\mathbf{W}_Q,\mathbf{W}_K\in\mathbb{R}^{D\times D_x}, \mathbf{W}_V\in\mathbb{R}^{D_v\times D_x}$ , Q和K的维度 $D = D_q = D_k$ 。
 
-$\mathbf{Q} :=[{q_1},\cdots,{q_N}]^\top, q_i \in \R^{D};\mathbf{K}:=[k_1,\cdots,k_N]^\top,k_i \in \R^{D}; \mathbf{V}:=[v_1,\cdots,v_N]^\top, v_i \in \R^{D_v}$
+$\mathbf{Q} :=[{q_1},\cdots,{q_N}]^\top \in \R^{N\times D}, q_i \in \R^{D}; \mathbf{K}:=[k_1,\cdots,k_N]^\top \in \R^{N\times D}, k_i \in \R^{D}; \mathbf{V}:=[v_1,\cdots,v_N]^\top \in \R^{N\times D_v}, v_i \in \R^{D_v}$
+
+$\mathbf{x_i^\top}$
 
 ![Alt text](../images/image-18.png)
 ![Alt text](../images/image-19.png)
@@ -74,15 +76,21 @@ $\mathbf{Q} :=[{q_1},\cdots,{q_N}]^\top, q_i \in \R^{D};\mathbf{K}:=[k_1,\cdots,
 
 ![图 3](../images/5b5e965981e60e4e428f916d7e5f977ffbb6c0e3cd72841fc5d377a23b0070f5.png)  
 
-$$H=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{D}} \right)V=AV$$
+- **attention matrix** $\mathrm{A}\in\mathbb{R}^{N\times N}$ 
 
-$$h_i=\sum_{j=1}^N\text{softmax}{ \left ( q _ i ^ \top k _ j / \sqrt D \right ) }\mathbf{v}_j:=\sum_{j=1}^Na_{ij}\mathbf{v}_j.$$
+  $$A=\text{softmax}(\dfrac{QK^\top}{\sqrt D})$$
 
-The output sequence $\mathbf{H}:=[h_1,\cdots,h_N]^\top $. 
+  softmax function is applied to each row of the matrix $\left(\dfrac{QK^T}{\sqrt{D}} \right)$, 即矩阵的最后一个维度, 目的是对N个$v_{i}$进行加权求和.
 
-The matrix $\mathrm{A}\in\mathbb{R}^{N\times N}$ and its component $a_{\boldsymbol{i}j}\text{ for }i,j=1,\cdots,N$ are the attention matrix and attention scores, respectively.
+- and its component **attention scores** $a_{\boldsymbol{i}j}\text{ for }i,j=1,\cdots,N$ 
 
-softmax function is applied to each row of the matrix $\left(\dfrac{QK^T}{\sqrt{D}} \right)$, 即矩阵的最后一个维度, 对N个$v_{i}$进行加权求和.
+  $$a_{ij}=\dfrac{\exp (q_i^\top k_j / \sqrt D)}{\displaystyle \sum_{j=1}^N\exp (q_i^\top k_j / \sqrt D)}$$
+
+- The output sequence $\mathbf{H}:=[h_1,\cdots,h_N]^\top \in \R^{N\times D_v}$. 
+
+  $$H=AV=\mathrm{softmax} \left(\dfrac{QK^T}{\sqrt{D}} \right)V$$
+
+  $$h_i=\sum_{j=1}^Na_{ij}\mathbf{v}_j=\sum_{j=1}^N\text{softmax}{ \left ( q _ i ^ \top k _ j / \sqrt D \right ) }\mathbf{v}_j$$
 
 
 

@@ -1,24 +1,36 @@
+- [1. dot product / scalar product / projection product](#1-dot-product--scalar-product--projection-product)
+- [2. outer product](#2-outer-product)
+- [3. Kronecker product](#3-kronecker-product)
+- [4. 叉乘 Cross product](#4-叉乘-cross-product)
+- [5. exterior product / wedge product](#5-exterior-product--wedge-product)
+- [6. Hadamard product](#6-hadamard-product)
+
+
+---
+
 - **outer product**
 - **dot product** (a special case of "**inner product**"), which takes a pair of coordinate vectors as input and produces a scalar
 - **Kronecker product**, which takes a pair of matrices as input and produces a block matrix
 - **Standard matrix multiplication**
 
-## dot product / scalar product / projection product
+## 1. dot product / scalar product / projection product
 
-$${\displaystyle \left\langle \mathbf {u} ,\mathbf {v} \right\rangle =\mathbf {u} ^{\textsf {T}}\mathbf {v} = \sum_{i=1}^{n}u_iv_i}$$
+$${\displaystyle \left\langle \mathbf {u} ,\mathbf {v} \right\rangle =\mathbf u \cdot \mathbf v = \mathbf {u} ^{\textsf {T}}\mathbf {v} = \sum_{i=1}^{n}u_iv_i} = |\mathbf u| |\mathbf v| \cos \theta$$
 
 The dot product is the trace of the outer product.
 
-**normalized vector**:
-- When two vectors are **perpendicular** to each other (A.B), the result of the dot product between these two vectors is 0. 
+**normalized vector** 的内积意义：如果都是单位向量，那么内积表示两个向量之间的夹角。 
 
-- When the two vectors point in **opposite directions** (A.C), the dot product returns -1. 
-
-- When they point in the **same direction** (A.D), it returns 1. 
-
+$\cos\theta=\dfrac{a\cdot b}{|a||b|}$
+    
 - It is also used intensively to find out the angle between two vectors or compute the angle between a vector and the axis of a coordinate system (which is useful when the coordinates of a vector are converted to spherical coordinates.
+- 单位向量间的内积结果，可以判断角度情况：
+  - When two vectors are **perpendicular** to each other (A.B), the result of the dot product between these two vectors is 0. 
+  - When the two vectors point in **opposite directions** (A.C), the dot product returns -1. 
+  - When they point in the **same direction** (A.D), it returns 1. 
 
-## outer product
+
+## 2. outer product
 The outer product $\mathbf {u} \otimes_{\mathbf {outer}} \mathbf {v}$ is equivalent to a matrix multiplication $\mathbf {u} \mathbf {v} ^{\operatorname {T}}$.
 
 $\mathbf {u}$ is represented as a $m\times 1$ column vector and $\mathbf {v}$ as a $n\times 1$ column vector.
@@ -44,7 +56,7 @@ array([[ 0.,  0.,  0.],
 
 ![Alt text](../images/image-13.png)  
 
-## Kronecker product
+## 3. Kronecker product
 
 If $\displaystyle \mathbf {u} ={\begin{bmatrix}1&2&3\end{bmatrix}}^{\textsf {T}}$ and $\displaystyle \mathbf {v} ={\begin{bmatrix}4&5\end{bmatrix}}^{\textsf {T}}$ , we have:
 
@@ -57,7 +69,7 @@ $$\displaystyle \mathbf {u} \otimes _{\text{Kron}}\mathbf {v} =\operatorname {ve
 
 
 
-## 叉乘 Cross product
+## 4. 叉乘 Cross product
 
 https://en.wikipedia.org/wiki/Cross_product
 
@@ -91,7 +103,7 @@ $\mathbf a \times \mathbf b$ is a vector that is perpendicular to both $\mathbf 
 
 
 
-## exterior product / wedge product
+## 5. exterior product / wedge product
 
 $$\displaystyle {u\wedge v}$$
 
@@ -100,6 +112,6 @@ $$\displaystyle {u\wedge v=-(v\wedge u)}$$
 
 In connection with the cross product, the exterior product of vectors can be used in arbitrary dimensions (with a bivector or 2-form result) and is independent of the orientation of the space.
 
-## Hadamard product
+## 6. Hadamard product
 
 element-wise, 按元素相乘
