@@ -17,7 +17,7 @@ $|a|=\sqrt{\langle a,a\rangle} == \displaystyle {\left\| X \right\|_2 } =\sqrt{\
 
 ## 3. normalize_vec
 
-$v^{\prime}=v/\|v\|$
+$\hat a=a/\|a\|$
 
 ```python
 import numpy as np
@@ -52,9 +52,17 @@ def normalize_double(x):
 
 ## 4. Projection
 
+![Alt text](../images/image-36.png)
+
 ![Alt text](../images/image-34.png) 
 
+将向量分解为互相垂直的向量
 
+![Alt text](../images/image-37.png)
+
+投影到正交坐标系：
+
+![Alt text](../images/image-41.png)
 
 ## 5. 施密特正交化
 > 分步
