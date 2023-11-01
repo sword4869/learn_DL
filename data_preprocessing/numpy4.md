@@ -18,6 +18,7 @@
 - [9. 布尔型索引 ](#9-布尔型索引)
 - [10. 花式索引](#10-花式索引)
 - [11. 数组转置](#11-数组转置)
+  - [torch](#torch)
 - [12. 如何判断两个numpy数组是否相等](#12-如何判断两个numpy数组是否相等)
 
 ```bash
@@ -775,7 +776,7 @@ print(arr[[2,1,0,3]] [:,:3])
 
 转置是重塑的一种特殊形式，它返回的是源数据的视图（不会进行任何复制操作）
 
-转置方法有`.T`、`transpose()`和`swapaxes()`.
+转置方法有`transpose()`、`.T`和`swapaxes()`.
 
 关系：在`transpose()`的基础上分化出`.T`和`swapaxes()`。
 
@@ -884,6 +885,38 @@ print(arr.transpose(0,2,1))
   [11 15]]]
 '''
 ```
+
+### torch
+
+`permute()`、`.T`, `transpose()`
+numpy到torch
+- 核心：`transpose()` → `permute()`
+- `swapaxes()` → `transpose()`
+- `.T`不变
+
+> permute
+```python
+A = torch.arange(12).reshape(3, 4)
+
+A.permute(1, 0)
+
+X = torch.ones(B, H, W, C)
+# X: [B, H, W, C]，变换成Y: [B, C, H, W]
+X.permute(0, 3, 1, 2)
+```
+
+> `.T` 和 `transpose()`
+```python
+A = torch.arange(12).reshape(3, 4)
+
+# 转置
+A.T
+
+# [4, 3]
+A.transpose(0, 1) == A.transpose(1, 0)
+```
+
+
 
 ## 12. 如何判断两个numpy数组是否相等
 

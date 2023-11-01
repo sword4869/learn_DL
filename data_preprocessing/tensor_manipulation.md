@@ -419,31 +419,7 @@ torch.abs()
 如果有4个维度，`dim=-1`, 等同`dim=3`。
 
 
-`.T`, `transpose()`, `permute()`: 基础是`permute()`
 
-torch的`transpose()`相当于numpy的`swapaxes()`, torch的`permute()`相当于numpy的`transpose()`
-
-> `.T` 和 `transpose()`
-```python
-A = torch.arange(12).reshape(3, 4)
-
-# 转置
-A.T
-
-# [4, 3]
-A.transpose(0, 1) == A.transpose(1, 0)
-```
-
-> permute
-```python
-A = torch.arange(12).reshape(3, 4)
-
-A.permute(1, 0)
-
-X = torch.ones(B, H, W, C)
-# X: [B, H, W, C]，变换成Y: [B, C, H, W]
-X.permute(0, 3, 1, 2)
-```
 > 张量的序列变张量 cat stack
 ```python
 X = torch.ones(3,4)

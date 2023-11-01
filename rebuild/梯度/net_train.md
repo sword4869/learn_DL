@@ -285,6 +285,7 @@ print('!'*20)
 train2(0)
 ```
 </details>
+
 ### 1.4. 训练、验证、测试
 
 ![图 5](../../images/796ec7e3493ded28ac0da0a00899df2bd30196b42b7b9a7d4351055ff2656656.png)  

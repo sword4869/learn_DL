@@ -12,7 +12,9 @@
   - [2.6. einops](#26-einops)
     - [2.6.1. einops](#261-einops)
     - [2.6.2. torch.einsum](#262-torcheinsum)
-- [3. np.concatenate](#3-npconcatenate)
+- [3. np.concatenate/stack](#3-npconcatenatestack)
+  - [3.1. concatenate](#31-concatenate)
+  - [3.2. stack](#32-stack)
 - [4. np.tile](#4-nptile)
 - [5. linspace](#5-linspace)
   - [5.1. torch.linspace](#51-torchlinspace)
@@ -428,8 +430,8 @@ tensor([[0, 2],
         [1, 3]])
 ```
 
-## 3. np.concatenate
-
+## 3. np.concatenate/stack
+### 3.1. concatenate
 The arrays must have the same shape, except in the dimension corresponding to axis (the first, by default).
 ```python
 # numpy.concatenate((a1, a2, ...), axis=0, out=None, dtype=None, casting="same_kind")
@@ -453,7 +455,61 @@ np.concatenate((a, b.T), axis=1)
 np.concatenate((a, b), axis=None)
 # array([1, 2, 3, 4, 5, 6])
 ```
+### 3.2. stack
+stack
+```python
+>>> arrays = [np.random.randn(3, 4) for _ in range(10)]
+>>> np.stack(arrays, axis=0).shape
+(10, 3, 4)
 
+>>> np.stack(arrays, axis=1).shape
+(3, 10, 4)
+
+>>> np.stack(arrays, axis=2).shape
+(3, 4, 10)
+
+>>> a = np.array([1, 2, 3])
+>>> b = np.array([4, 5, 6])
+>>> np.stack((a, b))
+array([[1, 2, 3],
+       [4, 5, 6]])
+
+>>> np.stack((a, b), axis=-1)
+array([[1, 4],
+       [2, 5],
+       [3, 6]])
+```
+vstack: stack along the first axis
+```python
+>>> a = np.array([1, 2, 3])
+>>> b = np.array([4, 5, 6])
+>>> np.vstack((a,b))
+array([[1, 2, 3],
+       [4, 5, 6]])
+
+>>> a = np.array([[1], [2], [3]])
+>>> b = np.array([[4], [5], [6]])
+>>> np.vstack((a,b))
+array([[1],
+       [2],
+       [3],
+       [4],
+       [5],
+       [6]])
+```
+hstack: stack along the second axis, except for 1-D arrays where it concatenates along the first axis.
+```python
+>>> a = np.array((1,2,3))
+>>> b = np.array((4,5,6))
+>>> np.hstack((a,b))
+array([1, 2, 3, 4, 5, 6])
+>>> a = np.array([[1],[2],[3]])
+>>> b = np.array([[4],[5],[6]])
+>>> np.hstack((a,b))
+array([[1, 4],
+       [2, 5],
+       [3, 6]])
+```
 ## 4. np.tile
 
 `numpy.tile(A, reps)`:通过重复A代表给出的次数来构建数组，平铺效果。
