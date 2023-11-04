@@ -26,5 +26,3 @@ image = image.transpose(2, 0, 1)
 gt_img = torch.from_numpy(image)
 torchvision.utils.save_image(gt_img, '1.png')
 ```
-
-```python
