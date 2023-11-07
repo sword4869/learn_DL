@@ -1,5 +1,5 @@
-- [1. model transformation](#1-model-transformation)
-- [2. camera/view transformation](#2-cameraview-transformation)
+- [1. model transformation 模型变换](#1-model-transformation-模型变换)
+- [2. camera/view transformation 视角变换](#2-cameraview-transformation-视角变换)
   - [2.1. 右手坐标系 right-handed coordinates](#21-右手坐标系-right-handed-coordinates)
   - [2.2. 各种右手的相机坐标系的转换](#22-各种右手的相机坐标系的转换)
   - [2.3. other](#23-other)
@@ -33,14 +33,42 @@
 - 世界坐标系 world coordinate：是三维世界的绝对坐标系，我们需要用它来描述三维环境中的任何物体的位置，用 $(x_{w}, y_{w},z_{w})$ 表示其坐标值。
 
 
-## 1. model transformation
+## 1. model transformation 模型变换
 
-## 2. camera/view transformation
+如何放置模型坐标到世界坐标中。
 
+![Alt text](../images/image-72.png)
+
+
+SRT: scale, rotation, translation. 而且顺序也是先 scale, 后rotation, 最后translation。
+
+模型的中心一开始就在世界坐标系原点。
+
+操作都是以物体的角度看。不是旋转坐标系，而是旋转人头；不是翻转y轴，而是翻转人头；先旋转后要看正脸还是侧脸后，我们把模型沿着z轴平移（look at)，因为中点在人头内部，看不到uv。
+```python
+def pose_spherical(radius, theta, phi):
+    '''
+    theta: 方位角
+    phi: 极角
+    return: [4, 4]
+    '''
+    pose = np.array([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]], dtype=np.float32)
+    pose = rot_theta(theta/180.*np.pi) @ pose   # y
+    pose = rot_phi(phi/180.*np.pi) @ pose       # x
+    pose = trans_t(radius) @ pose
+    pose = pose @ np.diag([1, -1, 1, 1])        # 这b是倒吊人
+    return pose
+```
+
+## 2. camera/view transformation 视角变换
 
 **将相机坐标系转到与世界坐标系重合：先旋转轴来轴向一致，再将相机平移到世界原点; M=RT， 先平移再旋转**。
 
-将相机和物体一起变换。所以相机坐标系下的物体坐标，变换矩阵乘物体的世界坐标。
+将相机和物体一起变换。所以相机坐标系下的物体坐标，变换矩阵乘物体的世界坐标。(变换点，就是变换整个坐标系)
 
 ![Alt text](../images/image-66.png)
 
@@ -67,23 +95,7 @@ The camera's extrinsic matrix describes the camera's location in the world $\mat
 
 For a **Column-Major** transform matrix, the first 3 columns are the +X, +Y, and +Z defining the camera orientation, and the forth column X, Y, Z values define the camera origin. 具体来说, camera orientation 是当前坐标系的轴在要变换到的另一坐标系的轴的方向, camera origin 是当前坐标系的原点在要变换到的另一坐标系的下的坐标。比如，c2w，则旋转矩阵的每一列分别表示了相机坐标系的XYZ轴方向在世界坐标系下对应的XYZ轴方向，平移向量表示的是相机坐标系的原点在世界坐标系中的位置。
 
-- T
-    
-    $\mathbf{T} \in SE(3)$
-    
-    $SE(n) = \left\{\mathbf{T}=\begin{bmatrix}\mathbf{R} & \mathbf{t}\\ 0^\top & 1\end{bmatrix} \in \R^{4\times 4}|\mathbf{R}\in SO(3),\mathbf{t}\in \R^3\right\}$
 
-- R
-    
-    $\mathbf{R} \in SO(3)$
-    
-    $SO(n) = \{\mathbf{R} \in \R^{n\times n}|\mathbf{R}\mathbf{R}^T=I,\det(\mathbf{R})=1\}$
-    - 旋转矩阵是一个正交矩阵（正交矩阵的逆等于其转置矩阵，则有$\mathbf{R}^{-1} = \mathbf{R}^{\top}$）
-    - 行列式值为1
-
-- t
-
-    $\mathbf{t}\in \R^3$
 
 
 
@@ -465,17 +477,6 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
 在内参矩阵中还有个参数 $s$（通常也可当成0），用来建模像素是平行四边形而不是矩形，与像素坐标系的u，v轴之间的夹角$\theta$的正切值$tan(\theta)$成反比，因此当 $s = 0$时，表示像素为矩形。
 
-```python
-# 焦距、W、H
-
-# 缩放尺寸为1，不缩放
-# 平移到图像中心
-K = np.array([
-    [focal_x, 0, 0.5*W],
-    [0, focal_y, 0.5*H],
-    [0, 0, 1]
-])
-```
 ##### 3.2.2.4. 综合
  
 ![](../images/b899ce078ef1a11a8bdc6fdde427448eaecbada3eb4ffa9557a90a3afac8dd66.png)
@@ -487,9 +488,13 @@ K = np.array([
 
 1. 加法
    
+    外参 `[3, 3]` 和 `3`
+
     $$ Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} = K\left( R\begin{bmatrix} X_w \\ Y_w \\ Z_w \end{bmatrix} + t \right)$$
 
 2. 世界坐标系的欧式点$P_{w}=[X_{w}, Y_{w}, Z_{w}]$，像素坐标的齐次坐标点 $P_{uv}=[u, v]$
+
+    外参 `[3, 4]`
 
     $$\begin{aligned}
     Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
@@ -505,6 +510,8 @@ K = np.array([
 
 
 3. 世界坐标系的齐次坐标点$P_{w}=[X_{w}, Y_{w}, Z_{w}, 1]$
+   
+    外参 `[4, 4]`
 
     $$\begin{aligned}
     Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
@@ -544,6 +551,9 @@ $$
 
 即 $T_{w2c} = [\mathbf{R}, \mathbf{t}], 则T_{c2w} = T_{w2c}^{-1} = [\mathbf{R}^\top, -\mathbf{R}^\top\mathbf{t}]$
 
+```python
+c2w = np.linalg.inv(w2c)
+```
 
 > 例子: 外参，Inverse project 自然是 c2w
 

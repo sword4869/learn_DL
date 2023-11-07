@@ -35,9 +35,21 @@ cv2.waitKey(0)
 ```
 
 ```python
-# 数组模式
+paste = np.zeros((img.shape[0], img.shape[1] * 2, 3), dtype=np.float32)
+paste[:, :img.shape[1], :] = img
+template_img = cv2.imread(os.path.join(output_image_dir, 'template.png'))
+paste[:, img.shape[1]:, :] = template_img
+# 调整 pasteq 的大小
+paste = cv2.resize(paste, (img.shape[1]//4, img.shape[0]//4))
+cv2.namedWindow('paste', 0)
+cv2.imshow('paste', paste.astype(np.uint8))
+if cv2.waitKey(0) == ord('q'):
+    exit()
+```
+
+```python
+# 数组模式 ndarry
 h,w,c = image.shape
-# ndarry
 ```
 
 ```python
@@ -48,6 +60,7 @@ diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 
 ```python
 # diff_gray 必须是灰度图
+diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 thresh = cv2.threshold(diff_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 ```
 ### 2.1. 轮廓
