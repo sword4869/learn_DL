@@ -16,16 +16,15 @@
   - [7.4. numpy.lexsort()](#74-numpylexsort)
 - [8. 唯一化以及其它的集合逻辑 ](#8-唯一化以及其它的集合逻辑)
 - [9. 用于数组的文件输入输出](#9-用于数组的文件输入输出)
+  - [9.1. npy](#91-npy)
+  - [9.2. npy](#92-npy)
+  - [9.3. bin](#93-bin)
 - [10. 线性代数](#10-线性代数)
 - [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
   - [11.1. seed()](#111-seed)
   - [11.2. rand() 连续均匀分布](#112-rand-连续均匀分布)
   - [11.3. randint() 离散均匀分布](#113-randint-离散均匀分布)
   - [11.4. randn()正态分布](#114-randn正态分布)
-- [12. 一个简单的随机漫步](#12-一个简单的随机漫步)
-- [13. 通过内置的random模块以纯Python的方式](#13-通过内置的random模块以纯python的方式)
-- [14. 用np.random模块 ](#14-用nprandom模块)
-- [15. 一次模拟多个随机漫步](#15-一次模拟多个随机漫步)
 
 
 ## 1. 通用函数：快速的元素级数组函数
@@ -430,23 +429,21 @@ print(np.in1d(values, [2, 3, 6]))
 
 NumPy能够读写磁盘上的文本数据或二进制数据。
 
-> np.save将数组数据写入磁盘：
-> 
-> 默认情况下，数组是以未压缩的原始二进制格式保存在扩展名为.npy的文件中的。如果文件路径末尾没有扩展名.npy，则该扩展名会被自动加上。
+### 9.1. npy
+
+数组是以**未压缩**的原始二进制格式保存在扩展名为`.npy`的文件中的。如果文件路径末尾没有扩展名`.npy`，则该扩展名会被自动加上。
 
 ```python
 arr = np.arange(10)
-np.save('some_array', arr)
-```
+np.save('some_array', arr)  # some_array.npy
 
-> np.load读取磁盘上的数组 
-
-```python
 print(np.load('some_array.npy'))
-#[0 1 2 3 4 5 6 7 8 9]
+# [0 1 2 3 4 5 6 7 8 9]
 ```
 
->  np.savez可以将多个数组保存到一个未压缩文件中，将数组以关键字参数的形式传入即可
+### 9.2. npy
+
+`np.savez`可以将多个数组保存到一个未压缩文件中，将数组以关键字参数的形式传入即可
 
 ```python
 np.savez('array_archive.npz', a=arr, b=arr)
@@ -455,11 +452,19 @@ print(arch['b'])
 #[0 1 2 3 4 5 6 7 8 9]
 ```
 
-> 如果要将数据压缩，可以使用numpy.savez\_compressed
+如果要将数据压缩，可以使用`numpy.savez_compressed`
 
 ```python
 np.savez_compressed('arrays_compressed.npz', a=arr, b=arr)
 ```
+
+### 9.3. bin
+
+```python
+arr = np.arange(10)
+arr.tofile('arr.bin')
+```
+
 
 ## 10. 线性代数
 
@@ -598,22 +603,19 @@ set_seed()
 均匀分布，生成`[0, 1)`之间的数据。
 
 ```python
+# 生成一个数
 print(np.random.rand())
-#生成一个数
-#0.6548904423938792
+# 0.6548904423938792
  
-print(np.random.rand(2,3))
-#生成一组两行三列的数据
-'''
-[[0.07085309 0.52801719 0.2369186 ]
- [0.98840087 0.03015251 0.86048123]]
-'''
-print(np.random.rand(2,3)-0.5)
-#生成一组(-0.5,0.5)之间的两行三列的数据
-'''
-[[-0.08586886  0.290878   -0.44895597]
- [-0.42226141  0.28728643 -0.33674102]]
-'''
+# 生成一组两行三列的数据
+print(np.random.rand(2, 3))
+# [[0.07085309 0.52801719 0.2369186 ]
+#  [0.98840087 0.03015251 0.86048123]]
+
+# 生成一组(-0.5,0.5)之间的两行三列的数据
+print(np.random.rand(2, 3) - 0.5)
+# [[-0.08586886  0.290878   -0.44895597]
+#  [-0.42226141  0.28728643 -0.33674102]]
 ```
 
 ### 11.3. randint() 离散均匀分布
@@ -621,70 +623,39 @@ print(np.random.rand(2,3)-0.5)
 > randint给定上下限范围 `[low, high)` 内的选取整数 
 
 ```python
-import numpy as np
- 
 x=np.random.randint(5)             #一个参数，产生[0,n)内的整数
-print(x)
 #1
  
 y=np.random.randint(0,10)          #两个参数，产生[a,b)内的整数
-print(y)
 #4
  
 z1=np.random.randint(0,9,3)        #前两个参数是范围，第三个参数是元组类型的size
-print(z1)
 #[3 8 2]
  
 z2=np.random.randint(0,10,(2,3))   
-print(z2)
-'''
-[[1 7 7]
- [5 6 2]]
-'''
+# [[1 7 7]
+#  [5 6 2]]
 ```
 
 Examples
 
 ```python
+# 生成包含100个元素，元素要么是0，要么是1
 >>> np.random.randint(2, size=10)
-array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0]) # random
->>> np.random.randint(1, size=10)
-array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+array([1, 0, 0, 0, 1, 1, 0, 0, 1, 0])
 
-```
-
-Generate a 2 x 4 array of ints between 0 and 4, inclusive:
-
-```python
->>> np.random.randint(5, size=(2, 4))
-array([[4, 0, 2, 1], # random
-       [3, 2, 2, 0]])
-
-```python
-
-Generate a 1 x 3 array with 3 different upper bounds
-
-```python
+# Generate a 1 x 3 array with 3 different upper bounds
 >>> np.random.randint(1, [3, 5, 10])
-array([2, 2, 9]) # random
+array([2, 2, 9])
 
-```
-
-Generate a 1 by 3 array with 3 different lower bounds
-
-```python
+# Generate a 1 by 3 array with 3 different lower bounds
 >>> np.random.randint([1, 5, 7], 10)
-array([9, 8, 7]) # random
+array([9, 8, 7])
 
-```
-
-Generate a 2 by 4 array using broadcasting with dtype of uint8
-
-```python
+# Generate a 2 by 4 array using broadcasting with dtype of uint8
 >>> np.random.randint([1, 3, 5, 7], [[10], [20]], dtype=np.uint8)
-array([[ 8,  6,  9,  7], # random
+array([[ 8,  6,  9,  7],
        [ 1, 16,  9, 12]], dtype=uint8)
-
 ```
 
 ### 11.4. randn()正态分布
@@ -693,140 +664,8 @@ array([[ 8,  6,  9,  7], # random
 
 ```python
 x=np.random.randn(5)
-print(x)
-#[ 0.61697938  0.25645408  0.60145609  0.49726365  0.55797877]
-y=np.random.randn(2,2)
-print(y)
-'''
-[[-1.15277551  0.74185824]
- [-0.55820537  0.55722007]]
-'''
-```
-
-## 12. 一个简单的随机漫步
-
-## 13. 通过内置的random模块以纯Python的方式
-
-> 一个通过内置的random模块以纯Python的方式实现1000步的随机漫步：从0开始，步长1和－1出现的概率相等。
-
-```python
-import random
-import matplotlib.pyplot as plt
-%matplotlib inline
- 
-position = 0
-#定义一个列表，现在里面只有一个元素0
-walk = [position]
-steps = 1000
-#循环1000次
-for i in range(steps):
-     step = 1 if random.randint(0, 1) else -1
-     #random.randint(0, 1)是产生随机的方向，或选择前者1的方向，或选择后者-1的方向
-     #1和-1是设置步长
-     position += step
-     walk.append(position)
-#输出前100次
-plt.plot(walk[:100])
-#这其实就是随机漫步中各步的累计和，可以用一个数组运算来实现。
-```
-
-![](https://img-blog.csdnimg.cn/20190324232154749.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
-
-## 14. 用np.random模块 
-
-> 用np.random模块一次性就能随机产生1000个结果
-
-```python
-import numpy as np
-import matplotlib.pyplot as plt
-%matplotlib inline
-position = 0
-#生成包含1000个元素的ndarray，元素要么是0，要么是1
-arr=np.random.randint(0,2,size=1000)
-#walk>0是判断条件，那么ndarray中的1值就变成1，0值就变成-1
-step=np.where(arr>0,1,-1)
-#walk就是前100个元素的累计和的ndarray，和纯python的walk列表一样
-walk=step[:100].cumsum()
-plt.plot(walk)
-```
-
-![](https://img-blog.csdnimg.cn/20190325170909742.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
-
-> 使用numpy模块，我们还可以统计一些数据
-
-```python
-#最大值和最小值
-print(walk.min())
-print(walk.max())
-#需要多久才能距离初始0点至少10步远（任一方向均可）
-print((np.abs(walk) >= 10).argmax())
-'''
--14
-4
-75
-'''
-#注意，这里使用argmax并不是很高效，因为它无论如何都会对数组进行完全扫描。
-#在本例中，只要发现了一个True，那我们就知道它是个最大值了。
-```
-
-## 15. 一次模拟多个随机漫步
-
-> 如果你希望模拟多个随机漫步过程（比如5000个），只需对上面的代码做一点点修改即可生成所有的随机漫步过程。只要给numpy.random的函数传入一个二元元组就可以产生一个二维数组，然后我们就可以一次性计算5000个随机漫步过程（一行一个）的累计和了：
-
-```python
-nwalks = 5000
-nsteps = 1000
-draws = np.random.randint(0, 2, size=(nwalks, nsteps))
-#size=(5000,1000)意思是5000行，1000列，即5000个包含1000个元素的ndarray
-steps = np.where(draws > 0, 1, -1)
-walks = steps.cumsum(1)
- 
-print(walks)
-'''
-[[  1   2   3 ...,  38  39  38]
- [  1   0   1 ..., -32 -31 -32]
- [  1   0  -1 ...,  -6  -5  -4]
- ..., 
- [  1   0   1 ...,  -2  -3  -4]
- [  1   2   3 ...,  38  39  38]
- [  1   0   1 ...,  -4  -3  -2]]
-'''
-```
-
-> 现在，我们来计算所有随机漫步过程的最大值和最小值：
-
-```python
-print(walks.max())
-print(walks.min())
-'''
-122
--130
-'''
-```
-
-> 得到这些数据之后，我们来计算30或－30的最小穿越时间。这里稍微复杂些，因为不是5000个过程都到达了30。我们可以用any方法来对此进行检查：
-
-```python
-hits30 = (np.abs(walks) >= 30).any(1)
-print(hits30)
-print(hits30.sum())
-'''
-[ True  True  True ..., False  True False]
-3347
-'''
-```
-
-> 然后我们利用这个布尔型数组选出那些穿越了30（绝对值）的随机漫步（行），并调用argmax在轴1上获取穿越时间：
-
-```python
-#hits30意思是如果是False，那么肯定没有达到30，就跳过，这样比以此索引更高效
-crossing_times = (np.abs(walks[hits30]) >= 30).argmax(1)
-print(crossing_times.mean())
-#506.527935465，平均穿越花费多长时间
-```
-
-> 用其他分布方式得到漫步数据。只需使用不同的随机数生成函数即可，如normal用于生成指定均值和标准差的正态分布数据：
-
-```python
-steps = np.random.normal(loc=0, scale=0.25,size=(nwalks, nsteps))
+# [ 0.61697938  0.25645408  0.60145609  0.49726365  0.55797877]
+y=np.random.randn(2, 2)
+# [[-1.15277551  0.74185824]
+#  [-0.55820537  0.55722007]]
 ```

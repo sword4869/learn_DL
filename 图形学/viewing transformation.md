@@ -1,20 +1,26 @@
 - [1. model transformation 模型变换](#1-model-transformation-模型变换)
-- [2. camera/view transformation 视角变换](#2-cameraview-transformation-视角变换)
-  - [2.1. 右手坐标系 right-handed coordinates](#21-右手坐标系-right-handed-coordinates)
-  - [2.2. 各种右手的相机坐标系的转换](#22-各种右手的相机坐标系的转换)
-  - [2.3. other](#23-other)
+- [2. camera/view transformation 视角变换(w2c)](#2-cameraview-transformation-视角变换w2c)
+  - [2.1. 在不同坐标系间坐标的转换](#21-在不同坐标系间坐标的转换)
+    - [2.1.1. frame-to-canonical matrix (正向)](#211-frame-to-canonical-matrix-正向)
+    - [2.1.2. canonical-to-frame matrix (反向)](#212-canonical-to-frame-matrix-反向)
+  - [2.2. 右手坐标系 right-handed coordinates](#22-右手坐标系-right-handed-coordinates)
+  - [2.3. 相机](#23-相机)
+  - [2.4. 各种右手的相机坐标系的转换](#24-各种右手的相机坐标系的转换)
+    - [2.4.1. 在获取c2w时](#241-在获取c2w时)
+    - [2.4.2. 已经获取c2w后](#242-已经获取c2w后)
 - [3. projection transformation](#3-projection-transformation)
   - [3.1. orthographic projection](#31-orthographic-projection)
-    - [3.1.1. viewporrt transformation](#311-viewporrt-transformation)
+    - [3.1.1. view volume to canonical view volume](#311-view-volume-to-canonical-view-volume)
+    - [3.1.2. viewporrt transformation](#312-viewporrt-transformation)
   - [3.2. perspective projection](#32-perspective-projection)
-    - [3.2.1. orthographic-based perspective (GAMES101)](#321-orthographic-based-perspective-games101)
+    - [3.2.1. frustum to canonical view volume](#321-frustum-to-canonical-view-volume)
     - [3.2.2. pinhole 的 K矩阵](#322-pinhole-的-k矩阵)
       - [3.2.2.1. 相机坐标系-\>图像坐标系](#3221-相机坐标系-图像坐标系)
       - [3.2.2.2. 图像坐标系-\>像素坐标系](#3222-图像坐标系-像素坐标系)
       - [3.2.2.3. 相机内参](#3223-相机内参)
       - [3.2.2.4. 综合](#3224-综合)
 - [4. 反向](#4-反向)
-- [???](#)
+- [5. ???](#5-)
 
 ---
 
@@ -35,16 +41,39 @@
 
 ## 1. model transformation 模型变换
 
+world coordinate
+
+![Alt text](../images/image-81.png)
+
+![Alt text](../images/image-82.png)
+
 如何放置模型坐标到世界坐标中。
 
 ![Alt text](../images/image-72.png)
 
 
-SRT: scale, rotation, translation. 而且顺序也是先 scale, 后rotation, 最后translation。
+SRT: scale, rotation, translation. 
 
-模型的中心一开始就在世界坐标系原点。
+顺序也是先 scale, 后rotation, 最后translation（S和R是线性变换，故可交换顺序，而T不行，必须放在最后）。
 
-操作都是以物体的角度看。不是旋转坐标系，而是旋转人头；不是翻转y轴，而是翻转人头；先旋转后要看正脸还是侧脸后，我们把模型沿着z轴平移（look at)，因为中点在人头内部，看不到uv。
+- 第一种: 
+    $$\begin{aligned}
+    P_{c}&=RSP_{w}+t
+    \end{aligned}$$
+
+- 第二种
+  
+    $$\begin{aligned}
+    \begin{bmatrix} P_{c} \\ 1\end{bmatrix}&=\begin{bmatrix} R & t \\ 0^\top & 1 \end{bmatrix} \begin{bmatrix} S & 0 \\ 0^\top & 1 \end{bmatrix} \begin{bmatrix} P_{w} \\ 1\end{bmatrix}    
+    \end{aligned}$$
+
+从世界坐标系到世界坐标系。所以操作都是以物体的角度看。
+- 模型的中心一开始就在世界坐标系原点。
+- 不是旋转坐标系，而是旋转人头；
+- 不是翻转y轴，而是翻转人头；
+- 不是平移坐标系，而是平移人头
+- 先旋转后要看正脸还是侧脸后，我们把模型沿着z轴平移（look at)，因为中点在人头内部，看不到uv。
+
 ```python
 def pose_spherical(radius, theta, phi):
     '''
@@ -64,13 +93,15 @@ def pose_spherical(radius, theta, phi):
     return pose
 ```
 
-## 2. camera/view transformation 视角变换
+## 2. camera/view transformation 视角变换(w2c)
 
 **将相机坐标系转到与世界坐标系重合：先旋转轴来轴向一致，再将相机平移到世界原点; M=RT， 先平移再旋转**。
 
 将相机和物体一起变换。所以相机坐标系下的物体坐标，变换矩阵乘物体的世界坐标。(变换点，就是变换整个坐标系)
 
 ![Alt text](../images/image-66.png)
+
+![Alt text](../images/image-80.png)
 
 
 乘了这个后，再乘别的变换矩阵，就是从原点移动相机矩阵的位置。
@@ -79,46 +110,51 @@ def pose_spherical(radius, theta, phi):
 
 ---
 
-> 从点的角度理解
+### 2.1. 在不同坐标系间坐标的转换
 
-c2w的含义: camera's pose matrix in world coordinate.
+#### 2.1.1. frame-to-canonical matrix (正向)
 
-c2w矩阵是一个4x4的矩阵，左上角3x3是旋转矩阵R，又上角的3x1向量是平移向量T。有时写的时候可以忽略最后一行[0,0,0,1]。
+![Alt text](../images/image-79.png)
 
-$$\begin{bmatrix}R&t\\0^\top &1\end{bmatrix}=\begin{bmatrix}\begin{array}{ccc|c}r_{11}&r_{12}&r_{13}&t_1\\r_{21}&r_{22}&r_{23}&t_2\\r_{31}&r_{32}&r_{33}&t_3\\\hline0&0&0&1\end{array}\end{bmatrix}$$
+$\mathbf{p}=(x_p,y_p)\equiv\mathbf{o}+x_p\mathbf{x}+y_p\mathbf{y}$
 
-$$\begin{bmatrix}R&t\end{bmatrix}=\begin{bmatrix}\begin{array}{ccc|c}r_{11}&r_{12}&r_{13}&t_1\\r_{21}&r_{22}&r_{23}&t_2\\r_{31}&r_{32}&r_{33}&t_3\end{array}\end{bmatrix}$$
+$\mathbf{p}=(u_{p},v_{p})\equiv\mathbf{e}+u_{p}\mathbf{u}+v_{p}\mathbf{v}$
 
+已知点p在uv坐标系的表示 $(u_{p},v_{p})$ 和 uv坐标轴在xy坐标系的单位向量 $\mathbf{u}\mathbf{v}$ 和 uv坐标系原点在xy坐标系的位置 $\mathbf{e}$，那么就可以求 $(x_p,y_p)$: 
 
+$\begin{bmatrix}x_p \\ y_p \\ 1\end{bmatrix} = u_p\begin{bmatrix}x_u \\ y_u \\0\end{bmatrix}v_p\begin{bmatrix}x_v \\ y_v \\0\end{bmatrix} + \begin{bmatrix}x_e \\ y_e \\1\end{bmatrix} = \begin{bmatrix}x_u&x_v&x_e\\y_u&y_v&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} = \begin{bmatrix}1&0&x_e\\0&1&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}x_u&x_v&0\\y_u&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} = TRP_{uv}$
 
-The camera's extrinsic matrix describes the camera's location in the world $\mathbf{t}$, and what direction it's pointing $\mathbf{R}$. 
+由此，视角变换矩阵的列向量意义：$\mathbf{p}_{xy}=\begin{bmatrix}\mathbf{u}&\mathbf{v}&\mathbf{e}\\0&0&1\end{bmatrix}\mathbf{p}_{uv}$
+- R：uv坐标系有两个坐标分量，就有两个列向量对应。这两个列向量，分别是uv坐标轴在xy坐标系的单位向量表示。
+- T: 最后一列，uv坐标系的原点在xy坐标系的位置 $\mathbf{e}$。
 
-For a **Column-Major** transform matrix, the first 3 columns are the +X, +Y, and +Z defining the camera orientation, and the forth column X, Y, Z values define the camera origin. 具体来说, camera orientation 是当前坐标系的轴在要变换到的另一坐标系的轴的方向, camera origin 是当前坐标系的原点在要变换到的另一坐标系的下的坐标。比如，c2w，则旋转矩阵的每一列分别表示了相机坐标系的XYZ轴方向在世界坐标系下对应的XYZ轴方向，平移向量表示的是相机坐标系的原点在世界坐标系中的位置。
+#### 2.1.2. canonical-to-frame matrix (反向)
 
+$\mathbf{p}_{uv}=\begin{bmatrix}\mathbf{u}&\mathbf{v}&\mathbf{e}\\0&0&1\end{bmatrix}^{-1}\mathbf{p}_{xy}$
 
+$\begin{bmatrix}\mathbf{u}&\mathbf{v}&\mathbf{e}\\0&0&1\end{bmatrix}^{-1} = (TR)^{-1} = R^{-1}T^{-1} = \begin{bmatrix}x_u&y_u&0\\x_v&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}1&0&-x_e\\0&1&-y_e\\0&0&1\end{bmatrix} = \begin{bmatrix} x_u & y_u & -x_u x_e -y_u y_e \\ x_v & y_v & -x_v x_e y_v y_e \\ 0 & 0 & 1\end{bmatrix}$
 
+> 困惑: 那这反向的矩阵的过程代表什么意义？
 
+反向的过程仅仅是矩阵求逆，所以过程没有像正向一样有意义，只是逆变换而已。
 
-> 从向量的角度
+$\begin{bmatrix}x_u&y_u&0\\x_v&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}1&0&-x_e\\0&1&-y_e\\0&0&1\end{bmatrix}$ 可以解释为先平移后旋转。
 
-![图 5](../images/ee3d0db691dffa4d96f9ffcaabf9cb0e52ac6a3ded1da48014924c67fb1d696f.png)  
+此时平移看似是平移负量，但是此时是在 uv坐标系下，你拿xy坐标系的位置表示干什么，要拿也是拿uv坐标系下看xy坐标轴的原点的表示啊。
 
-描述点B。在绿色坐标系下，B点(1,2)。在蓝色坐标系下，B点(2,2)。怎么转化？借助向量。
+只是结果有意义， $\begin{bmatrix} x_u & y_u & -x_u x_e -y_u y_e \\ x_v & y_v & -x_v x_e y_v y_e \\ 0 & 0 & 1\end{bmatrix}$ 可以解读为xy坐标轴在uv坐标系的向量表示 和 原点位置 $(-x_u x_e -y_u y_e , -x_v x_e y_v y_e)$.
 
-描述向量AB。在绿色坐标系下，AB是起点(0,0)和方向向量(1,2)，即AB(1,2)=(0,0)+(1,2)。在蓝色坐标系下是CB=CA+AB, (2,2)=(0,1)+(2,1)。
+> 那么谁是正向，谁是反向？
 
-也即A点(0,1)和B点(2,2)=(1,2)-(-1,0)。
+正向反向，只看已知条件是由谁表示的。
 
-怎么做到从绿色到蓝色？旋转坐标系，方向向量(2,1)变化为(1,2)，平移向量(-1,0)就是在绿色坐标系下观察的世界坐标系原点的位置。
+比如，我们可以讲 xy→uv是正向，那么就需要知道：点p在xy坐标系的表示 $(x_{p},y_{p})$ 和 xy坐标轴在uv坐标系的单位向量 $\mathbf{x_{uv}}\mathbf{y_{uv}}$ 和 xy坐标系原点在uv坐标系的位置 $\mathbf{o_{uv}}$，那么就可以求 $(u_p,v_p)$
 
-![图 6](../images/a3b6257693f7e85d96f84d846a740dac3f521287df3779978b9079484f8d3203.png)  
+$\mathbf{p}_{uv}=\begin{bmatrix}\mathbf{x}_{uv}&\mathbf{y}_{uv}&\mathbf{o}_{uv}\\0&0&1\end{bmatrix}\mathbf{p}_{xy}$
 
-相机坐标系虚线坐标轴，世界坐标系彩色坐标轴。相机坐标的黑色OA，选转后世界坐标的OB，在相机坐标下看世界坐标原点的平移量是粉色的OO'，世界坐标的O'C = OB - OO'。
+### 2.2. 右手坐标系 right-handed coordinates
 
-也就是说，关键点，**世界坐标下的向量 = 旋转后的向量 - 相机坐标下看世界坐标原点的平移向量**，或者，****世界坐标下的向量 = 旋转后的向量 + 世界坐标下看相机坐标原点的平移向量****。后者才是矩阵中的 $t$。
-
-
-### 2.1. 右手坐标系 right-handed coordinates
+In 2D, right-handed means y is counterclockwise from x.
 
 
 > 将左右手性和right-up-forward联系在一起，而不是xyz
@@ -190,122 +226,129 @@ The only thing that defines the handedness of the coordinate system is the orien
     
     ![Alt text](../images/image-63.png)
 
-### 2.2. 各种右手的相机坐标系的转换
+### 2.3. 相机
+
+> c2w: camera coordinate to world coordinate
+
+camera's pose matrix in world coordinate.
+
+The camera's extrinsic matrix describes 
+- $\mathbf{R}$: 3 columns are the +X, +Y, and +Z defining the camera orientation in world coordinate. 
+  
+    为什么代表旋转方向？因为相机不同的旋转方向，对应不同的坐标轴向量。
+- $\mathbf{t}$: 相机坐标系的原点，也是 the camera's location in the world
+
+> column-major w2c↔c2w，两矩阵互逆。
+
+$$
+\begin{aligned}
+\left[\begin{array}{c|c}\mathbf{R_c}&\mathbf{C}\\\hline \mathbf{0}\top&1\end{array}\right]
+& = \left[\begin{array}{c|c}\mathbf{R}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}  \\
+&=\left[\left[\begin{array}{c|c}\mathbf{I}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]\left[\begin{array}{c|c}\mathbf{R}&0\\\hline\mathbf{0}&1\end{array}\right]\right]^{-1}& (\text{decomposing rigid transform})  \\
+&=\left[\begin{array}{c|c}\mathbf{R}&0\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}\left[\begin{array}{c|c}\mathbf{I}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}& (\text{distributing the inverse})  \\
+&=\left[\begin{array}{c|c}\mathbf{R}^\top &0\\\hline\mathbf{0}\top&1\end{array}\right]\left[\begin{array}{c|c}\mathbf{I}&-\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]& \text{(applying the inverse)}  \\
+&=\left[\begin{array}{c|c}\mathbf{R}^\top&-\mathbf{R}^\top\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]& (\text{matrix multiplication}) 
+\end{aligned}
+$$
+
+
+即 $T_{w2c} = [\mathbf{R}, \mathbf{t}], 则T_{c2w} = T_{w2c}^{-1} = [\mathbf{R}^\top, -\mathbf{R}^\top\mathbf{t}]$
+
+```python
+c2w = np.linalg.inv(w2c)
+```
+
+### 2.4. 各种右手的相机坐标系的转换
 
 ![](../images/d7811eeb810841979e5f8cbd88f6e6d71e2744c4d464081863dd8d93079e2370.png)
 
 ![](../images/0b2e24a1c6d97650f49d5d02e08f0f244fa60e9a700c62330261ddb30daeb61d.png)
 
-> R: [3, 3]
+注意：各种右手的相机坐标系的转换，在c2w和w2c上表现不同。
+
+#### 2.4.1. 在获取c2w时
+
+w2c 和 c2w，谁设正向都可以，正向的才有意义。但是为什么我们设c2w为正向。
+
+因为我们很容易表达相机坐标轴在世界坐标的位置（即下面的方法），而不容易表达世界坐标轴在相机坐标系的位置。
+
+有相机坐标的原点 $e$, 相机 look at 方向的向量 $\vec v$, 相机的向上向量 $\vec{up}$. 这三者均是在世界坐标系的表示。
+
+
+![Alt text](../images/QQ%E6%88%AA%E5%9B%BE20231112105723.png)
 
 ```python
-# RDF to RUB: x'=x, y'=-y, z'=z
-pose = np.concatenate([pose[:, 0:1], -pose[:, 1:2], -pose[:, 2:3]], 1)
+# 这里以 RDF 举例
+e = np.array([0, 0, 500], dtype=np.float32)
+v = np.array([0, 0, -1], dtype=np.float32)  # D
+# v = np.array([0, 0, 1], dtype=np.float32)  # U
+up = np.array([0, -1, 0], dtype=np.float32)
 
-# DRB to RUB: x'=y, y'=-x, z'=z
-pose = np.concatenate([pose[:, 1:2], -pose[:, 0:1], pose[:, 2:3]], 1)
+w = normalize(v)                    # F
+# w = =normalize(v)                    # B
+r = normalize(np.cross(up, v))
+u = normalize(np.cross(w, r))
+
+c2w = np.zeros((4, 4), dtype=np.float32)
+c2w[:3, 0] = r  # x
+c2w[:3, 1] = u  # y
+c2w[:3, 2] = w  # z
+c2w[:3, 3] = e
+c2w[3, 3] = 1
+print(c2w)
+w2c = np.linalg.inv(c2w)
+print(w2c)
 ```
+
+
+#### 2.4.2. 已经获取c2w后
+
+- c2w->c2w: 只动R，变的是轴（整个列向量）
+
 ```python
-# RDF to RUB
-pose = pose @ np.diag([1, -1, -1])
+# R: [3, 3], c2w: [3, 4] or [4, 4]
 
-# DRB to RUB
-pose = pose @ np.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+# RDF to RUB: x'=x, y'=-y, z'=-z
+R[:, 1:3] *= -1
+c2w[:3, 1:3] *= -1
+
+R = np.concatenate([R[:, 0:1], -R[:, 1:2], -R[:, 2:3]], 1)
+c2w = np.concatenate([c2w[:, 0:1], -c2w[:, 1:2], -c2w[:, 2:3], c2w[:, 3:4]], 1)
+R = R @ np.diag([1, -1, -1])
+c2w = c2w @ np.diag([1, -1, -1, 1])
 ```
 
-> RT pose: [3, 4] or [4, 4]
+涉及非对称
 ```python
-# RDF to RUB: x'=x, y'=-y, z'=z
-pose = np.concatenate([pose[:, 0:1], -pose[:, 1:2], -pose[:, 2:3], pose[:, 3:4]], 1)
-
-# DRB to RUB: x'=y, y'=-x, z'=z
-pose = np.concatenate([pose[:, 1:2], -pose[:, 0:1], pose[:, 2:3], pose[:, 3:4]], 1)
+# RDF to DRB: x'=y, y'=x, z'=-z
+R = np.concatenate([R[:, 1:2], R[:, 0:1], -R[:, 2:3]], 1)
+c2w = np.concatenate([c2w[:, 1:2], c2w[:, 0:1], -c2w[:, 2:3], c2w[:, 3:4]], 1)
+R = R @ np.array([[0, 1, 0], [1, 0, 0], [0, 0, -1]])
+c2w = c2w @ np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]])
 ```
+
+> w2c->w2c: 变的是各个列向量的xyz坐标
+
+因为 $T_{w2c} = T_{c2w}^{-1} = [\mathbf{R}^\top, -\mathbf{R}^\top\mathbf{t}]$.  所以，c2w的R列变化，变成了w2c的行变化，而且T也跟着变。
+
 ```python
-# RDF to RUB
-pose = pose @ np.diag([1, -1, -1, 1])
-
-# DRB to RUB
-pose = pose @ np.array([[0, -1, 0, 0], [1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]])
+# RDF to RUB: x'=x, y'=-y, z'=-z
+w2c[1:3, :] = -w2c[1:3, :]
+w2c = np.diag([1, -1, -1, 1]) @ w2c
 ```
-
-### 2.3. other
-
-
-属于刚体变换，包括旋转和平移操作（先平移后旋转）。
-
-比如column-major w2c：
-- 世界坐标系的欧式点$P_{w}=[X_{w}, Y_{w}, Z_{w}]^\top$，相机坐标系的欧式点$P_{c}=[X_{c}, Y_{c}, Z_{c}]^\top$，
-
-    $$\begin{aligned}
-    P_{c}&=RP_{w}+t \\
-    \begin{bmatrix} X_{c} \\ Y_{c} \\ Z_{c}  \end{bmatrix}  
-    &= R \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w}  \end{bmatrix} + \begin{bmatrix} t_{x} \\  t_{y} \\ t_{z}  \end{bmatrix}
-    \end{aligned}$$
-
-- 世界坐标系的齐次坐标点$P_{w}=[X_{w}, Y_{w}, Z_{w}, 1]^\top$，相机坐标系的欧式点$P_{c}=[X_{c}, Y_{c}, Z_{c}]^\top$，
-
-    $$\begin{aligned}
-    P_{c}&=\begin{bmatrix} R & t \end{bmatrix}P_{w}\\
-    \begin{bmatrix} X_{c} \\ Y_{c} \\ Z_{c} \end{bmatrix}  
-    &= \begin{bmatrix} R & t \end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
-    \end{aligned}$$
-
-- 世界坐标系的齐次坐标点$P_{w}=[X_{w}, Y_{w}, Z_{w}, 1]^\top$，相机坐标系的齐次坐标点$P_{c}=[X_{c}, Y_{c}, Z_{c}, 1]^\top$，
-    $$\begin{aligned}
-    P_{c}&=\begin{bmatrix} R & t \\ 0^\top & 1 \end{bmatrix}P_{w}\\
-    \begin{bmatrix} X_{c} \\ Y_{c} \\ Z_{c} \\ 1 \end{bmatrix}  
-    &= \begin{bmatrix} R & t \\ 0^\top & 1  \end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
-    \end{aligned}$$
-
-    甚至可以进一步分解，这样就很明显是先乘旋转矩阵，后乘平移矩阵。
-
-    $$
-    \begin{aligned}
-    \left[\begin{array}{c|c}R&\mathbf{t}\\\hline\mathbf{0\top}&1\end{array}\right]
-    & =\left[\begin{array}{c|c}I&\mathbf{t}\\\hline\mathbf{0\top}&1\end{array}\right]\times\left[\begin{array}{c|c}R&\mathbf{0}\\\hline\mathbf{0\top}&1\end{array}\right]  \\
-    &=\left[\begin{array}{ccc|c}1&0&0&t_1\\0&1&0&t_2\\0&0&1&t_3\\\hline0&0&0&1\end{array}\right]\times\left[\begin{array}{ccc|c}r_{1,1}&r_{1,2}&r_{1,3}&0\\r_{2,1}&r_{2,2}&r_{2,3}&0\\r_{3,1}&r_{3,2}&r_{3,3}&0\\\hline0&0&0&1\end{array}\right]
-    \end{aligned}
-    $$
-
-比如row-major w2c：
-- 世界坐标系的欧式点$P_{w}=[X_{w}, Y_{w}, Z_{w}]$，相机坐标系的欧式点$P_{c}=[X_{c}, Y_{c}, Z_{c}]$，
-
-    $$\begin{aligned}
-    P_{c}&=P_{w}R+t \\
-    \begin{bmatrix} X_{c} & Y_{c} & Z_{c}  \end{bmatrix}  
-    &= \begin{bmatrix} X_{w} & Y_{w} & Z_{w}  \end{bmatrix} R + \begin{bmatrix} t_{x} & t_{y} & t_{z} \end{bmatrix}
-    \end{aligned}$$
-
-- 世界坐标系的齐次坐标点$P_{w}=[X_{w}, Y_{w}, Z_{w}, 1]$，相机坐标系的欧式点$P_{c}=[X_{c}, Y_{c}, Z_{c}]$，
-
-    $$\begin{aligned}
-    P_{c}&=P_{w}\begin{bmatrix} R \\ t \end{bmatrix}\\
-    \begin{bmatrix} X_{c} & Y_{c} & Z_{c} \end{bmatrix}  
-    &= \begin{bmatrix} X_{w} &  Y_{w} & Z_{w} & 1 \end{bmatrix} \begin{bmatrix} R \\ t \end{bmatrix}
-    \end{aligned}$$
-
-- 世界坐标系的齐次坐标点$P_{w}=[X_{w}, Y_{w}, Z_{w}, 1]$，相机坐标系的齐次坐标点$P_{c}=[X_{c}, Y_{c}, Z_{c}, 1]$，
-    $$\begin{aligned}
-    P_{c}&=\begin{bmatrix} R &  0 \\ t & 1 \end{bmatrix}P_{w}\\
-    \begin{bmatrix} X_{c} & Y_{c} & Z_{c} & 1 \end{bmatrix}  
-    &= \begin{bmatrix} X_{w} & Y_{w} & Z_{w} & 1 \end{bmatrix}\begin{bmatrix} R &  0 \\ t & 1 \end{bmatrix}  
-    \end{aligned}$$
-
-    甚至可以进一步分解，这样就很明显是先乘旋转矩阵，后乘平移矩阵。
-
-    $$
-    \begin{aligned}
-    \left[\begin{array}{c|c}R&\mathbf{0}\\\hline\mathbf{t}&1\end{array}\right]
-    & =\left[\begin{array}{c|c}R&\mathbf{0}\\\hline\mathbf{0}&1\end{array}\right]\times \left[\begin{array}{c|c}I&\mathbf{0}\\\hline\mathbf{t}&1\end{array}\right] \\
-    &=\left[\begin{array}{ccc|c}r_{1,1}&r_{1,2}&r_{1,3}&0\\r_{2,1}&r_{2,2}&r_{2,3}&0\\r_{3,1}&r_{3,2}&r_{3,3}&0\\\hline0&0&0&1\end{array}\right] \times \left[\begin{array}{ccc|c}1&0&0&0\\0&1&0&0\\0&0&1&0\\\hline t_1&t_2&t_3&1\end{array}\right]
-    \end{aligned}
-    $$
+涉及非对称
+```python
+# RDF to DRB: x'=y, y'=x, z'=-z
+w2c = np.concatenate([w2c[1:2], w2c[0:1], -w2c[2:3], w2c[3:4]], 0)
+w2c = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) @ w2c
+```
 ## 3. projection transformation
 
 perspective projection 透射投影 和 orthographic projection 正交投影 的区别：无有近大远小。
 
 ### 3.1. orthographic projection
+
+#### 3.1.1. view volume to canonical view volume
 
 将三维空间投影至标准二维平面($[-1,1]^2$)之上 
 
@@ -328,7 +371,7 @@ orthographic projection is affine transformation (最后一行是 $\begin{bmatri
 $M_{ortho}=\mathbf{ST}=\begin{bmatrix}\frac{2}{r-l}&0&0&0\\0&\frac{2}{t-b}&0&0\\0&0&\frac{2}{n-f}&0\\0&0&0&1\end{bmatrix}\begin{bmatrix}1&0&0&-\frac{r+l}2\\0&1&0&-\frac{t+b}2\\0&0&1&-\frac{n+f}2\\0&0&0&1\end{bmatrix} = \begin{bmatrix}\frac{2}{r-l}&0&0&-\frac{r+l}{r-l}\\0&\frac{2}{t-b}&0&-\frac{t+b}{t-b}\\0&0&\frac{2}{n-f}&-\frac{n+f}{n-f}\\0&0&0&1\end{bmatrix}$
 
 PS: 这里的z并没有丢掉，为了之后的遮挡关系检测
-#### 3.1.1. viewporrt transformation
+#### 3.1.2. viewporrt transformation
 
 将处于标准平面映射到屏幕分辨率范围之内，即$[-1,1]^2 \rightarrow [0,width]*[0,height]$, 其中width和height指屏幕分辨率大小.
 
@@ -342,7 +385,7 @@ $M_{viewport}=\begin{pmatrix}\frac{width}{2}&0&0&\frac{width}{2}\\0&\frac{height
 
 perspective projection (最后一行是 $\begin{bmatrix} 0 & 0 & 1 &0\end{bmatrix}$ ) is **not** affine transformation ($\begin{bmatrix} 0 & 0 & 0 & 1\end{bmatrix}$)
 
-#### 3.2.1. orthographic-based perspective (GAMES101)
+#### 3.2.1. frustum to canonical view volume
 
 这个的投影考虑视锥的 left, right, top, bottom, near, far
 
@@ -477,6 +520,29 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
 在内参矩阵中还有个参数 $s$（通常也可当成0），用来建模像素是平行四边形而不是矩形，与像素坐标系的u，v轴之间的夹角$\theta$的正切值$tan(\theta)$成反比，因此当 $s = 0$时，表示像素为矩形。
 
+
+
+   
+$$\begin{aligned}
+Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix}
+&=\begin{bmatrix} \alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} f_x & 0 & 0\\ 0 & f_y & 0\\ 0 & 0 & 1\end{bmatrix} \begin{bmatrix} X_{c} \\  Y_{c} \\ Z_{c} \end{bmatrix}\\
+&=\begin{bmatrix} \alpha f_x & 0 & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{bmatrix} \begin{bmatrix} X_c \\ Y_c \\ Z_c\end{bmatrix} \\
+&=K \begin{bmatrix} X_c \\ Y_c \\ Z_c\end{bmatrix} 
+\end{aligned}
+$$
+
+$$\begin{aligned}
+Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
+&= \begin{bmatrix} \alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix}
+\begin{bmatrix} f_x & 0 & 0 & 0\\ 0 & f_y & 0 & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
+\begin{bmatrix} X_{c} \\  Y_{c} \\ Z_{c} \\ 1 \end{bmatrix}
+\\ &= 
+\begin{bmatrix} \alpha f_x & 0 & c_x & 0\\ 0 & \beta f_y & c_y & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
+\begin{bmatrix} X_{c} \\  Y_{c} \\ Z_{c} \\ 1 \end{bmatrix}
+\\ &= KP_c
+\end{aligned}
+$$
+
 ##### 3.2.2.4. 综合
  
 ![](../images/b899ce078ef1a11a8bdc6fdde427448eaecbada3eb4ffa9557a90a3afac8dd66.png)
@@ -498,11 +564,7 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
     $$\begin{aligned}
     Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
-    &= \begin{bmatrix} \alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix}
-    \begin{bmatrix} f_x & 0 & 0\\ 0 & f_y & 0\\ 0 & 0 & 1\end{bmatrix}
-    \begin{bmatrix} R & t\end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
-    \\ &= 
-    \begin{bmatrix} \alpha f_x & 0 & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{bmatrix}
+    &= \begin{bmatrix} \alpha f_x & 0 & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{bmatrix}
     \begin{bmatrix} R & t\end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
     \\ &= KTP_w
     \end{aligned}
@@ -515,18 +577,14 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
     $$\begin{aligned}
     Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
-    &= \begin{bmatrix} \alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix}
-    \begin{bmatrix} f_x & 0 & 0 & 0\\ 0 & f_y & 0 & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
-    \begin{bmatrix} R & t \\ 0^T & 1  \end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
-    \\ &= 
-    \begin{bmatrix} \alpha f_x & 0 & c_x & 0\\ 0 & \beta f_y & c_y & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
+    &= \begin{bmatrix} \alpha f_x & 0 & c_x & 0\\ 0 & \beta f_y & c_y & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
     \begin{bmatrix} R & t \\ 0^T & 1  \end{bmatrix}  \begin{bmatrix} X_{w} \\  Y_{w} \\ Z_{w} \\ 1 \end{bmatrix}
     \\ &= KTP_w
     \end{aligned}
     $$
 
 
-**相机深度**$z_{c}$ 乘以 **像素坐标**$P_{uv}$ = **相机内参**K 乘以 **相机外参RT** 乘以 **世界坐标**$P_{w}$
+**相机深度**$z_{c}$ 乘以 **像素坐标**$P_{uv}$ = **相机内参**K 乘以 **相机外参TR** 乘以 **世界坐标**$P_{w}$
 
 像素坐标系下的一点可以被认为是三维空间中的一条射线， $z_{c}$ 就是像素点在相机坐标系下的深度。
 
@@ -534,26 +592,6 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
 
 ## 4. 反向
-
-> column-major w2c↔c2w，两矩阵互逆。
-
-$$
-\begin{aligned}
-\left[\begin{array}{c|c}\mathbf{R_c}&\mathbf{C}\\\hline \mathbf{0}\top&1\end{array}\right]
-& = \left[\begin{array}{c|c}\mathbf{R}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}  \\
-&=\left[\left[\begin{array}{c|c}\mathbf{I}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]\left[\begin{array}{c|c}\mathbf{R}&0\\\hline\mathbf{0}&1\end{array}\right]\right]^{-1}& (\text{decomposing rigid transform})  \\
-&=\left[\begin{array}{c|c}\mathbf{R}&0\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}\left[\begin{array}{c|c}\mathbf{I}&\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]^{-1}& (\text{distributing the inverse})  \\
-&=\left[\begin{array}{c|c}\mathbf{R}^\top &0\\\hline\mathbf{0}\top&1\end{array}\right]\left[\begin{array}{c|c}\mathbf{I}&-\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]& \text{(applying the inverse)}  \\
-&=\left[\begin{array}{c|c}\mathbf{R}^\top&-\mathbf{R}^\top\mathbf{t}\\\hline\mathbf{0}\top&1\end{array}\right]& (\text{matrix multiplication}) 
-\end{aligned}
-$$
-
-
-即 $T_{w2c} = [\mathbf{R}, \mathbf{t}], 则T_{c2w} = T_{w2c}^{-1} = [\mathbf{R}^\top, -\mathbf{R}^\top\mathbf{t}]$
-
-```python
-c2w = np.linalg.inv(w2c)
-```
 
 > 例子: 外参，Inverse project 自然是 c2w
 
@@ -575,7 +613,7 @@ $$P_w = \mathbf{R}^{\top}\mathbf{K}^{−1} \begin{bmatrix} u \\ v \\ 1 \end{bmat
 - ray origin $o=-\mathbf{R}^\top\mathbf{t}$, ray direction $r=\mathbf{R}^{\top}\mathbf{K}^{−1}[u,v,1]^\top$
 
 
-## ???
+## 5. ???
 ![Alt text](../images/image-71.png)
 
 - $R_c$代表的意思

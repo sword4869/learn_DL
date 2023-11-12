@@ -1,25 +1,28 @@
-- [1. ndarray](#1-ndarray)
-- [2. 性质](#2-性质)
-- [3. 创建ndarray](#3-创建ndarray)
-  - [3.1. np.array()](#31-nparray)
-  - [3.2. np.zeros() 、ones() 、empty()](#32-npzeros-onesempty)
-  - [3.3. np.arange()](#33-nparange)
-- [4. ndarray的数据类型](#4-ndarray的数据类型)
-  - [4.1. 指定类型： ](#41-指定类型)
-  - [4.2. 转化类型：](#42-转化类型)
-  - [4.3. np.array()和np.asarray()的区别](#43-nparray和npasarray的区别)
-- [5. 还原list](#5-还原list)
-- [6. ndarray数组的运算](#6-ndarray数组的运算)
-- [7. 基本的切片与索引](#7-基本的切片与索引)
-  - [7.1. 基本的切片和索引](#71-基本的切片和索引)
-  - [7.2. 多维数组的索引](#72-多维数组的索引)
-  - [7.3. 视图还是复制](#73-视图还是复制)
-- [8. 花式切片](#8-花式切片)
-- [9. 布尔型索引 ](#9-布尔型索引)
-- [10. 花式索引](#10-花式索引)
-- [11. 数组转置](#11-数组转置)
-  - [torch](#torch)
-- [12. 如何判断两个numpy数组是否相等](#12-如何判断两个numpy数组是否相等)
+- [1. 性质](#1-性质)
+  - [1.1. print小数](#11-print小数)
+- [2. 创建ndarray](#2-创建ndarray)
+  - [2.1. np.array()](#21-nparray)
+  - [2.2. np.zeros() 、ones() 、empty()](#22-npzeros-onesempty)
+  - [2.3. np.arange()](#23-nparange)
+- [3. ndarray的数据类型](#3-ndarray的数据类型)
+  - [3.1. 指定类型： ](#31-指定类型)
+  - [3.2. 转化类型：](#32-转化类型)
+  - [3.3. np.array()和np.asarray()的区别](#33-nparray和npasarray的区别)
+- [4. 还原list](#4-还原list)
+- [5. ndarray数组的运算](#5-ndarray数组的运算)
+- [6. 基本的切片与索引](#6-基本的切片与索引)
+  - [6.1. 基本的切片和索引](#61-基本的切片和索引)
+  - [6.2. 多维数组的索引](#62-多维数组的索引)
+- [7. 花式切片](#7-花式切片)
+- [8. 布尔型索引 ](#8-布尔型索引)
+- [9. 花式索引](#9-花式索引)
+- [10. 数组转置](#10-数组转置)
+  - [10.1. torch](#101-torch)
+- [11. 如何判断两个numpy数组是否相等](#11-如何判断两个numpy数组是否相等)
+- [12. copy](#12-copy)
+  - [12.1. 引用](#121-引用)
+  - [12.2. 视图（View）是浅复制](#122-视图view是浅复制)
+  - [12.3. 深复制（Deep Copy）](#123-深复制deep-copy)
 
 ```bash
 pip install numpy
@@ -28,9 +31,7 @@ pip install numpy
 import numpy as np
 ```
 
-## 1. ndarray
-
-## 2. 性质
+## 1. 性质
 
 ```python
 arr = np.array([[1., 2., 3.], [4., 5., 6.]])  # 创建ndarray
@@ -81,11 +82,18 @@ print(arr4.shape)
 #(2,2,3)
 ```
 
-## 3. 创建ndarray
+### 1.1. print小数
+
+```python
+np.set_printoptions(suppress=True)
+np.set_printoptions(suppress=True, precision=4)
+```
+
+## 2. 创建ndarray
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzI2MDQyMjkxX2Qza1cyTllOYnMuanBn?x-oss-process=image/format,png)
 
-### 3.1. np.array()
+### 2.1. np.array()
 
 ```python
 import numpy as np
@@ -129,7 +137,7 @@ print(type(data4))
 # 所以array()中的数据最好写成列表类型
 ```
 
-### 3.2. np.zeros() 、ones() 、empty()
+### 2.2. np.zeros() 、ones() 、empty()
 
 zeros和ones分别可以创建指定长度或形状的全0或全1数组，empty可以创建一个没有任何具体值的数组。
 
@@ -179,7 +187,7 @@ print(np.empty((2,3)))
 '''
 ```
 
-### 3.3. np.arange()
+### 2.3. np.arange()
 
 arange是Python内置函数range的数组版，产生从0~N-1的整数ndarray。注意：不到N
 
@@ -213,7 +221,7 @@ arr=np.arange(28).reshape((3,2,4))
 #reshape()里传入一个元组类型
 ```
 
-## 4. ndarray的数据类型
+## 3. ndarray的数据类型
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzI2MjU4OTA0X3pITzZOZjlicUsuanBn?x-oss-process=image/format,png)
 
@@ -221,7 +229,7 @@ arr=np.arange(28).reshape((3,2,4))
 
 > 通常只需要知道你所处理的数据的大致类型是浮点数、复数、整数、布尔值、字符串，还是普通的Python对象即可 
 
-### 4.1. 指定类型： 
+### 3.1. 指定类型： 
 
 ```python
 arr1=np.array([1,2,3])
@@ -239,7 +247,7 @@ print(arr2.dtype)
 empty_uint32 = np.empty(8, dtype='u4')
 ```
 
-### 4.2. 转化类型：
+### 3.2. 转化类型：
 
 > astype()
 
@@ -264,7 +272,7 @@ print(arr.astype(np.float))
 #[  1.25        -9.6         42.00000002]
 ```
 
-### 4.3. np.array()和np.asarray()的区别
+### 3.3. np.array()和np.asarray()的区别
 
 `array` 和 `asarray` 都可以将结构数据转化为 `ndarray` 
 - 当数据源是列表时，都会copy出一个副本，占用新的内存。
@@ -302,13 +310,13 @@ print(arr7[1][1], arr8[1][1], arr9[1][1])
 2 1 1
 '''
 ```
-## 5. 还原list
+## 4. 还原list
 
 ```python
 l = arr.tolist()
 # [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 10, 11]]
 ```
-## 6. ndarray数组的运算
+## 5. ndarray数组的运算
 
 > 数组与标量的算术运算会将标量值传播到各个元素：
 
@@ -361,9 +369,9 @@ print(arr2 == arr1)
 '''
 #>、<、==、>=、<=.注意==
 ```
-## 7. 基本的切片与索引
+## 6. 基本的切片与索引
 
-### 7.1. 基本的切片和索引
+### 6.1. 基本的切片和索引
 
 注意：当你将一个标量值赋值给一个切片时（如arr[5:8]=12），该值会自动传播到整个选区。
 
@@ -415,7 +423,7 @@ slice[:]=666
 print(arr)
 ```
 
-### 7.2. 多维数组的索引
+### 6.2. 多维数组的索引
 
 > 在多维数组中，如果省略了后面的索引，则返回对象会是一个维度低一点的ndarray
 > 
@@ -443,47 +451,9 @@ print(arr2d[0,2])
 
  ![](https://img-blog.csdnimg.cn/20190320193647802.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
-### 7.3. 视图还是复制
 
-> 视图：跟列表最重要的区别在于，数组切片是原始数组的视图。这意味着数据不会被复制，修改切片，变动也会体现在原始数组arr中。
-> 
-> 由于NumPy的设计目的是处理大数据，所以你可以想象一下，假如NumPy坚持要将数据复制来复制去的话会产生何等的性能和内存问题。
 
-```python
-import numpy as np 
-arr = np.arange(10)
- 
-print (arr)
-#[0 1 2 3 4 5 6 7 8 9]
-slice=arr[0:4]
-print(slice)
-#[0 1 2 3]
-slice[:]=666
-print(arr)
-slice[0]=33
-print(arr)
-#[ 33 666 666 666   4   5   6   7   8   9]
-```
-
-> 复制：如果你想要得到的是ndarray切片的一份副本而非视图，就需要明确地进行复制操作，copy()方法
-
-```python
-arr2d = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
-myarr=arr2d.copy()
-myarr[0]=666
-print(myarr)
-print(arr2d)
-'''
-[[666 666 666]
- [  4   5   6]
- [  7   8   9]]
-[[1 2 3]
- [4 5 6]
- [7 8 9]]
-'''
-```
-
-## 8. 花式切片
+## 7. 花式切片
 
 ![](https://img-blog.csdnimg.cn/20200615133536252.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NhbmRhbHBob240ODY5,size_16,color_FFFFFF,t_70)
 
@@ -520,7 +490,7 @@ print(arr2d[:,:2])
 '''
 ```
 
-## 9. 布尔型索引 
+## 8. 布尔型索引 
 
 通过布尔型索引选取数组中的数据，将总是创建数据的副本，即使返回一模一样的数组也是如此。 
 
@@ -626,7 +596,7 @@ print(arr)
 #设置整行整列为0
 ```
 
-## 10. 花式索引
+## 9. 花式索引
 
 花式索引跟切片不一样，它总是将数据复制到新数组中。
 
@@ -772,7 +742,7 @@ print(arr[[2,1,0,3]] [:,:3])
 '''
 ```
 
-## 11. 数组转置
+## 10. 数组转置
 
 转置是重塑的一种特殊形式，它返回的是源数据的视图（不会进行任何复制操作）
 
@@ -886,7 +856,7 @@ print(arr.transpose(0,2,1))
 '''
 ```
 
-### torch
+### 10.1. torch
 
 `permute()`、`.T`, `transpose()`
 numpy到torch
@@ -918,15 +888,94 @@ A.transpose(0, 1) == A.transpose(1, 0)
 
 
 
-## 12. 如何判断两个numpy数组是否相等
+## 11. 如何判断两个numpy数组是否相等
 
 - `(array1 == array2)` 返回两个矩阵中对应元素是否相等的逻辑值
 - `(array1 == array2).all()`当两个矩阵所有对应元素相等，返回一个逻辑值True
 - `(array1 == array2).any()`当两个矩阵所有任何一个对应元素相等，返回一个逻辑值True
-___
 
-参考：
+## 12. copy
 
-[https://tianchi.aliyun.com/notebook-ai/detail?spm=5176.12282042.0.0.60cb290abNYT8n&postId=5977](https://tianchi.aliyun.com/notebook-ai/detail?spm=5176.12282042.0.0.60cb290abNYT8n&postId=5977)
+### 12.1. 引用
+```python
+a = np.arange(12)
+c = a                            
+print('c是a吗？', c is a)
+print('c是以a为基础建立的吗', c.base is a)
+c.shape = 3, 4
+print('a的shape', a.shape)    # a的shape会跟着变
+c[0] = -1
+print('a的值', a[0])          # a的值会跟着变
+'''
+c是a吗？ True
+c是以a为基础建立的吗 False  ## c都已经是a....
+a的shape (3, 4)
+a的值 [-1 -1 -1 -1]
+'''
+```
 
-\[xwjm\]([https://pan.baidu.com/s/1WjMCiIdWQ4WXg50Ark1HTg](https://pan.baidu.com/s/1WjMCiIdWQ4WXg50Ark1HTg))
+
+
+### 12.2. 视图（View）是浅复制
+view方法创建一个与原来数组相同的新对象：
+- 可以分享相同的数据 value. 数据不会被复制，修改切片，变动也会体现在原始数组中。
+- 唯一可以变的是 shape.
+```python
+a = np.arange(12)
+c = a.view()                     
+print('c是a吗？', c is a)
+print('c是以a为基础建立的吗', c.base is a)
+c.shape = 2, 2
+print('a的shape', a.shape)    # a的shape不跟着变
+c[0] = -1
+print('a的值', a[0])          # 但a的值会跟着变
+c[:] = 666
+print('a的值', a[0])          # 但a的值会跟着变
+'''
+c是a吗？ False
+c是以a为基础建立的吗 True
+a的shape (12,)
+a的值 -1
+a的值 666
+'''
+```
+
+数组切片是原始数组的视图。
+
+```python
+a = np.arange(12)
+c = a[0:4]                       
+print('c是a吗？', c is a)
+print('c是以a为基础建立的吗', c.base is a)
+c.shape = 2, 2
+print('a的shape', a.shape)    # a的shape不跟着变
+c[0] = -1
+print('a的值', a[0])          # 但a的值会跟着变
+c[:] = 666
+print('a的值', a[0])          # 但a的值会跟着变
+'''
+c是a吗？ False
+c是以a为基础建立的吗 True
+a的shape (12,)
+a的值 -1
+a的值 666
+'''
+```
+### 12.3. 深复制（Deep Copy）
+这个时候d是a的复制，只是单纯的复制，两者没有一点关系：
+```python
+a = np.arange(12)
+c = a.copy()                            
+print('c是a吗？', c is a)
+print('c是以a为基础建立的吗', c.base is a)
+c.shape = 3, 4
+print('a的shape', a.shape)    # a的shape不跟着变
+c[0] = -1
+print('a的值', a[0])          # a的值不会跟着变
+'''
+是a吗？ False
+c是以a为基础建立的吗 False
+a的shape (12,)
+a的值 0
+'''
+```
