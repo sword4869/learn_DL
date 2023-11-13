@@ -68,8 +68,5 @@
 
 - `camera_angle_x`：完整的fov
 - `rotation`: 没用到。
-- `transform_matrix`: 
-    
-    外参 c2w。相机坐标系 RUB。
-    nerf 里`load_blender_data`返回的`poses`, `get_rays`的`c2w`。
+- `transform_matrix`: c2w `[4,4]`。相机坐标系 RUB。
 

@@ -48,6 +48,8 @@ True
 >>> x = np.array([1, 2])
 >>> x[np.newaxis, :].shape
 (1, 2)
+>>> x[np.newaxis].shape     # 可以简写
+(1, 2)
 >>> x[:, None].shape               
 (2, 1)
 

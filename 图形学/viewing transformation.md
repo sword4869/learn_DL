@@ -8,6 +8,7 @@
   - [2.4. 各种右手的相机坐标系的转换](#24-各种右手的相机坐标系的转换)
     - [2.4.1. 在获取c2w时](#241-在获取c2w时)
     - [2.4.2. 已经获取c2w后](#242-已经获取c2w后)
+  - [2.5. 其他](#25-其他)
 - [3. projection transformation](#3-projection-transformation)
   - [3.1. orthographic projection](#31-orthographic-projection)
     - [3.1.1. view volume to canonical view volume](#311-view-volume-to-canonical-view-volume)
@@ -342,6 +343,15 @@ w2c = np.diag([1, -1, -1, 1]) @ w2c
 w2c = np.concatenate([w2c[1:2], w2c[0:1], -w2c[2:3], w2c[3:4]], 0)
 w2c = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) @ w2c
 ```
+### 2.5. 其他
+
+$R_2 \left[ R_1\begin{bmatrix}x \\ y \\ z \end{bmatrix} + t_1 \right] + t_2 = R_2 R_1 \begin{bmatrix}x \\ y \\ z \end{bmatrix} + R_2 t_1 + t_2 $
+```python
+R = R_2 @ R_1     # [3, 3]
+t = R_2 @ t_1 + t_2   # [3]
+extrin = np.hstack((R, t[None].T))  # [3, 4]，如何将R和T拼接
+```
+
 ## 3. projection transformation
 
 perspective projection 透射投影 和 orthographic projection 正交投影 的区别：无有近大远小。

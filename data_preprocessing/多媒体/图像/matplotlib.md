@@ -1,3 +1,5 @@
+好处就是读取、显示、保存，uint8 或者 float 都行。
+
 ```python
 import numpy as np
 from PIL import Image
@@ -10,4 +12,10 @@ array = np.array(img)
 plt.imsave('f1f.png', array)
 plt.imshow(array)
 plt.show()
+```
+
+
+显示单通道图有一个bug，如果全是1或者全是0，那么会显示黑色。存在多个值时，1才是纯白，0是纯黑。
+```python
+plt.imshow(img[..., 3:4], cmap='gray')
 ```

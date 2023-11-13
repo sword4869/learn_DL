@@ -48,6 +48,8 @@ print(img.format)   # JPEG
 ##################################### 色彩模式之转化灰度图
 im = img.convert('L')       # 灰度图
 # im = img.convert('RGB')   # RGB
+# 如果是RGB的png，那么Image.open打开就是RGB。这时候想要RGBA，就convert强行加一个都是1的alpha
+# im = img.convert('RGBA')   # RGBA
 
 ##################################### 图片大小之改变大小
 
