@@ -4,13 +4,10 @@
   - [2.2. 有参的](#22-有参的)
 - [3. 写入](#3-写入)
   - [3.1. scalar](#31-scalar)
-    - [3.1.1. add\_scalar](#311-add_scalar)
-    - [3.1.2. add\_scalars](#312-add_scalars)
   - [3.2. images](#32-images)
-    - [3.2.1. add\_image](#321-add_image)
-    - [3.2.2. add\_images](#322-add_images)
-  - [3.3. net graph](#33-net-graph)
-  - [3.4. 网络例子](#34-网络例子)
+  - [3.3. 其他](#33-其他)
+  - [3.4. net graph](#34-net-graph)
+  - [3.5. 网络例子](#35-网络例子)
 - [4. share](#4-share)
   - [4.1. 直接下载就行](#41-直接下载就行)
   - [4.2. dev](#42-dev)
@@ -30,7 +27,7 @@ TensorBoard 1.14+ **can be run** with a reduced feature set if you do not have T
 
 The primary limitation is that as of 1.14, only the following plugins are supported: scalars, custom scalars, image, audio, graph, projector (partial), distributions, histograms, text, PR curves, mesh.
 
-直接安`tensorflow`得了。
+基本操作没问题，不用安`tensorflow`。
 
 > Duplicate plugins for name projector
 
@@ -123,7 +120,7 @@ from torch.utils.tensorboard import SummaryWriter
 # 创建
 writer = SummaryWriter()
 
-# 刷入
+# 手动刷入硬盘. 自动写入是Default is every two minutes
 writer.flush()
 
 # 关闭
@@ -131,46 +128,25 @@ writer.close()
 ```
 
 ### 3.1. scalar
+- `add_scalar(tag, scalar_value, global_step=None, ...)`
 
-#### 3.1.1. add_scalar
-
-`add_scalar(tag, scalar_value, global_step=None, walltime=None)`
+- `add_scalars(main_tag, tag_scalar_dict, global_step, ...)`: 每个具有可以单独开关的日志。
 
 ```python
-from torch.utils.tensorboard import SummaryWriter
-
-# 创建
-writer = SummaryWriter()
-
 for i in range(100):
     # 图的名字, y轴, x轴
     writer.add_scalar('fuction of y', i * 2, i)
-    
-# 关闭
-writer.close()
 ```
 ![图 4](../images/16e75547003ddd481dc98f649061637de870697e88c4f3b9508839f9ceec2544.png)  
 
 ```python
-from torch.utils.tensorboard import SummaryWriter
-import numpy as np
-
-writer = SummaryWriter()
-
 for n_iter in range(100):
     writer.add_scalar('Loss/train', np.random.random(), n_iter)
     writer.add_scalar('Loss/test', np.random.random(), n_iter)
-    
-writer.close()
 ```
 ![图 3](../images/dc116d8b6db1354284839e48332e3f7e7b7261f5690e2178a73355948b200072.png)  
 
-#### 3.1.2. add_scalars
 ```python
-from torch.utils.tensorboard import SummaryWriter
-
-writer = SummaryWriter()
-
 r = 5
 for i in range(100):
     writer.add_scalars('run_14h',
@@ -180,7 +156,6 @@ for i in range(100):
                            'tanx': np.tan(i/r)
                        },
                        i)
-writer.close()
 ```
 
 ![图 1](../images/cc2f602a18cbdec5c172a7330c4f4856efa1d6f86ae02d869fb73eb2ac1f9153.png) 
@@ -199,58 +174,52 @@ writer.add_scalars('train', log_values, global_step)
 
 ![Alt text](../images/image-24.png)
 
-每个可以单独开关。
 
 ### 3.2. images
 
-#### 3.2.1. add_image
+`add_image(tag, img_tensor, global_step=None, walltime=None, dataformats='CHW')`
 
-- `img`： numpy array, torch tensor, [0.,1.0] or [0, 255]
+- `img_tensor`： (torch.Tensor, numpy.ndarray, or string/blobname), [0.,1.0] or [0, 255]
 - `dataformats `: Image data format specification of the form `CHW`, `HWC`, `HW`, `WH`, etc.
 
-- tensor
-```python
-from torch.utils.tensorboard import SummaryWriter
+`add_images(tag, img_tensor, global_step=None, walltime=None, dataformats='NCHW')`:
+- `dataformats `: Image data format specification of the form `NCHW`, `NHWC`, `CHW`, `HWC`, `HW`, `WH`, etc.
+    
+    可以是一个，(1, H, W, C)
+    
+    可以全是[0,255]或者全是[0.0, 1.0]，但不能混着来
 
-# X.shape = torch.Size([128, 1, 224, 224])
-X, y = next(iter(test_iter))
-
-writer = SummaryWriter()
-# writer.add_image(tag, img, global_step, dataformats='CHW')
-# dataformats: CHW, HWC, HW, WH
-writer.add_image('gt', X[0], 0, dataformats='HWC')
-writer.close()
-```
-![图 5](../images/d36e25c5bd39401d8f2ab5286bf58c1affd0ce06914a17a665f9cd15f55e965b.png)  
-
-- ndarry
+PS:保存的`global_step`太多的话，会被吞掉一部分。
 
 ```python
-from torch.utils.tensorboard import SummaryWriter
-from skimage import io
+### tensor
+X, y = next(iter(test_iter))    # [128, 1, 224, 224]
 
-# (111, 189, 3)
-img = io.imread(r'images\494f271c9bdece36a1cc2ae66913f16d296c1f6e0c852278769c7f233c658166.png')
+writer.add_image('gt', X[0], 0)
 
-writer = SummaryWriter()
-writer.add_image('gt_ndarry', img, 0, dataformats='HWC')
-writer.close()
+### ndarray
+writer.add_image('gt_ndarry', img, 0, dataformats='HWC')    # (111, 189, 3)
 ```
 ![图 6](../images/ebb993bbdf19c6b6d43e65433ff2bd1fdfb0252ce5f95f97fe2b9d96cd5ddc10.png)  
 
 
-#### 3.2.2. add_images
-- `dataformats `: Image data format specification of the form `NCHW`, `NHWC`, `CHW`, `HWC`, `HW`, `WH`, etc.
 ```python
-# dataformats (str): Image data format specification of the form NCHW, NHWC, CHW, HWC, HW, WH, etc.
-# imgs：
-# - 可以是一个，(1, H, W, C)
-# - 可以全是[0,255]或者全是[0.0, 1.0]，但不能混着来
-writer.add_images('gt', imgs, 0, dataformats='NHWC')
+writer.add_images('gt', imgs, 0)
 ```
 ![图 7](../images/bf95f3f28e0477226eb32dd0b30024f08fae8feda02a57d753fbf2ff3d18d22e.png)  
 
-### 3.3. net graph
+### 3.3. 其他
+
+`add_histogram(tag, values, global_step=None, ...)`
+
+`add_figure(tag, figure, global_step=None, close=True, walltime=None)`: matplotlib figure 
+
+`add_video(tag, vid_tensor, global_step=None, fps=4, walltime=None)`
+
+`add_audio(tag, snd_tensor, global_step=None, sample_rate=44100, walltime=None)`
+
+`add_text(tag, text_string, global_step=None, walltime=None)`
+### 3.4. net graph
 ```python
 import torch
 # torchvision.datasets.FashionMNIST
@@ -338,7 +307,7 @@ writer.close()
 ![图 3](../images/cc9a7bd6c4d74ba9650e0a0e7d05c9af1bbbe13798bd09ef8b2246b29cf3d169.png)  
 ![图 4](../images/a4faaa1d9d7b1887a2fd998fdfcaef6e91444dd12ab90e416f298e7d1b3694d2.png)  
 
-### 3.4. 网络例子
+### 3.5. 网络例子
 ```python
 writer = SummaryWriter()
 # 训练
