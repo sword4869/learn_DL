@@ -1,13 +1,19 @@
-- [resize](#resize)
-- [1. 像素操作](#1-像素操作)
-- [2. 和 Numpy 数组之间的转化](#2-和-numpy-数组之间的转化)
+- [1. open,save,show](#1-opensaveshow)
+- [2. convert](#2-convert)
+- [3. 通道分离合并](#3-通道分离合并)
+- [4. crop/paste](#4-croppaste)
+- [5. rotate](#5-rotate)
+- [6. resize](#6-resize)
+- [7. 像素操作](#7-像素操作)
+- [8. 和 Numpy 数组之间的转化](#8-和-numpy-数组之间的转化)
 
 ---
+
 ```bash
 pip install pillow
 ```
 
-## 0.1. open,save,show
+## 1. open,save,show
 ```python
 from PIL import Image
 
@@ -29,19 +35,17 @@ plt.imshow(img)
 
 # 也可以直接在jupyter notebook 显示
 img
+```
 
-
-##################################### 图像的属性
-
+## 2. convert
+```python
 '''
 没有shape属性
 - mode 属性为色彩模式，RGB 代表彩色图像，L 代表光照图像也即灰度图像等
-- size 属性为图片的大小，非数组的样式，(宽度W，高度H)
 - format 属性为图片的格式，如常见的 PNG、JPEG 等
 '''
 
 print(img.mode)     # RGB
-print(img.size)     # (481, 321)
 print(img.format)   # JPEG
 
 
@@ -50,13 +54,9 @@ im = img.convert('L')       # 灰度图
 # im = img.convert('RGB')   # RGB
 # 如果是RGB的png，那么Image.open打开就是RGB。这时候想要RGBA，就convert强行加一个都是1的alpha
 # im = img.convert('RGBA')   # RGBA
-
-##################################### 图片大小之改变大小
-
-# （W， H）
-im = img.resize((300, 600))
-im = img.resize((300, 600), resample=Image.NEAREST)
-
+```
+## 3. 通道分离合并
+```python
 ##################################### 通道分离合并
 
 # 分离
@@ -70,8 +70,11 @@ axs[2].imshow(b, cmap='gray')
 
 # 合并
 im = Image.merge('RGB', (r, g, b))
+```
 
+## 4. crop/paste
 
+```python
 ##################################### 获取局部区域（裁剪）
 # 左上角 X 坐标、Y 坐标，右下角 X 坐标、Y 坐标
 box = (0, 0, 30, 30)
@@ -81,7 +84,10 @@ im = img.crop(box)
 ##################################### 粘贴图片
 
 img.paste(img.crop(box), (10, 10))  # 左上角坐标
+```
+## 5. rotate
 
+```python
 ##################################### 旋转
 
 # 平面翻转
@@ -104,17 +110,24 @@ im = img.rotate(45)
   ![图 1](../../../images/01963753d6524216a4ba5fc3480fd554fb35b26507ab1b10b84831c46c648262.png)  
   ![图 2](../../../images/196a76ab7e709bfdf2849990e6611bdeb4ea477c3d1407b8a77d7ce16d1a3008.png)  
 
-# resize
-
+## 6. resize
 ```python
-resolution = (new_w, new_h)
-resized_image_PIL = pil_image.resize(resolution)
+>>> image.size
+(1334, 2048)
+>>> image.width
+1334
+>>> image.height
+2048
 ```
 
-# 1. 像素操作
 ```python
-from PIL import Image
+# (w, h)
+im = img.resize((300, 600))
+im = img.resize((300, 600), resample=Image.NEAREST)
+```
 
+## 7. 像素操作
+```python
 img = Image.open('../image/20220923201825.jpg')
 
 ##################################### 读取像素：方式1
@@ -143,7 +156,7 @@ im = img.split()
 im = im[2].point(lambda i: i > 128 and 255) # 对 B 通道进行二值化
 ```
 
-# 2. 和 Numpy 数组之间的转化
+## 8. 和 Numpy 数组之间的转化
 ```python
 import numpy as np
 from PIL import Image
