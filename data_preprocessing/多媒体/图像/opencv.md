@@ -2,6 +2,7 @@
 - [2. Usage](#2-usage)
   - [2.1. 轮廓](#21-轮廓)
   - [2.2. 缩放](#22-缩放)
+  - [2.3. 前景背景](#23-前景背景)
 
 ---
 ## 1. install
@@ -86,4 +87,48 @@ img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
 # 方法2：fx, fy
 # dsize需要设置None，一起用就会只用dsize起作用
 img = cv2.resize(img, dsize=None, fx=2, fy=2, interpolation=cv2.INTER_AREA)
+```
+
+### 2.3. 前景背景
+
+
+- img: 输入图像，支持8位3通道
+- mask: 掩码图像，可以设置为:
+    GCD_BGD(=0），背景；
+    GCD_FGD(=1），前景；
+    GCD_PR_BGD(=2），可能的背景；
+    GCD_PR_FGD(=3），可能的前景。
+- rect: 前景的矩形，格式为(x,y,w,h），分别为左上角坐标和宽度，高度
+- bdgModel, fgdModel: 算法内部是用的数组，只需要创建两个大小为(1,65）np.float64的数组。
+- iterCount: 迭代次数
+- mode:使用矩阵模式还是蒙板模式
+    cv2.GC_INIT_WITH_RECT
+    cv2.GC_INIT_WITH_MASK
+```python
+import numpy as np
+import cv2
+# 读取图像
+img = cv2.imread(r'C:\Users\lab\Pictures\1111.png')
+
+# ROI 
+r = cv2.selectROI('input', img, False)  # 返回 (x_min, y_min, w, h)
+rect = (int(r[0]), int(r[1]), int(r[2]), int(r[3]))
+# 手动
+rect = (1, 1, img.shape[1], img.shape[0]) # (x_min, y_min, w, h)
+
+mask = np.zeros(img.shape[:2], np.uint8)
+bgdModel = np.zeros((1, 65), np.float64)
+fgdModel = np.zeros((1, 65), np.float64)
+cv2.grabCut(img, mask, rect, bgdModel, fgdModel, 1, cv2.GC_INIT_WITH_RECT)
+
+mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+img_f = img * mask2[:, :, np.newaxis]
+img_bg = img * (1 - mask2[:, :, np.newaxis])
+
+# 显示图像
+cv2.imshow("img", img)
+cv2.imshow("img_f",img_f)
+cv2.imshow("img_bg",img_bg)
+cv2.waitKey()
+cv2.destroyAllWindows()
 ```

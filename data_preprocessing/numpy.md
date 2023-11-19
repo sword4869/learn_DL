@@ -483,15 +483,17 @@ array([[1, 4],
 ```
 vstack: stack along the first axis
 ```python
->>> a = np.array([1, 2, 3])
->>> b = np.array([4, 5, 6])
->>> np.vstack((a,b))
+#### stack
+>>> a = np.array([1, 2, 3])        # [3]
+>>> b = np.array([4, 5, 6])        # [3]
+>>> np.vstack((a,b))               # [2, 3]
 array([[1, 2, 3],
        [4, 5, 6]])
 
->>> a = np.array([[1], [2], [3]])
->>> b = np.array([[4], [5], [6]])
->>> np.vstack((a,b))
+#### concatenate
+>>> a = np.array([[1], [2], [3]])  # [3, 1]
+>>> b = np.array([[4], [5], [6]])  # [3, 1]
+>>> np.vstack((a,b))               # [6, 1]
 array([[1],
        [2],
        [3],
@@ -501,13 +503,16 @@ array([[1],
 ```
 hstack: stack along the second axis, except for 1-D arrays where it concatenates along the first axis.
 ```python
->>> a = np.array((1,2,3))
->>> b = np.array((4,5,6))
->>> np.hstack((a,b))
+#### stack
+>>> a = np.array((1,2,3))          # [3]
+>>> b = np.array((4,5,6))          # [3]
+>>> np.hstack((a,b))               # [6]
 array([1, 2, 3, 4, 5, 6])
->>> a = np.array([[1],[2],[3]])
->>> b = np.array([[4],[5],[6]])
->>> np.hstack((a,b))
+
+#### concatenate
+>>> a = np.array([[1],[2],[3]])    # [3, 1]
+>>> b = np.array([[4],[5],[6]])    # [3, 1]
+>>> np.hstack((a,b))               # [3, 2]
 array([[1, 4],
        [2, 5],
        [3, 6]])

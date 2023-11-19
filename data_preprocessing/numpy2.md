@@ -435,9 +435,9 @@ NumPy能够读写磁盘上的文本数据或二进制数据。
 
 ```python
 arr = np.arange(10)
-np.save('some_array', arr)  # some_array.npy
+np.save('numpy_array', arr)  # some_array.npy
 
-print(np.load('some_array.npy'))
+print(np.load('numpy_array.npy'))
 # [0 1 2 3 4 5 6 7 8 9]
 ```
 
@@ -446,23 +446,25 @@ print(np.load('some_array.npy'))
 `np.savez`可以将多个数组保存到一个未压缩文件中，将数组以关键字参数的形式传入即可
 
 ```python
-np.savez('array_archive.npz', a=arr, b=arr)
-arch = np.load('array_archive.npz')
-print(arch['b'])
-#[0 1 2 3 4 5 6 7 8 9]
+np.savez('archive.npz', a=arr, b=arr)
+arch = np.load('archive.npz')
+print(arch['a'], arch['b'])
+# [0 1 2 3 4 5 6 7 8 9] [0 1 2 3 4 5 6 7 8 9]
 ```
 
 如果要将数据压缩，可以使用`numpy.savez_compressed`
 
 ```python
-np.savez_compressed('arrays_compressed.npz', a=arr, b=arr)
+np.savez_compressed('archive_compressed.npz', a=arr, b=arr)
 ```
 
 ### 9.3. bin
 
+注意 dtype 来对齐字节
 ```python
-arr = np.arange(10)
+arr = np.arange(10, dtype=np.int32)
 arr.tofile('arr.bin')
+print(np.fromfile('binary.bin', dtype=np.int32))
 ```
 
 
