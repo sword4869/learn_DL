@@ -2,7 +2,7 @@
     - linux
       ```bash
       export CUDA_VISIBLE_DEVICES=0
-      # export CUDA_VISIBLE_DEVICES="0,1"
+      export CUDA_VISIBLE_DEVICES="0,1"
       ```
       然后执行
       ```bash
@@ -11,11 +11,13 @@
       python
       ```
     - windows
+
+      注意 `set` 环境变量是在cmd下。
       ```bash
-      set CUDA_VISIBLE_DEVICES=0
       # set CUDA_VISIBLE_DEVICES="0" 是错的
       
-      # set CUDA_VISIBLE_DEVICES=0,1
+      set CUDA_VISIBLE_DEVICES=0
+      set CUDA_VISIBLE_DEVICES=0,1
       ```
 - 只对这一次命令起效果
     - 只有linux

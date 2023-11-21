@@ -503,7 +503,7 @@ array([[1],
 ```
 hstack: stack along the second axis, except for 1-D arrays where it concatenates along the first axis.
 ```python
-#### stack
+#### append
 >>> a = np.array((1,2,3))          # [3]
 >>> b = np.array((4,5,6))          # [3]
 >>> np.hstack((a,b))               # [6]
