@@ -22,9 +22,10 @@
 - [10. 线性代数](#10-线性代数)
 - [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
   - [11.1. seed()](#111-seed)
-  - [11.2. rand() 连续均匀分布](#112-rand-连续均匀分布)
+  - [11.2. rand()/random()/random\_sample() 连续均匀分布](#112-randrandomrandom_sample-连续均匀分布)
   - [11.3. randint() 离散均匀分布](#113-randint-离散均匀分布)
   - [11.4. randn()正态分布](#114-randn正态分布)
+  - [11.5. choice() 列表](#115-choice-列表)
 
 
 ## 1. 通用函数：快速的元素级数组函数
@@ -600,7 +601,9 @@ print(" ***** set seed result ***** ")
 set_seed()
 ```
 
-### 11.2. rand() 连续均匀分布
+### 11.2. rand()/random()/random_sample() 连续均匀分布
+
+`rand()`, `random()` 都是 `random_sample()` 的别名
 
 均匀分布，生成`[0, 1)`之间的数据。
 
@@ -670,4 +673,41 @@ x=np.random.randn(5)
 y=np.random.randn(2, 2)
 # [[-1.15277551  0.74185824]
 #  [-0.55820537  0.55722007]]
+```
+
+### 11.5. choice() 列表
+
+`random.choice(a, size=None, replace=True, p=None)`
+- `a`: 1-D array（不限类型，string也可以）
+
+    If an int, the random sample is generated as if it were np.arange(a)
+- `p`: The probabilities associated with each entry in a. 
+
+    If `None`, the sample assumes a uniform distribution.
+
+```python
+# Generate a uniform random sample from np.arange(5) of size 3
+# This is equivalent to np.random.randint(0,5,3)
+>>> np.random.choice(5, 3)
+array([0, 3, 4])
+
+# Generate a non-uniform random sample from np.arange(5) of size 3
+>>> np.random.choice(5, 3, p=[0.1, 0, 0.3, 0.6, 0])
+array([3, 3, 0])
+```
+
+Generate a uniform random sample from np.arange(5) of size 3 without replacement:
+
+```python
+# This is equivalent to np.random.permutation(np.arange(5))[:3]
+>>> np.random.choice(5, 3, replace=False)
+array([3,1,0])
+```
+
+Any of the above can be repeated with an arbitrary array-like instead of just integers. For instance:
+```python
+>>> aa_milne_arr = ['pooh', 'rabbit', 'piglet', 'Christopher']
+>>> np.random.choice(aa_milne_arr, 5, p=[0.5, 0.1, 0.1, 0.3])
+array(['pooh', 'pooh', 'pooh', 'Christopher', 'piglet'],
+      dtype='<U11')
 ```
