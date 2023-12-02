@@ -407,18 +407,8 @@ output = input.clamp(min=0, max=9)
 # tensor([[9, 4, 8, 9, 9, 9, 9, 9, 8, 0]])
 ```
 
-[torch.max()](https://blog.csdn.net/ViatorSun/article/details/108909312): 三种形式
-- torch.max(x), 返回一个最大值的标量
-- torch.max(x, dim=d), 返回元组(维度最大值，在该维度的下标)
-- torch.max(x,y)，element-wise最大值
-
-
-torch.abs()
-
 ## 1.3. 维度操作
 如果有4个维度，`dim=-1`, 等同`dim=3`。
-
-
 
 > 张量的序列变张量 cat stack
 ```python

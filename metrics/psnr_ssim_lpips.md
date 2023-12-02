@@ -1,12 +1,32 @@
-- [1. overview](#1-overview)
-- [2. psnr和ssim](#2-psnr和ssim)
-  - [2.1. data\_range](#21-data_range)
-  - [2.2. psnr](#22-psnr)
-  - [2.3. ssim](#23-ssim)
-- [3. lpips](#3-lpips)
+- [1. loss](#1-loss)
+- [2. overview](#2-overview)
+- [3. psnr和ssim](#3-psnr和ssim)
+  - [3.1. data\_range](#31-data_range)
+  - [3.2. psnr](#32-psnr)
+  - [3.3. ssim](#33-ssim)
+- [4. lpips](#4-lpips)
 
 ----
-## 1. overview
+
+## 1. loss
+
+- PSNR↑:
+  - PSNR高于40dB说明图像质量几乎与原图一样好；
+  - 在30-40dB之间通常表示图像质量的失真损失在可接受范围内；
+  - 在20-30dB之间说明图像质量比较差；
+  - PSNR低于20dB说明图像失真严重。
+- SSIM↑：[0, 1]，越大代表图像越相似。如果两张图片完全一样时，SSIM值为1
+- LPIPS↓
+
+> 如何把 SSIM 用到loss里（如何把越大越好的指标用到越小越好的loss里）？
+
+就是所谓的 D-SSIM = 1 - SSIM。SSIM的最大范围 - SSIM值。
+
+```python
+loss = (1.0 - ssim(image, gt_image))
+```
+
+## 2. overview
 
 ```python
 from skimage.metrics import structural_similarity, peak_signal_noise_ratio
@@ -64,7 +84,7 @@ def metrics3(imgs1, imgs2, channel_axis_imgs1, channel_axis_imgs2, device='cpu')
     return psnr, ssim, lpips_metric.detach().cpu().numpy().item()
 ```
 
-## 2. psnr和ssim
+## 3. psnr和ssim
 > old name:
 - `skimage.measure.compare_psnr` -> `skimage.metrics.peak_signal_noise_ratio`
 - `skimage.measure.compare_ssim` -> `skimage.metrics.structural_similarity`
@@ -75,7 +95,7 @@ def metrics3(imgs1, imgs2, channel_axis_imgs1, channel_axis_imgs2, device='cpu')
 
 只要shape相同, 建议[H,W,3]。
 
-### 2.1. data_range
+### 3.1. data_range
 
 The data range of the input image (distance between minimum and maximum possible values). By deault, 255 for uint8, 1 for float.
 
@@ -113,7 +133,7 @@ The data range of the input image (distance between minimum and maximum possible
     dmin, dmax = dtype_range[im1.dtype.type]
     data_range = dmax - dmin
     ``` 
-### 2.2. psnr
+### 3.2. psnr
 
 可以看出，只要shape相同，[H,W,C],[C,H,W],[H*W,C]等等都行。
 ```python
@@ -147,7 +167,7 @@ mse2psnr(mse)
 ```
 ![图 1](../images/8c818487db3918b41c16ed0dbe4efaad6cb940cd33e68a2bd35bf5d80b7b3aba.png)  
 
-### 2.3. ssim
+### 3.3. ssim
 
 - `data_range` unit8还是float
     ```python
@@ -230,7 +250,7 @@ cv2.waitKey(0)
 ```
 可以看出用灰度图框选不太准（毕竟三通道融合了）
 
-## 3. lpips
+## 4. lpips
 两种方式
 - `lpips.LPIPS`
 - `torchmetrics.image.lpip.LearnedPerceptualImagePatchSimilarity`

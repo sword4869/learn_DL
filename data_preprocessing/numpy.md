@@ -1,41 +1,32 @@
-- [1. np.random.choice()](#1-nprandomchoice)
-- [2. 增加维度与删除维度](#2-增加维度与删除维度)
-  - [2.1. 增加维度 np.newaxis, None, np.expand\_dims](#21-增加维度-npnewaxis-none-npexpand_dims)
-  - [2.2. 广播](#22-广播)
-    - [2.2.1. 计算shape](#221-计算shape)
-    - [2.2.2. 修正shape](#222-修正shape)
-      - [2.2.2.1. torch.Tensor.expand](#2221-torchtensorexpand)
-  - [2.3. np.repeat](#23-nprepeat)
-    - [2.3.1. torch.Tensor.repeat](#231-torchtensorrepeat)
-  - [2.4. np.squeeze](#24-npsqueeze)
-  - [2.5. 应用维度](#25-应用维度)
-  - [2.6. einops](#26-einops)
-    - [2.6.1. einops](#261-einops)
-    - [2.6.2. torch.einsum](#262-torcheinsum)
-- [3. np.concatenate/stack](#3-npconcatenatestack)
-  - [3.1. concatenate](#31-concatenate)
-  - [3.2. stack](#32-stack)
-- [4. np.tile](#4-nptile)
-- [5. linspace](#5-linspace)
-  - [5.1. torch.linspace](#51-torchlinspace)
-- [6. meshgrid](#6-meshgrid)
-  - [6.1. torch.meshgrid](#61-torchmeshgrid)
-- [7. np.take / ndarray.take](#7-nptake--ndarraytake)
+- [1. 增加维度与删除维度](#1-增加维度与删除维度)
+  - [1.1. 增加维度 np.newaxis, None, np.expand\_dims](#11-增加维度-npnewaxis-none-npexpand_dims)
+  - [1.2. 广播](#12-广播)
+    - [1.2.1. 计算shape](#121-计算shape)
+    - [1.2.2. 修正shape](#122-修正shape)
+      - [1.2.2.1. torch.Tensor.expand](#1221-torchtensorexpand)
+  - [1.3. np.repeat](#13-nprepeat)
+    - [1.3.1. torch.Tensor.repeat](#131-torchtensorrepeat)
+  - [1.4. np.squeeze](#14-npsqueeze)
+  - [1.5. 应用维度](#15-应用维度)
+  - [1.6. einops](#16-einops)
+    - [1.6.1. einops](#161-einops)
+    - [1.6.2. torch.einsum](#162-torcheinsum)
+- [2. np.concatenate/stack](#2-npconcatenatestack)
+  - [2.1. concatenate](#21-concatenate)
+  - [2.2. stack](#22-stack)
+- [3. np.tile](#3-nptile)
+- [4. linspace](#4-linspace)
+  - [4.1. torch.linspace](#41-torchlinspace)
+- [5. meshgrid](#5-meshgrid)
+  - [5.1. torch.meshgrid](#51-torchmeshgrid)
+- [6. np.take / ndarray.take](#6-nptake--ndarraytake)
 
 
-## 1. np.random.choice()
-<https://blog.csdn.net/ImwaterP/article/details/96282230>
 
-```bash
-numpy.random.choice(a, size=None, replace=True, p=None)
-从a(只要是ndarray都可以，但必须是一维的)中随机抽取数字，并组成指定大小(size)的数组
-replace:True表示可以取相同数字，False表示不可以取相同数字
-数组p：与数组a相对应，表示取数组a中每个元素的概率，默认为选取每个元素的概率相同。
-```
 
-## 2. 增加维度与删除维度
+## 1. 增加维度与删除维度
 
-### 2.1. 增加维度 np.newaxis, None, np.expand_dims
+### 1.1. 增加维度 np.newaxis, None, np.expand_dims
 
 - `np.newaxis, None`
     
@@ -79,7 +70,7 @@ True
 (1, 2, 1)
 ```
 
-### 2.2. 广播
+### 1.2. 广播
 - 得到的数组将具有与具有最大维度数的输入数组相同的维度数 ndim = max ndim
 - 其中每个维度的大小是输入数组中对应维度的
 - 它从尾部（即最右侧）尺寸开始，然后向左移动。
@@ -87,7 +78,7 @@ True
   即 ndim 较小的数组会在前面追加一个长度为 1 的维度。
 - 注意：缺失的尺寸假定为1，即被扩散的轴必须是1
 
-#### 2.2.1. 计算shape 
+#### 1.2.1. 计算shape 
 
 `numpy.broadcast_shapes(*args)`
 ```python
@@ -129,7 +120,7 @@ True
        ValueError: shape mismatch: objects cannot be broadcast to a single shape.  
        Mismatch is between arg 0 with shape (4, 3) and arg 1 with shape (2, 3).
        ```
-#### 2.2.2. 修正shape
+#### 1.2.2. 修正shape
 `numpy.broadcast_to(array, shape, subok=False)`
 ```python
 >>> x = np.array([1, 2, 3])
@@ -166,7 +157,7 @@ array([[1, 2, 3],
        ```
 
 
-##### 2.2.2.1. torch.Tensor.expand
+##### 1.2.2.1. torch.Tensor.expand
 `torch.Tensor.expand(*sizes)`
 ```python
 >>> x = torch.Tensor([[1], [2], [3]])            # [3, 1]
@@ -175,7 +166,7 @@ tensor([[1., 1., 1., 1.],
         [2., 2., 2., 2.],
         [3., 3., 3., 3.]])
 ```
-### 2.3. np.repeat
+### 1.3. np.repeat
 `numpy.repeat(a, repeats, axis=None)` or `Ndarry.repeat(repeats, axis=None)`:
 - `axis`: 默认`None`展平数组
 ```python
@@ -203,7 +194,7 @@ array([[1, 2, 2],
 (1000, 4)
 ```
 
-#### 2.3.1. torch.Tensor.repeat
+#### 1.3.1. torch.Tensor.repeat
 `torch.Tensor.repeat(*sizes)`: 
 
 要求`*sizes` 对齐 tensor变量的n_dim.
@@ -240,7 +231,7 @@ def noise_like(shape, device):
     return repeat_noise()
 ```
 
-### 2.4. np.squeeze
+### 1.4. np.squeeze
 
 删除维度 
 
@@ -271,7 +262,7 @@ array(1234)  # 0d array
 1234
 ```
 
-### 2.5. 应用维度
+### 1.5. 应用维度
 
 ```python
 >>> arr = np.arange(4).reshape((2,2))
@@ -318,9 +309,9 @@ array([[ 6, 22, 38],
        [54, 70, 86]])
 ```
 
-### 2.6. einops
+### 1.6. einops
 
-#### 2.6.1. einops
+#### 1.6.1. einops
 
 numpy.ndarray, tensorflow, pytorch, 或者 list.
 
@@ -362,7 +353,7 @@ repeat(timesteps, 'b -> b d', d=dim)
 ```
 
 
-#### 2.6.2. torch.einsum
+#### 1.6.2. torch.einsum
 
 > 矩阵的乘积
 
@@ -432,8 +423,8 @@ tensor([[0, 2],
         [1, 3]])
 ```
 
-## 3. np.concatenate/stack
-### 3.1. concatenate
+## 2. np.concatenate/stack
+### 2.1. concatenate
 The arrays must have the same shape, except in the dimension corresponding to axis (the first, by default).
 ```python
 # numpy.concatenate((a1, a2, ...), axis=0, out=None, dtype=None, casting="same_kind")
@@ -457,7 +448,7 @@ np.concatenate((a, b.T), axis=1)
 np.concatenate((a, b), axis=None)
 # array([1, 2, 3, 4, 5, 6])
 ```
-### 3.2. stack
+### 2.2. stack
 stack
 ```python
 >>> arrays = [np.random.randn(3, 4) for _ in range(10)]
@@ -517,7 +508,7 @@ array([[1, 4],
        [2, 5],
        [3, 6]])
 ```
-## 4. np.tile
+## 3. np.tile
 
 `numpy.tile(A, reps)`:通过重复A代表给出的次数来构建数组，平铺效果。
 - If `reps` has length `d`, the result will have dimension of `max(d, A.ndim)`.
@@ -579,7 +570,7 @@ array([[1, 2, 3, 4],
        [1, 2, 3, 4]])
 ```
 
-## 5. linspace
+## 4. linspace
 
 在区间内，平均划分，返回n个点。
 ```python
@@ -612,13 +603,13 @@ array([1. , 1.9, 2.8, 3.7, 4.6, 5.5, 6.4, 7.3, 8.2, 9.1])
 
 `np.linspace(0, 9, 10)` or `np.linspace(0, 10, 10 + 1)[:-1]` or `np.linspace(0, 10, 10, endpoint=False)`
 
-### 5.1. torch.linspace
+### 4.1. torch.linspace
 
 `torch.linspace(start, end, steps, *, out=None, dtype=None, layout=torch.strided, device=None, requires_grad=False)`
 
 只有包含 start 和 stop, [start, stop] 的模式了。
 
-## 6. meshgrid
+## 5. meshgrid
 
 
 参考资料：[meshgrid理解](https://blog.csdn.net/lllxxq141592654/article/details/81532855), [numpy](https://numpy.org/doc/stable/reference/generated/numpy.meshgrid.html)
@@ -893,7 +884,7 @@ plt.show()
 ![图 1](../images/f2379011d0512af6b34b11062fd7ef5655d00e009c9776fff346b7bd2a73d227.png)  
 
 
-### 6.1. torch.meshgrid
+### 5.1. torch.meshgrid
 
 `torch.meshgrid(*tensors, indexing='ij')`
 
@@ -902,7 +893,7 @@ plt.show()
 <https://blog.csdn.net/weixin_39504171/article/details/106356977>
 <https://pytorch.org/docs/stable/generated/torch.meshgrid.html>
 
-## 7. np.take / ndarray.take
+## 6. np.take / ndarray.take
 
 `numpy.take(a, indices, axis=None, out=None, mode='raise')[source]
 `

@@ -6,8 +6,10 @@
 - [4. 将条件逻辑表述为数组运算np.where()](#4-将条件逻辑表述为数组运算npwhere)
 - [5. 数学和统计方法](#5-数学和统计方法)
   - [5.1. 聚合计算aggregation](#51-聚合计算aggregation)
-  - [5.2. max](#52-max)
-  - [5.3. 非聚合](#53-非聚合)
+  - [5.2. max and nan](#52-max-and-nan)
+    - [torch.max](#torchmax)
+  - [5.3. nan](#53-nan)
+  - [5.4. 非聚合](#54-非聚合)
 - [6. 对布尔型数组中的True值计数](#6-对布尔型数组中的true值计数)
 - [7. 排序](#7-排序)
   - [7.1. 三种排序算法](#71-三种排序算法)
@@ -237,14 +239,63 @@ print(arr.sum(axis=0))     #列，计算每列的和
 '''
 ```
 
-### 5.2. max
+### 5.2. max and nan
 
-由于`1<nan`, `1>nan``1==nan` 均为 `False`
+由于`1<nan`, `1>nan`,`1==nan` 均为 `False`
 - `np.max(a, axis)`：有nan则最大值返回nan
 - `np.nanmax(a, axis)`：排除nan
 - `np.maximum(a, b, axis)`：这才是两个数组。还是有nan问题。
 
-### 5.3. 非聚合
+```python
+# ptp: peak to peak
+>>> a = np.array([[10, 7, 4], [3, 2, 1]])
+>>> max_sub_min = a.ptp()
+>>> max_sub_min
+9   
+```
+
+```python
+>>> a = np.array([[10, 7, 4], [3, 2, 1]])   # dtype('int32')
+>>> np.percentile(a, [0, 100])
+array([ 1., 10.])
+>>> min, max = np.percentile(a, [0, 100])
+>>> min
+1.0
+>>> max
+10.0
+
+# 设置最小、最大的阈值（可能是原数组里没有的）
+>>> min, max = np.percentile(a, [2, 98])
+(1.1, 9.700000000000001)
+>>> a[a < min] = min
+>>> a[a > max] = max
+>>> a
+array([[9, 7, 4],
+       [3, 2, 1]])
+```
+#### torch.max
+
+[torch.max()](https://blog.csdn.net/ViatorSun/article/details/108909312): 三种形式
+- torch.max(x), 返回一个最大值的标量
+- torch.max(x, 0), 即 torch.max(x, dim=0), 返回元组(维度最大值，在该维度的下标)
+- torch.max(x, y)，element-wise最大值
+
+```python
+# arr: [1, 6172]
+>>> a, b = torch.max(arr, 1)
+>>> a
+tensor([657.7120], device='cuda:0')
+>>> b
+tensor([5392], device='cuda:0')
+```
+
+### 5.3. nan
+
+```python
+depth_map = np.nan_to_num(depth_map) # nan全都变为0
+```
+
+### 5.4. 非聚合
 
 > cumsum和cumprod之类的方法则不聚合，而是产生一个由中间结果组成的数组
 
@@ -676,11 +727,13 @@ y=np.random.randn(2, 2)
 ```
 
 ### 11.5. choice() 列表
+<https://blog.csdn.net/ImwaterP/article/details/96282230>
 
 `random.choice(a, size=None, replace=True, p=None)`
 - `a`: 1-D array（不限类型，string也可以）
 
     If an int, the random sample is generated as if it were np.arange(a)
+- `replace`:True表示可以取相同数字，False表示不可以取相同数字
 - `p`: The probabilities associated with each entry in a. 
 
     If `None`, the sample assumes a uniform distribution.

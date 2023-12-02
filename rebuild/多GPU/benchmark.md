@@ -2,10 +2,19 @@
 - benchmark 为 True 不保证计算更快
 
 ## 1. benchmark
+cuDNN 是英伟达专门为深度神经网络所开发出来的**GPU加速库**. 
+
+PyTorch 会默认使用 cuDNN 加速。
+
+```python
+print(torch.backends.cudnn.enabled) # True
+# torch.backends.cudnn.enabled = True 没必要写。
+```
+
+但是，torch.backends.cudnn.benchmark 默认模式是为 False
 ```python
 torch.backends.cudnn.benchmark = True
 ```
-cuDNN 是英伟达专门为深度神经网络所开发出来的**GPU加速库**. PyTorch 会默认使用 cuDNN 加速。但是，torch.backends.cudnn.benchmark 默认模式是为 False
 
 benchmark 将会让程序在第一次迭代时花费更多时间，为整个网络的每个卷积层搜索最适合它的**卷积实现算法**(有的算法在卷积核大的情况下，速度很快；比如有的算法在某些情况下内存使用比较小)，进而实现网络的加速。
 

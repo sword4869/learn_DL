@@ -1,5 +1,6 @@
 - [1. install](#1-install)
 - [2. Usage](#2-usage)
+  - [imwrite](#imwrite)
   - [2.1. 轮廓](#21-轮廓)
   - [2.2. 缩放](#22-缩放)
   - [2.3. 前景背景](#23-前景背景)
@@ -23,6 +24,7 @@ a. Packages for standard desktop environments (Windows, macOS, almost any GNU/Li
 Headless: Packages for server environments (such as Docker, cloud environments etc.), no GUI library dependencies
 
 所以，一般选择 `pip install opencv-contrib-python` 
+
 
 ## 2. Usage
 
@@ -64,6 +66,48 @@ diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 thresh = cv2.threshold(diff_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 ```
+### imwrite
+
+img的数据类型是array（即数组类型），这里一般情况下要填入的是8位的单通道或3通道（带有BGR通道顺序）
+
+imwrite函数是基于文件扩展名选择图像的格式：
+
+▶对于PNG，JPEG2000和TIFF格式，可以保存16位无符号（CV_16U）图像。
+
+▶32位浮点（CV_32F）图像可以保存为PFM，TIFF，OpenEXR和Radiance HDR格式; 使用LogLuv高动态范围编码（每像素4个字节）保存3通道（CV_32FC3）TIFF图像。
+
+▶可以使用此功能保存带有Alpha通道的PNG图像。为此，创建8位（或16位）4通道图像BGRA，其中alpha通道最后。完全透明的像素应该将alpha设置为0，完全不透明的像素应该将alpha设置为255/65535。
+
+```python
+depth_min = depth.min()
+depth_max = depth.max()
+
+max_val = (2 ** (8 * bits)) - 1
+if depth_max - depth_min > np.finfo("float").eps:
+    out = (depth - depth_min) / (depth_max - depth_min) * max_val
+else:
+    out = np.zeros(depth.shape, dtype=depth.dtype)
+
+if bits == 1:
+    cv2.imwrite(path, out.astype("uint8"), [cv2.IMWRITE_PNG_COMPRESSION, 0])
+elif bits == 2:
+    cv2.imwrite(path, out.astype("uint16"), [cv2.IMWRITE_PNG_COMPRESSION, 0])
+```
+
+- `cv2.CV_IMWRITE_JPEG_QUALITY`：设置 `.jpeg/.jpg` 格式的图片质量，取值为 0-100（默认值 95），数值越大则图片质量越高；
+- `cv2.CV_IMWRITE_WEBP_QUALITY`：设置 `.webp` 格式的图片质量，取值为 0-100；
+- `cv2.CV_IMWRITE_PNG_COMPRESSION`：设置 `.png` 格式图片的压缩比，取值为 0-9（默认值 3），数值越大则质量越低。
+
+```python
+# 默认值为95%质量
+>>> cv2.imwrite("F://1.jpeg",img)
+# 无损版
+>>> cv2.imwrite("F://2.jpeg",img, [cv2.IMWRITE_JPEG_QUALITY, 100])
+# 战损版
+>>> cv2.imwrite("F://3.jpeg",img, [cv2.IMWRITE_JPEG_QUALITY, 2])
+# 多参数演示
+>>> cv2.imwrite("F://5.jpeg",img, [cv2.IMWRITE_JPEG_LUMA_QUALITY, 10, cv2.IMWRITE_JPEG_QUALITY, 100])
+``` 
 ### 2.1. 轮廓
 ```python
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

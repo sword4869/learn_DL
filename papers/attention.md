@@ -45,10 +45,10 @@
 
 QKV本质：矩阵乘法(ab)(bc)(cd)
 
-- a是Q的个数，b是Q和K的维度，c是K和V的个数，d是V的个数
+- a是Q的个数，b是Q和K的维度，c是K和V的个数，d是V的维度
 - 两种方式
-  - $(QK^\top)V$: 转置K，那么Q(ab),K(cb),V(cd)
-  - $(Q^\top K)V$: 转置Q，那么Q(ba),K(bc),V(cd)
+  - $(QK^\top)V$: 转置K，那么Q(ab),K(cb),V(cd)，都是个数x维度。
+  - $(Q^\top K)V$: 转置Q，那么Q(ba),K(bc),V(cd)，Q和K是维度x个数，V是个数x维度。
 
 在self-attention中，a等于c。
 

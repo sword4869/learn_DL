@@ -1,5 +1,7 @@
 - [1. model transformation 模型变换](#1-model-transformation-模型变换)
+  - [存疑](#存疑)
 - [2. camera/view transformation 视角变换(w2c)](#2-cameraview-transformation-视角变换w2c)
+  - [存疑](#存疑-1)
   - [2.1. 在不同坐标系间坐标的转换](#21-在不同坐标系间坐标的转换)
     - [2.1.1. frame-to-canonical matrix (正向)](#211-frame-to-canonical-matrix-正向)
     - [2.1.2. canonical-to-frame matrix (反向)](#212-canonical-to-frame-matrix-反向)
@@ -67,7 +69,7 @@ SRT: scale, rotation, translation.
     $$\begin{aligned}
     \begin{bmatrix} P_{c} \\ 1\end{bmatrix}&=\begin{bmatrix} R & t \\ 0^\top & 1 \end{bmatrix} \begin{bmatrix} S & 0 \\ 0^\top & 1 \end{bmatrix} \begin{bmatrix} P_{w} \\ 1\end{bmatrix}    
     \end{aligned}$$
-
+### 存疑
 从世界坐标系到世界坐标系。所以操作都是以物体的角度看。
 - 模型的中心一开始就在世界坐标系原点。
 - 不是旋转坐标系，而是旋转人头；
@@ -96,6 +98,7 @@ def pose_spherical(radius, theta, phi):
 
 ## 2. camera/view transformation 视角变换(w2c)
 
+### 存疑
 **将相机坐标系转到与世界坐标系重合：先旋转轴来轴向一致，再将相机平移到世界原点; M=RT， 先平移再旋转**。
 
 将相机和物体一起变换。所以相机坐标系下的物体坐标，变换矩阵乘物体的世界坐标。(变换点，就是变换整个坐标系)
@@ -113,6 +116,11 @@ def pose_spherical(radius, theta, phi):
 
 ### 2.1. 在不同坐标系间坐标的转换
 
+仿射变换：从uv到xy，就要知道原坐标系 $uve$ 在目标坐标系xy的表示，然后得到 $tR$
+
+逆仿射变换：从xy到uv，知道目标坐标系 $uve$ 在原坐标系xy的表示，然后得到 $R^{-1}t^{-1}$
+
+
 #### 2.1.1. frame-to-canonical matrix (正向)
 
 ![Alt text](../images/image-79.png)
@@ -123,7 +131,12 @@ $\mathbf{p}=(u_{p},v_{p})\equiv\mathbf{e}+u_{p}\mathbf{u}+v_{p}\mathbf{v}$
 
 已知点p在uv坐标系的表示 $(u_{p},v_{p})$ 和 uv坐标轴在xy坐标系的单位向量 $\mathbf{u}\mathbf{v}$ 和 uv坐标系原点在xy坐标系的位置 $\mathbf{e}$，那么就可以求 $(x_p,y_p)$: 
 
-$\begin{bmatrix}x_p \\ y_p \\ 1\end{bmatrix} = u_p\begin{bmatrix}x_u \\ y_u \\0\end{bmatrix}v_p\begin{bmatrix}x_v \\ y_v \\0\end{bmatrix} + \begin{bmatrix}x_e \\ y_e \\1\end{bmatrix} = \begin{bmatrix}x_u&x_v&x_e\\y_u&y_v&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} = \begin{bmatrix}1&0&x_e\\0&1&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}x_u&x_v&0\\y_u&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} = TRP_{uv}$
+$\begin{aligned}
+\begin{bmatrix}x_p \\ y_p \\ 1\end{bmatrix} &= u_p\begin{bmatrix}x_u \\ y_u \\0\end{bmatrix}v_p\begin{bmatrix}x_v \\ y_v \\0\end{bmatrix} + \begin{bmatrix}x_e \\ y_e \\1\end{bmatrix} \\
+&= \begin{bmatrix}x_u&x_v&x_e\\y_u&y_v&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} &(\text{写成矩阵形式})\\
+&= \begin{bmatrix}1&0&x_e\\0&1&y_e\\0&0&1\end{bmatrix}\begin{bmatrix}x_u&x_v&0\\y_u&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}u_p\\v_p\\1\end{bmatrix} &\text{(拆分仿射变换)}\\
+&= TRP_{uv}
+\end{aligned}$
 
 由此，视角变换矩阵的列向量意义：$\mathbf{p}_{xy}=\begin{bmatrix}\mathbf{u}&\mathbf{v}&\mathbf{e}\\0&0&1\end{bmatrix}\mathbf{p}_{uv}$
 - R：uv坐标系有两个坐标分量，就有两个列向量对应。这两个列向量，分别是uv坐标轴在xy坐标系的单位向量表示。
@@ -345,13 +358,18 @@ w2c = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) @ w2c
 ```
 ### 2.5. 其他
 
-$R_2 \left[ R_1\begin{bmatrix}x \\ y \\ z \end{bmatrix} + t_1 \right] + t_2 = R_2 R_1 \begin{bmatrix}x \\ y \\ z \end{bmatrix} + R_2 t_1 + t_2 $
+$$\begin{aligned}
+&R_{w\to 2} \left[ R_{1\to w}\begin{bmatrix}x \\ y \\ z \end{bmatrix} + t_{1\to w} \right] + t_{w\to 2} \\
+&= R_{w\to 2} R_{1\to w} \begin{bmatrix}x \\ y \\ z \end{bmatrix} + R_{w\to 2} t_{1\to w} + t_{w\to 2} \tag{1}\\
+&= R_{1\to 2}\begin{bmatrix}x \\ y \\ z \end{bmatrix} + t_{1\to 2}&\text{(得到视角之间的变换)} 
+\end{aligned}$$
+
+代码：
 ```python
 R = R_2 @ R_1     # [3, 3]
 t = R_2 @ t_1 + t_2   # [3]
 extrin = np.hstack((R, t[None].T))  # [3, 4]，如何将R和T拼接
 ```
-
 ## 3. projection transformation
 
 perspective projection 透射投影 和 orthographic projection 正交投影 的区别：无有近大远小。
@@ -530,16 +548,18 @@ $K = \begin{bmatrix} \alpha f_x & s & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{
 
 在内参矩阵中还有个参数 $s$（通常也可当成0），用来建模像素是平行四边形而不是矩形，与像素坐标系的u，v轴之间的夹角$\theta$的正切值$tan(\theta)$成反比，因此当 $s = 0$时，表示像素为矩形。
 
+$Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} = KP_c$
+  
+1. 3行3列
 
-
-   
 $$\begin{aligned}
 Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix}
 &=\begin{bmatrix} \alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} f_x & 0 & 0\\ 0 & f_y & 0\\ 0 & 0 & 1\end{bmatrix} \begin{bmatrix} X_{c} \\  Y_{c} \\ Z_{c} \end{bmatrix}\\
-&=\begin{bmatrix} \alpha f_x & 0 & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{bmatrix} \begin{bmatrix} X_c \\ Y_c \\ Z_c\end{bmatrix} \\
-&=K \begin{bmatrix} X_c \\ Y_c \\ Z_c\end{bmatrix} 
+&=\begin{bmatrix} \alpha f_x & 0 & c_x\\ 0 & \beta f_y & c_y\\ 0 & 0 & 1\end{bmatrix} \begin{bmatrix} X_c \\ Y_c \\ Z_c\end{bmatrix}
 \end{aligned}
 $$
+
+2. 3行4列
 
 $$\begin{aligned}
 Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix} 
@@ -549,9 +569,23 @@ Z_c\begin{bmatrix} u \\ v \\ 1\end{bmatrix}
 \\ &= 
 \begin{bmatrix} \alpha f_x & 0 & c_x & 0\\ 0 & \beta f_y & c_y & 0\\ 0 & 0 & 1 & 0\end{bmatrix}
 \begin{bmatrix} X_{c} \\  Y_{c} \\ Z_{c} \\ 1 \end{bmatrix}
-\\ &= KP_c
 \end{aligned}
 $$
+
+```python
+ones = torch.ones((pos.shape[0], pos.shape[1], 1)).to(pos.device)
+pos_homo = torch.cat((pos, ones), -1)   # (1, N, 4), each is [x,y,z,1]
+projected = torch.bmm(M, pos_homo.permute(0, 2, 1))     # (1, 3, 4) @ (1, 4, N)
+projected = projected.permute(0, 2, 1)  # (1, N, 3)
+proj = torch.zeros_like(projected)
+# u = x / z
+proj[..., 0] = projected[..., 0] / projected[..., 2]
+# v = y / z
+proj[..., 1] = projected[..., 1] / projected[..., 2]
+# 1 没意义，我可以存点别的，比如归一化的 0-1 的z-value深度
+clip_space, _ = torch.max(projected[..., 2], 1, keepdim=True)
+proj[..., 2] = projected[..., 2] / clip_space
+```
 
 ##### 3.2.2.4. 综合
  
@@ -602,6 +636,8 @@ $$
 
 
 ## 4. 反向
+
+$\begin{bmatrix} x \\ y \\ z \end{bmatrix} = \mathbf{K}^{−1} \begin{bmatrix} u \\ v \\ 1 \end{bmatrix} z$：再乘z才是camera下的xyz。
 
 > 例子: 外参，Inverse project 自然是 c2w
 
