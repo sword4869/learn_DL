@@ -1,16 +1,27 @@
-- [mesh](#mesh)
-- [ply](#ply)
+- [1. obj](#1-obj)
+  - [subdivide](#subdivide)
+- [2. ply](#2-ply)
 
 
 ---
-## mesh
+## 1. obj
 
 https://paulbourke.net/dataformats/obj/
 
-```python
+```
 vt 0.823777 0.561993
 v -55.4881591796875 50.375640869140625 1044.4334716796875
 f 5604/23260 6208/23261 5603/23262
+```
+```
+v 1.000000 0.000000 0.000000
+v 0.000000 1.000000 0.000000
+v 0.000000 0.000000 1.000000
+v 0.000000 0.000000 0.000000
+f 1 2 3
+f 1 2 4
+f 1 3 4
+f 2 3 4
 ```
 - `v`: geometric vertices, 顶点xyz坐标
 - `vt`: vertices texture, 纹理uv坐标
@@ -56,8 +67,60 @@ def load_obj(filename):
     #     print(k, v.shape)
     return obj
 ```
+```python
+from pytorch3d.structures import Meshes
+from pytorch3d.io import IO
+import torch
 
-## ply
+# 三角形
+v = torch.tensor([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+f = torch.tensor([[0, 1, 2]])
+meshes = Meshes(verts=[v], faces=[f])
+io = IO()
+io.save_mesh(data=meshes, path='./tri.obj')
+
+# 三棱锥
+v = torch.tensor([[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0]])
+f = torch.tensor([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
+meshes = Meshes(verts=[v], faces=[f])
+io = IO()
+io.save_mesh(data=meshes, path='./tri.obj')
+```
+### subdivide
+
+![Alt text](../images/image-83.png)
+
+![Alt text](../images/image-57.png)
+
+```python
+from pytorch3d.structures import Meshes
+from pytorch3d.io import IO
+import torch
+import open3d as o3d
+import numpy as np
+
+v = torch.tensor([[1, 0, 0], [0, 1, 0], [0, 0, 1], [0, 0, 0]])
+f = torch.tensor([[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]])
+meshes = Meshes(verts=[v], faces=[f])
+io = IO()
+io.save_mesh(data=meshes, path='./tri.obj')
+
+def mesh2ply2(mesh_path, ply_path):
+    mesh = o3d.io.read_triangle_mesh(mesh_path)
+    mesh.compute_vertex_normals()
+    num_verts = np.array(mesh.vertices).shape[0]
+    o3d.visualization.draw_geometries([mesh])
+    mesh1 = mesh.subdivide_loop(number_of_iterations=1)
+    num_verts2 = np.array(mesh.vertices).shape[0]
+    o3d.visualization.draw_geometries([mesh, mesh1])
+    
+    o3d.io.write_triangle_mesh(ply_path, mesh1, write_ascii=True)
+    print(f'{mesh_path} -> {ply_path}: {num_verts} -> {num_verts2}')
+
+mesh2ply2('./tri.obj', './tri2.obj')
+```
+
+## 2. ply
 
 ```python
 ply
@@ -120,25 +183,44 @@ vertex_0 = vertex[0]                # <class 'numpy.void'>, (-38.8725, 35.1234, 
 
 ### element face 
 face = plydata['face']
-face_count = face.count           # 39904
+face_count = face.count             # 39904
 vertex_indices = face['vertex_indices']     # <class 'numpy.ndarray'>, shape (39904,)
 # faces['vertex_indices'][0]
 # array([   0, 5118, 5120], dtype=uint32)
 ```
 
-```
+```python
 from plyfile import PlyElement
 
 def storePly(path, xyz, rgb):
-    # Define the dtype for the structured array
     dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4'),
-            ('nx', 'f4'), ('ny', 'f4'), ('nz', 'f4'),
             ('red', 'u1'), ('green', 'u1'), ('blue', 'u1')]
-    
-    normals = np.zeros_like(xyz)
 
     elements = np.empty(xyz.shape[0], dtype=dtype)
-    attributes = np.concatenate((xyz, normals, rgb), axis=1)
+    attributes = np.concatenate((xyz, rgb), axis=1)
+    elements[:] = list(map(tuple, attributes))
+
+    # Create the PlyData object and write to file
+    vertex_element = PlyElement.describe(elements, 'vertex')
+    ply_data = PlyData([vertex_element])
+    ply_data.write(path)
+
+
+def storePly(path, xyz):
+    dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4')]
+
+    elements = [(xyz[i,0], xyz[i,1], xyz[i,2]) for i in range(xyz.shape[0])]
+    elements = np.array(elements, dtype=dtype)
+
+    # Create the PlyData object and write to file
+    vertex_element = PlyElement.describe(elements, 'vertex')
+    ply_data = PlyData([vertex_element])
+    ply_data.write(path)
+
+def storePly(path, xyz):
+    dtype = [('x', 'f4'), ('y', 'f4'), ('z', 'f4')]
+    
+    attributes = np.array(xyz)
     elements[:] = list(map(tuple, attributes))
 
     # Create the PlyData object and write to file

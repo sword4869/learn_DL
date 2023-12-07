@@ -31,17 +31,27 @@ def video2sequence(video_path):
 
 ## 2. squence2video
 
+写入视频，如同写入图片一样，都需要uint8格式的数据
+
 ```python
 import cv2
 
-def squence2video(imgs, savename):
-    # imgs: [N, H, W, C]
-    fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+def squence2video(imgs, savename, fps=25):
+    '''save a sequence of images to a video
+    imgs: [N, H, W, C], RGB, 0~255
+    fps: frames per second
+    '''
+    fourcc = cv2.VideoWriter_fourcc(*'MPEG')
     h, w = imgs.shape[1:3]  
-    fps = 25
-    # cv2.VideoWriter(filename, FourCC code, fps, (W, H))
-    out = cv2.VideoWriter(savename + ".mp4", fourcc, fps, (w, h))
+    out = cv2.VideoWriter(savename, fourcc, fps, (w, h))
     for img in imgs:
-        out.write(cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+        out.write(img)
     out.release()
+    print('save video to', savename)
 ```
+
+- `MPEG`: `.avi`, `.mp4`
+- `mp4v`: `.avi`, `.mp4`。注意`MP4V`不行。
+- `MJPG`: `.avi`可以，`.mp4`不行
+- `XVID`: `.avi`可以，`.mp4`不行

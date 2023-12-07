@@ -5,9 +5,13 @@
 - [2. 提取声音](#2-提取声音)
   - [2.1. Extract Audio from Audio](#21-extract-audio-from-audio)
   - [2.2. Extract Audio from Video](#22-extract-audio-from-video)
-  - [2.3. 音量增强](#23-音量增强)
+  - [2.3. 静音](#23-静音)
+  - [2.4. 音量增强](#24-音量增强)
 - [3. 从视频中提取图片](#3-从视频中提取图片)
 - [4. 由图片生成gif](#4-由图片生成gif)
+- [5. crop](#5-crop)
+- [6. 音视频时间裁剪](#6-音视频时间裁剪)
+- [7. 格式](#7-格式)
 
 
 ---
@@ -48,7 +52,7 @@ ffmpeg -i audio_input.wav audio_output_1.mp3 audio_output_2.ogg
 ```
 ### 1.2. 限定视频fps
 ```bash
-# -r          fps
+# -r 20         fps
 ffmpeg -i video_input.mp4 -r 20 video_output.mp4
 ```
 
@@ -65,25 +69,35 @@ ffmpeg -i video_input.mp4 -r 20 video_output.mp4
 ### 2.1. Extract Audio from Audio
 
 ```bash
-# 采样频率
--ar 44100
-# 通道数
--ac 2
-
+# -ar 16000     audio read 采样频率
+# -ac 1         audio count 通道数
+# -ab 256k      audio bitrate 比特率
 ffmpeg -i 001.mp3 -ar 16000 -ac 1 001.wav 
 ```
 
 ### 2.2. Extract Audio from Video
 ```bash
-# -vn                 disable video
-ffmpeg -i video.mp4 -vn audio.mp3
-```
+# -vn                 video no
 
+# 输出是视频格式，则是没有画面的视频
+ffmpeg -i video.mp4 -vn video_no_audio.mp4
+
+# 输出是音频格式，则可以不用
+ffmpeg -i video.mp4 audio.mp3
+```
+综合命令：
 ```bash
 ffmpeg -i video.mp4 -vn -ar 16000 -ac 1 audio.mp3
 ```
 
-### 2.3. 音量增强
+### 2.3. 静音
+
+```bash
+# -an                  audio no
+ffmpeg -i input.mp4 -an output.mp4
+```
+
+### 2.4. 音量增强
 
 
 ```bash
@@ -99,10 +113,59 @@ ffmpeg -i input.ogg -af "volume=0.75" output.ogg
 ```bash
 ffmpeg -i "video.mov" -f image2 "%05d.png"
 ```
+```bash
+ffmpeg -i %05d.png video.mov
+```
 
 ## 4. 由图片生成gif
 ```bash
-# -r                  fps
 # -i                  图片格式, 01.png,02.png
-ffmpeg -r 20 -i "%01d.png" "name.gif"
+ffmpeg -i "%01d.png" -r 20 name.gif
 ```
+
+## 5. crop
+
+```bash
+# -vf crop=in_w-200:in_h-200 
+# -vf crop=640:480:0:0
+
+ffmpeg -i out.flv -vf crop=in_w-200:in_h-200 out.mp4
+```
+
+## 6. 音视频时间裁剪
+
+```bash
+# -ss HH:MM:SS.MILLISECONDS    start second 开始时间
+# -t 10                        裁剪的时间大小，这里裁剪10s
+ffmpeg -i out.flv -ss 00:00:00 -t 10 out.ts
+```
+```bash
+# -ss HH:MM:SS.MILLISECONDS    start second 开始时间
+# -to HH:MM:SS.MILLISECONDS    结束时间 
+ffmpeg -i out.flv -ss 40 -to 70 out.ts
+```
+
+
+## 7. 格式
+
+```bash
+ffmpeg -i out.flv -f s16le out.pcm
+ffmpeg -i input.mp4 -c:v rawvideo -pix_fmt yuv420p out.yuv
+ffmpeg -i out.flv -c:v copy -c:a copy out.mp4
+```
+`s16le`: s代表有符号 16表示每一个数值用16位表示 le表示为little end 小头存储
+
+`-c:v` 等于`-vcodec`
+  ```
+  copy
+  rawvideo
+  libx264 
+  ```
+
+`-c:a` 等于 `-acodec`
+  ```
+  copy
+  libmp3lame (mp3)
+  pcm_s16le (wav)
+  ```
+`-pix_fmt` 像素格式

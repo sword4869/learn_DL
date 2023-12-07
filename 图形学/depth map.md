@@ -24,3 +24,14 @@ disp_map = 1./torch.max(1e-10 * torch.ones_like(depth_map), depth_map / torch.ma
 - z-value in camera space。
 
 My gt depth is a disparity map. Have you processed it? Otherwise, the current supervision is just opposite to the optimization goal.
+
+
+```python
+import pylab as plt
+
+def depth_to_rgb(depth_map):   
+    depth_map = (depth_map - np.min(depth_map)) / np.ptp(depth_map)
+    cm = plt.get_cmap('plasma')
+    pixel_colored = np.uint8(np.rint(cm(depth_map) * 255))[:, :, :3]
+    return Image.fromarray(pixel_color
+```
