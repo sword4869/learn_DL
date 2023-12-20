@@ -9,6 +9,7 @@
   - [1.6. 拷贝](#16-拷贝)
     - [1.6.1. 拷贝](#161-拷贝)
   - [1.7. torch.gather / torch.Tensor.gather](#17-torchgather--torchtensorgather)
+  - [1.8. 内存大小](#18-内存大小)
 
 # 1. tensor_manipulation
 
@@ -603,4 +604,17 @@ tensor([[3, 3],
 tensor([[9, 7],
         [6, 7],
         [3, 7]])
+```
+
+## 1.8. 内存大小
+
+32位浮点数，32bit，4B
+```python
+>>> a = torch.rand([16, 16])
+>>> a.element_size()            # 字节大小
+4
+>>> a.nelement()
+256
+>>> a.element_size() * a.nelement()
+1024
 ```
