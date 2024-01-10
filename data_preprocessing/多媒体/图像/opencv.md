@@ -1,9 +1,11 @@
 - [1. install](#1-install)
 - [2. Usage](#2-usage)
-  - [imwrite](#imwrite)
-  - [2.1. 轮廓](#21-轮廓)
-  - [2.2. 缩放](#22-缩放)
-  - [2.3. 前景背景](#23-前景背景)
+  - [2.1. imread](#21-imread)
+  - [2.2. other](#22-other)
+  - [2.3. imwrite](#23-imwrite)
+  - [2.4. 轮廓](#24-轮廓)
+  - [2.5. 缩放](#25-缩放)
+  - [2.6. 前景背景](#26-前景背景)
 
 ---
 ## 1. install
@@ -28,6 +30,7 @@ Headless: Packages for server environments (such as Docker, cloud environments e
 
 ## 2. Usage
 
+### 2.1. imread
 ```python
 import cv2
 
@@ -36,6 +39,25 @@ image = cv2.imread(image_path)
 cv2.imshow("imageA", image)
 cv2.waitKey(0)
 ```
+`imread` 不支持中文（读中文路径的图片，返回 None）
+
+所以，只能用PIL库先读，再转给cv。
+
+```python
+from PIL import Image
+import numpy as np
+import cv2
+
+def load_img(img_path: str):
+    '''
+    cv2.imread()的替代函数，支持中文路径
+    '''
+    img = Image.open(img_path)
+    img = np.array(img, dtype=np.uint8)
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    return img
+```
+### 2.2. other
 
 ```python
 paste = np.zeros((img.shape[0], img.shape[1] * 2, 3), dtype=np.float32)
@@ -66,7 +88,7 @@ diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
 thresh = cv2.threshold(diff_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
 ```
-### imwrite
+### 2.3. imwrite
 
 img的数据类型是array（即数组类型），这里一般情况下要填入的是8位的单通道或3通道（带有BGR通道顺序）
 
@@ -108,7 +130,7 @@ elif bits == 2:
 # 多参数演示
 >>> cv2.imwrite("F://5.jpeg",img, [cv2.IMWRITE_JPEG_LUMA_QUALITY, 10, cv2.IMWRITE_JPEG_QUALITY, 100])
 ``` 
-### 2.1. 轮廓
+### 2.4. 轮廓
 ```python
 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 cnts = cnts[0] if len(cnts) == 2  else cnts[1]
@@ -120,7 +142,7 @@ for c in cnts:
     cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
     cv2.drawContours(mask, [c], 0, (0,255,0), -1)
 ```
-### 2.2. 缩放
+### 2.5. 缩放
 `cv2.resize(src, dsize[, dst[, fx[, fy[, interpolation]]]])`
 
 ```python
@@ -133,7 +155,7 @@ img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
 img = cv2.resize(img, dsize=None, fx=2, fy=2, interpolation=cv2.INTER_AREA)
 ```
 
-### 2.3. 前景背景
+### 2.6. 前景背景
 
 
 - img: 输入图像，支持8位3通道
