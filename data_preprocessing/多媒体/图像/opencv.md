@@ -1,14 +1,20 @@
-- [1. install](#1-install)
-- [2. Usage](#2-usage)
-  - [2.1. imread](#21-imread)
-  - [2.2. other](#22-other)
-  - [2.3. imwrite](#23-imwrite)
-  - [2.4. 轮廓](#24-轮廓)
-  - [2.5. 缩放](#25-缩放)
-  - [2.6. 前景背景](#26-前景背景)
+- [install](#install)
+- [Usage](#usage)
+  - [imread](#imread)
+  - [窗口大小](#窗口大小)
+  - [按键](#按键)
+  - [不断更新图片](#不断更新图片)
+  - [获取某点像素值](#获取某点像素值)
+  - [imwrite](#imwrite)
+  - [缩放](#缩放)
+  - [拼接图片](#拼接图片)
+  - [画图](#画图)
+- [other](#other)
+- [前景背景](#前景背景)
+- [轮廓](#轮廓)
 
 ---
-## 1. install
+## install
 
 a. Packages for standard desktop environments (Windows, macOS, almost any GNU/Linux distribution)
 
@@ -28,9 +34,11 @@ Headless: Packages for server environments (such as Docker, cloud environments e
 所以，一般选择 `pip install opencv-contrib-python` 
 
 
-## 2. Usage
+## Usage
 
-### 2.1. imread
+### imread
+
+路径没有英文就直接读。
 ```python
 import cv2
 
@@ -39,9 +47,7 @@ image = cv2.imread(image_path)
 cv2.imshow("imageA", image)
 cv2.waitKey(0)
 ```
-`imread` 不支持中文（读中文路径的图片，返回 None）
-
-所以，只能用PIL库先读，再转给cv。
+`imread` 不支持中文（读中文路径的图片，返回 None），那只能用PIL库先读，再转给cv。
 
 ```python
 from PIL import Image
@@ -57,38 +63,63 @@ def load_img(img_path: str):
     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
     return img
 ```
-### 2.2. other
+### 窗口大小
 
 ```python
-paste = np.zeros((img.shape[0], img.shape[1] * 2, 3), dtype=np.float32)
-paste[:, :img.shape[1], :] = img
-template_img = cv2.imread(os.path.join(output_image_dir, 'template.png'))
-paste[:, img.shape[1]:, :] = template_img
-# 调整 pasteq 的大小
-paste = cv2.resize(paste, (img.shape[1]//4, img.shape[0]//4))
-cv2.namedWindow('paste', 0)
-cv2.imshow('paste', paste.astype(np.uint8))
-if cv2.waitKey(0) == ord('q'):
+# 鼠标能调 和 resizeWindow 起作用是同步的，要么都能，要么不能调。
+# windows实际效果就两种：都有状态栏（关闭、全屏、最小），只分能调和不能调。
+# (1) WINDOW_AUTOSIZE(默认值), WINDOW_FULLSCREEN: 图像原大小
+# (2) WINDOW_NORMAL, WINDOW_GUI_EXPANDED, WINDOW_FREERATIO, WINDOW_KEEPRATIO: 能自己调
+cv2.namedWindow(out_win, cv2.WINDOW_NORMAL)
+cv2.resizeWindow("result", 400, 300) # 设置窗口大小
+cv2.moveWindow("winname",x,y)       # 设置窗口的位置，窗口左上角
+```
+关闭窗口
+```python
+cv2.destroyWindow(winname)
+
+cv2.destroyAllWindows()
+```
+### 按键
+
+```python
+# waitKey单位ms，默认0表示无限等待，默认退出是esc
+import cv2
+
+img = cv2.imread('1.png')
+cv2.imshow('image', img)
+cv2.waitKey()
+```
+
+```python
+if cv2.waitKey() == ord('q'):
     exit()
 ```
 
-```python
-# 数组模式 ndarry
-h,w,c = image.shape
-```
+### 不断更新图片
+
+只要同一个窗口就行，无须其他操作
 
 ```python
-# 需要是 uint8, np.uint16, np.float32
-# 因为 np的float默认是np.float64，会报错
-diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+import cv2
+
+img = cv2.imread('1.png')
+for i in range(0, img.shape[1],10):
+    cv2.line(img, (0,0),(i,i),(255,0,0),5)
+    cv2.imshow('image', img)
+    cv2.waitKey(500)
 ```
 
+### 获取某点像素值
+
 ```python
-# diff_gray 必须是灰度图
-diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
-thresh = cv2.threshold(diff_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+pos = (833, 833)    # x, y
+color = img[pos[1], pos[0]]    # h, w
+print(color)        # [B G R]，而且是ndarry
+# [224 224 224]         
 ```
-### 2.3. imwrite
+
+### imwrite
 
 img的数据类型是array（即数组类型），这里一般情况下要填入的是8位的单通道或3通道（带有BGR通道顺序）
 
@@ -130,19 +161,14 @@ elif bits == 2:
 # 多参数演示
 >>> cv2.imwrite("F://5.jpeg",img, [cv2.IMWRITE_JPEG_LUMA_QUALITY, 10, cv2.IMWRITE_JPEG_QUALITY, 100])
 ``` 
-### 2.4. 轮廓
+
+### 缩放
+
 ```python
-cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-cnts = cnts[0] if len(cnts) == 2  else cnts[1]
-for c in cnts:
-	# compute the bounding box of the contour and then draw the
-	# bounding box on both input images to represent where the two
-	# images differ
-    (x, y, w, h) = cv2.boundingRect(c)
-    cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    cv2.drawContours(mask, [c], 0, (0,255,0), -1)
+# 数组模式 ndarry
+h,w,c = image.shape
 ```
-### 2.5. 缩放
+
 `cv2.resize(src, dsize[, dst[, fx[, fy[, interpolation]]]])`
 
 ```python
@@ -155,8 +181,81 @@ img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
 img = cv2.resize(img, dsize=None, fx=2, fy=2, interpolation=cv2.INTER_AREA)
 ```
 
-### 2.6. 前景背景
+e.g.
+```python
+# 调整 pasteq 的大小
+paste = cv2.resize(paste, (paste.shape[1]//4, paste.shape[0]//4), interpolation=cv2.INTER_AREA)
+cv2.imshow('paste', paste)
+cv2.waitKey()
+```
 
+### 拼接图片
+```python
+# 拼接图片
+paste = np.zeros((img.shape[0], img.shape[1] * 2, 3), dtype=np.float32)
+paste[:, :img.shape[1], :] = img
+template_img = cv2.imread(os.path.join(output_image_dir, 'template.png'))
+paste[:, img.shape[1]:, :] = template_img
+```
+
+
+### 画图
+
+```python
+# 线
+cv2.line(img, pt1, pt2, color[, thickness[, lineType[, shift]]])
+cv2.line(img, (0,0),(511,511),(255,0,0),5)
+
+# 矩形
+cv2.rectangle(img, pt1, pt2, color[, thickness[, lineType[, shift]]])
+cv2.rectangle(img,(384,0),(510,128),(0,255,0),3)
+
+# 圆形
+cv2.circle(img, center, radius, color[, thickness[, lineType[, shift]]])
+cv2.circle(img,(447,63), 63, (0,0,255), 3)
+
+# 椭圆
+# center：中心位置
+# axes：轴长度（长轴长度，短轴长度）
+# angle：椭圆在逆时针方向上的旋转角度
+# startAngle：主轴顺时针方向测量的椭圆弧的起点
+# endAngle：主轴顺时针方向测量的椭圆弧的终点
+cv2.ellipse(img, center, axes, angle, startAngle, endAngle, color[, thickness[, lineType[, shift]]])
+cv2.ellipse(img,(256,256),(100,50),0,0,180,255,-1)
+
+# 多边形
+cv2.polylines(img, pts, isClosed, color[, thickness[, lineType[, shift]]])
+pts = np.array([[10,5],[20,30],[70,20],[50,10]], np.int32)
+pts = pts.reshape((-1,1,2))     # 顶点数x1x2形状
+cv2.polylines(img,[pts],True,(0,255,255))
+```
+thickness取-1是实心，否则空心。默认厚度 = 1.
+
+lineType默认是`cv2.LINE_AA`抗锯齿线条，不用管。
+
+```python
+# 文字
+# org：您想要放置它的位置坐标（即数据开始的左下角）
+cv2.putText(img, text, org, fontFace, fontScale, color[, thickness[, lineType[, bottomLeftOrigin]]])
+cv2.putText(img,'OpenCV',(10,500), cv2.FONT_HERSHEY_SIMPLEX, 4,(255,255,255),2)
+```
+
+## other
+
+```python
+# 需要是 uint8, np.uint16, np.float32
+# 因为 np的float默认是np.float64，会报错
+diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+```
+
+```python
+# diff_gray 必须是灰度图
+diff_gray = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+thresh = cv2.threshold(diff_gray, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+```
+
+
+## 前景背景
 
 - img: 输入图像，支持8位3通道
 - mask: 掩码图像，可以设置为:
@@ -197,4 +296,17 @@ cv2.imshow("img_f",img_f)
 cv2.imshow("img_bg",img_bg)
 cv2.waitKey()
 cv2.destroyAllWindows()
+```
+
+## 轮廓
+```python
+cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cnts = cnts[0] if len(cnts) == 2  else cnts[1]
+for c in cnts:
+	# compute the bounding box of the contour and then draw the
+	# bounding box on both input images to represent where the two
+	# images differ
+    (x, y, w, h) = cv2.boundingRect(c)
+    cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    cv2.drawContours(mask, [c], 0, (0,255,0), -1)
 ```
