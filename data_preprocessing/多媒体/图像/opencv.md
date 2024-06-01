@@ -12,6 +12,7 @@
 - [other](#other)
 - [前景背景](#前景背景)
 - [轮廓](#轮廓)
+- [回调函数](#回调函数)
 
 ---
 ## install
@@ -309,4 +310,23 @@ for c in cnts:
     (x, y, w, h) = cv2.boundingRect(c)
     cv2.rectangle(imageA, (x, y), (x + w, y + h), (0, 0, 255), 2)
     cv2.drawContours(mask, [c], 0, (0,255,0), -1)
+```
+
+## 回调函数
+
+```python
+# 固定格式: (event, x, y, flags, param)
+def callback_click(event, x, y, flags, param):
+    if event == cv2.EVENT_FLAG_LBUTTON:
+        print(f'click {x} {y}')
+        cmd = f'adb shell input tap {x} {y}'
+        subprocess.check_output(cmd, shell=True)
+
+cv2.namedWindow('image', cv2.WINDOW_GUI_NORMAL)
+cv2.setMouseCallback('image', callback_click)
+
+while True:
+    # 缩小显示
+    cv_img = cv2.resize(cv_img, (cv_img.shape[1]// RESIZE, cv_img.shape[0]// RESIZE), interpolation=cv2.INTER_AREA)
+    cv2.imshow('image', cv_img)
 ```
