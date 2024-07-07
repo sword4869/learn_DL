@@ -1,25 +1,3 @@
-- [1. model transformation 模型变换](#1-model-transformation-模型变换)
-  - [存疑](#存疑)
-- [2. camera/view transformation 视角变换(w2c)](#2-cameraview-transformation-视角变换w2c)
-  - [存疑](#存疑-1)
-  - [2.1. 在不同坐标系间坐标的转换](#21-在不同坐标系间坐标的转换)
-    - [2.1.1. frame-to-canonical matrix (正向)](#211-frame-to-canonical-matrix-正向)
-    - [2.1.2. canonical-to-frame matrix (反向)](#212-canonical-to-frame-matrix-反向)
-  - [2.2. 右手坐标系 right-handed coordinates](#22-右手坐标系-right-handed-coordinates)
-  - [2.3. 相机](#23-相机)
-  - [2.4. 各种右手的相机坐标系的转换](#24-各种右手的相机坐标系的转换)
-    - [2.4.1. 在获取c2w时](#241-在获取c2w时)
-    - [2.4.2. 已经获取c2w后](#242-已经获取c2w后)
-  - [2.5. 其他](#25-其他)
-- [3. projection transformation](#3-projection-transformation)
-  - [3.1. orthographic projection](#31-orthographic-projection)
-    - [3.1.1. view volume to canonical view volume](#311-view-volume-to-canonical-view-volume)
-    - [3.1.2. viewporrt transformation](#312-viewporrt-transformation)
-  - [3.2. perspective projection](#32-perspective-projection)
-    - [3.2.1. frustum to canonical view volume](#321-frustum-to-canonical-view-volume)
-
----
-
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062023181.png)
 
 图像的成像过程经历了世界坐标系—>相机坐标系—>图像坐标系—>像素坐标系这四个坐标系的转换，如下图所示：
@@ -35,15 +13,19 @@
 - 世界坐标系 world coordinate：是三维世界的绝对坐标系，我们需要用它来描述三维环境中的任何物体的位置，用 $(x_{w}, y_{w},z_{w})$ 表示其坐标值。
 
 
-## 1. model transformation 模型变换
+## model transformation 模型变换
 
-world coordinate
+世界坐标系永远都是这样，只有相机坐标系才是五花八门。
 
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062024109.png)
 
+`Meshes`的坐标是顶点的世界坐标系位置。
+
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062024956.png)
 
-如何放置模型坐标到世界坐标中。
+### 如何放置模型坐标到世界坐标中
+
+即移动`Meshes`的坐标（顶点的世界坐标系位置）
 
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062024700.png)
 
@@ -89,7 +71,7 @@ def pose_spherical(radius, theta, phi):
     return pose
 ```
 
-## 2. camera/view transformation 视角变换(w2c)
+## camera/view transformation 视角变换(w2c)
 
 ### 存疑
 **将相机坐标系转到与世界坐标系重合：先旋转轴来轴向一致，再将相机平移到世界原点; M=RT， 先平移再旋转**。
@@ -107,14 +89,14 @@ def pose_spherical(radius, theta, phi):
 
 ---
 
-### 2.1. 在不同坐标系间坐标的转换
+### 在不同坐标系间坐标的转换
 
 仿射变换：从uv到xy，就要知道原坐标系 $uve$ 在目标坐标系xy的表示，然后得到 $tR$
 
 逆仿射变换：从xy到uv，知道目标坐标系 $uve$ 在原坐标系xy的表示，然后得到 $R^{-1}t^{-1}$
 
 
-#### 2.1.1. frame-to-canonical matrix (正向)
+#### frame-to-canonical matrix (正向)
 
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062024531.png)
 
@@ -135,7 +117,7 @@ $\begin{aligned}
 - R：uv坐标系有两个坐标分量，就有两个列向量对应。这两个列向量，分别是uv坐标轴在xy坐标系的单位向量表示。
 - T: 最后一列，uv坐标系的原点在xy坐标系的位置 $\mathbf{e}$。
 
-#### 2.1.2. canonical-to-frame matrix (反向)
+#### canonical-to-frame matrix (反向)
 
 $\mathbf{p}_{uv}=\begin{bmatrix}\mathbf{u}&\mathbf{v}&\mathbf{e}\\0&0&1\end{bmatrix}^{-1}\mathbf{p}_{xy}$
 
@@ -159,7 +141,7 @@ $\begin{bmatrix}x_u&y_u&0\\x_v&y_v&0\\0&0&1\end{bmatrix}\begin{bmatrix}1&0&-x_e\
 
 $\mathbf{p}_{uv}=\begin{bmatrix}\mathbf{x}_{uv}&\mathbf{y}_{uv}&\mathbf{o}_{uv}\\0&0&1\end{bmatrix}\mathbf{p}_{xy}$
 
-### 2.2. 右手坐标系 right-handed coordinates
+### 右手坐标系 right-handed coordinates
 
 In 2D, right-handed means y is counterclockwise from x.
 
@@ -233,7 +215,7 @@ The only thing that defines the handedness of the coordinate system is the orien
   
     ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062028778.png)
 
-### 2.3. 相机
+### 相机
 
 > c2w: camera coordinate to world coordinate
 
@@ -265,15 +247,15 @@ $$
 c2w = np.linalg.inv(w2c)
 ```
 
-### 2.4. 各种右手的相机坐标系的转换
+### 各种右手的相机坐标系的转换
 
 ![](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062028328.png)
 
 ![](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062028296.png)
 
-注意：各种右手的相机坐标系的转换，在c2w和w2c上表现不同。
+不变：z是前后，除了LLFF外的x都是左右、y是上下。
 
-#### 2.4.1. 在获取c2w时
+#### 在获取c2w时
 
 w2c 和 c2w，谁设正向都可以，正向的才有意义。但是为什么我们设c2w为正向。
 
@@ -308,7 +290,7 @@ print(w2c)
 ```
 
 
-#### 2.4.2. 已经获取c2w后
+#### 已经获取c2w后
 
 - c2w->c2w: 只动R，变的是轴（整个列向量）
 
@@ -349,7 +331,7 @@ w2c = np.diag([1, -1, -1, 1]) @ w2c
 w2c = np.concatenate([w2c[1:2], w2c[0:1], -w2c[2:3], w2c[3:4]], 0)
 w2c = np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]) @ w2c
 ```
-### 2.5. 其他
+### 其他
 
 $$\begin{aligned}
 &R_{w\to 2} \left[ R_{1\to w}\begin{bmatrix}x \\ y \\ z \end{bmatrix} + t_{1\to w} \right] + t_{w\to 2} \\
@@ -363,13 +345,13 @@ R = R_2 @ R_1     # [3, 3]
 t = R_2 @ t_1 + t_2   # [3]
 extrin = np.hstack((R, t[None].T))  # [3, 4]，如何将R和T拼接
 ```
-## 3. projection transformation
+## projection transformation
 
 perspective projection 透射投影 和 orthographic projection 正交投影 的区别：无有近大远小。
 
-### 3.1. orthographic projection
+### orthographic projection
 
-#### 3.1.1. view volume to canonical view volume
+#### view volume to canonical view volume
 
 将三维空间投影至标准二维平面($[-1,1]^2$)之上 
 
@@ -392,7 +374,7 @@ orthographic projection is affine transformation (最后一行是 $\begin{bmatri
 $M_{ortho}=\mathbf{ST}=\begin{bmatrix}\frac{2}{r-l}&0&0&0\\0&\frac{2}{t-b}&0&0\\0&0&\frac{2}{n-f}&0\\0&0&0&1\end{bmatrix}\begin{bmatrix}1&0&0&-\frac{r+l}2\\0&1&0&-\frac{t+b}2\\0&0&1&-\frac{n+f}2\\0&0&0&1\end{bmatrix} = \begin{bmatrix}\frac{2}{r-l}&0&0&-\frac{r+l}{r-l}\\0&\frac{2}{t-b}&0&-\frac{t+b}{t-b}\\0&0&\frac{2}{n-f}&-\frac{n+f}{n-f}\\0&0&0&1\end{bmatrix}$
 
 PS: 这里的z并没有丢掉，为了之后的遮挡关系检测
-#### 3.1.2. viewporrt transformation
+#### viewporrt transformation
 
 将处于标准平面映射到屏幕分辨率范围之内，即$[-1,1]^2 \rightarrow [0,width]*[0,height]$, 其中width和height指屏幕分辨率大小.
 
@@ -402,11 +384,11 @@ $M_{viewport}=\begin{pmatrix}\frac{width}{2}&0&0&\frac{width}{2}\\0&\frac{height
 
 
 
-### 3.2. perspective projection
+### perspective projection
 
 perspective projection (最后一行是 $\begin{bmatrix} 0 & 0 & 1 &0\end{bmatrix}$ ) is **not** affine transformation ($\begin{bmatrix} 0 & 0 & 0 & 1\end{bmatrix}$)
 
-#### 3.2.1. frustum to canonical view volume
+#### frustum to canonical view volume
 
 这个的投影考虑视锥的 left, right, top, bottom, near, far
 
@@ -470,9 +452,9 @@ $M = M_{ortho}M_{persp-ortho} = \begin{bmatrix}\frac{2}{r-l}&0&0&-\frac{r+l}{r-l
 
 没加 viewport transformation.
 
-#### 3.2.2. pinhole 的 K矩阵
+#### pinhole 的 K矩阵
 
-##### 3.2.2.1. 相机坐标系->图像坐标系
+##### 相机坐标系->图像坐标系
 
 这里的相似三角形就不是任意值的近平面了，而是 image plane (the distance between the pinhole and image plane is **focal length**.)
 
@@ -515,7 +497,7 @@ $$\dfrac{f}{Z_{c}} = -\dfrac{x}{X_c} = -\dfrac{y}{Y_C}$$
 
 ![](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062025565.png)
 
-##### 3.2.2.2. 图像坐标系->像素坐标系
+##### 图像坐标系->像素坐标系
 
 ![](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062025778.png)
 
@@ -530,7 +512,7 @@ $
 Z_c \begin{bmatrix}\alpha & 0 & c_x \\0 & \beta & c_y \\ 0 & 0 & 1 \end{bmatrix}\begin{bmatrix}x \\y \\1 \end{bmatrix} = 
 Z_c\begin{bmatrix} u \\v \\ 1\end{bmatrix}
 $
-##### 3.2.2.3. 相机内参
+##### 相机内参
 
 The intrinsic matrix transforms 3D camera cooordinates to 2D homogeneous image coordinates.
 
@@ -581,7 +563,7 @@ clip_space, _ = torch.max(projected[..., 2], 1, keepdim=True)
 proj[..., 2] = projected[..., 2] / clip_space
 ```
 
-##### 3.2.2.4. 综合
+##### 综合
 
 ![](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062025049.png)
 
@@ -629,7 +611,7 @@ proj[..., 2] = projected[..., 2] / clip_space
 
 
 
-## 4. 反向
+## 反向
 
 $\begin{bmatrix} x \\ y \\ z \end{bmatrix} = \mathbf{K}^{−1} \begin{bmatrix} u \\ v \\ 1 \end{bmatrix} z$：再乘z才是camera下的xyz。
 
@@ -653,7 +635,7 @@ $$P_w = \mathbf{R}^{\top}\mathbf{K}^{−1} \begin{bmatrix} u \\ v \\ 1 \end{bmat
 - ray origin $o=-\mathbf{R}^\top\mathbf{t}$, ray direction $r=\mathbf{R}^{\top}\mathbf{K}^{−1}[u,v,1]^\top$
 
 
-## 5. ???
+## ???
 ![Alt text](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407062025209.png)
 
 - $R_c$代表的意思
