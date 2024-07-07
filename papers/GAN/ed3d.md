@@ -1,0 +1,4 @@
+- 3D-aware
+- multiview images
+- novel instances
+- triplane
