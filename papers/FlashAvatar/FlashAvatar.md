@@ -1,4 +1,6 @@
-# 输入和输出
+## Test
+
+输入和输出
 
 ```
 输入
@@ -43,7 +45,7 @@ python test.py --idname Obama --checkpoint dataset/Obama/log/ckpt/chkpnt.pth
 
 
 
-# loss
+## loss
 
 ```python
 loss = loss_huber*1 + loss_G*1
@@ -51,7 +53,7 @@ loss = loss_huber*1 + loss_G*1
 
 
 
-## huber 损失
+### huber 损失
 
 特别是在处理带有异常值的数据时。Huber损失相比于平方误差损失 MSE 对异常值更加鲁棒。
 
@@ -69,11 +71,11 @@ def huber_loss(network_output, gt, alpha):
     return loss.mean()
 ```
 
-# 训练
+## 训练
 
-## 数据预处理
+### 数据预处理
 
-### [MICA](https://github.com/Zielon/MICA)
+#### [MICA](https://github.com/Zielon/MICA)
 
 放入全身的第一帧 `demo\input\duda.jpg`
 
@@ -85,7 +87,7 @@ demo\output\duda\identity.npy		# 身份
 
 
 
-### [metrical-tracker](https://github.com/Zielon/metrical-tracker)
+#### [metrical-tracker](https://github.com/Zielon/metrical-tracker)
 
 放入
 
@@ -103,7 +105,7 @@ output\duda\checkpoint		# .frame文件
 
 
 
-### [face-parsing.PyTorch](https://github.com/zllrunning/face-parsing.PyTorch)
+#### [face-parsing.PyTorch](https://github.com/zllrunning/face-parsing.PyTorch)
 
 放入 `input\duda\source`
 
@@ -121,7 +123,7 @@ test_res\chosen_merge_00000.png		# 反选背景
 test_res\chosen_merge_00001.png
 ```
 
-## train
+### train
 
 ```bash
 # python train.py --idname <id_name>
@@ -132,7 +134,7 @@ python train.py --idname Obama
 
 
 
-# Code
+## Code
 
 
 
@@ -157,7 +159,7 @@ if train_type == 2:
 ```
 codedict
 - shape: torch.Size([1, 300])		# identity, 这个shape在flashAvater是公用的, 采用 00000.frame
-- expr: torch.Size([1, 100])
+- expr: torch.Size([1, 100])		# tracked expression coefficients
 - eyes_pose: torch.Size([1, 12])
 - eyelids: torch.Size([1, 2])
 - jaw_pose: torch.Size([1, 6])
@@ -190,27 +192,33 @@ frame = {
 }
 ```
 
-## DeformModel
+### DeformModel
 
 ```python
 # 输出10维
 verts_final, rot_delta, scale_coef = DeformModel.decode(codedict)       # torch.Size([1, 13453, 3]), torch.Size([1, 13453, 4]), torch.Size([1, 13453, 3])
-
-
-uv_vertices_shape_embeded_condition = torch.cat((self.uv_vertices_shape_embeded, condition), dim=2)
-deforms = self.deformNet(uv_vertices_shape_embeded_condition)
 ```
 
 ```python
 def decode(self, codedict):
-	condition = torch.cat((expr_code, jaw_pose, eyes_pose, eyelids), dim=1)	
+  	# 4个组成ψ
+	condition = torch.cat((expr_code, jaw_pose, eyes_pose, eyelids), dim=1)		# [1, 120]
     condition = condition.unsqueeze(1).repeat(1, self.v_num, 1)    # torch.Size([1, 14876, 120])
-
+	
+    # r(μ_T) 是 uv_vertices_shape_embeded
     uv_vertices_shape_embeded_condition = torch.cat((self.uv_vertices_shape_embeded, condition), dim=2)	#     torch.Size([1, 14876, 171])
+    
+    # MLP( r(μ_T), ψ )
     deforms = self.deformNet(uv_vertices_shape_embeded_condition)
 ```
 
-## shape
+MLP的输入和输出都是固定维度的...uv_vertices的个数。
+
+​	将表情变量 扩展为  uv_vertices_shape_embeded 的个数。[1, 120] → [1, 14876, 120]
+
+​	输入=cat(表情变量, uv_vertices_shape_embeded)，[1, 14876, 171]
+
+### shape
 
 ```python
 ckpt_path = os.path.join(mica_ckpt_dir, '00000.frame')
@@ -222,10 +230,10 @@ self.shape_param = torch.as_tensor(flame_params['shape'])
 codedict['shape'] = scene.shape_param.to("cuda")		# torch.Size([1, 300])
 
 
-##### 用处1 example_init
+###### 用处1 example_init
 DeformModel.example_init(codedict)
 
-##### 用处2 decode
+###### 用处2 decode
 # forward_geo中根据这些参数进行 lbs, 得到变换后的顶点
 # torch.Size([1, 5023, 3])
 geometry = self.flame_model.forward_geo(
@@ -313,11 +321,7 @@ geometry = self.flame_model.forward_geo(
         return verts_final, rot_delta, scale_coef
 ```
 
-MLP的输入和输出都是固定维度的...uv_vertices的个数。
 
-​	将表情变量 扩展为  uv_vertices_shape_embeded 的个数。[1, 120] → [1, 14876, 120]
-
-​	输入=cat(表情变量, uv_vertices_shape_embeded)，[1, 14876, 171]
 
 ```python
 def example_init(self, codedict):

@@ -2,21 +2,21 @@
 
 ```
 # this is a comment
-v 1.000000 -1.000000 -1.000000			#  顶点的坐标值，个数是 V
+v 1.000000 -1.000000 -1.000000			# [-1, 1] 顶点的坐标值，个数是 V
 v 1.000000 -1.000000 1.000000
 v -1.000000 -1.000000 1.000000
 v -1.000000 -1.000000 -1.000000
 v 1.000000 1.000000 -1.000000
-vt 0.748573 0.750412					# 顶点的uv纹理坐标值，个数是 T: T >= V，因为一个顶点可能属于两个面
+vt 0.748573 0.750412					# [0,1] 顶点的uv纹理坐标值，个数是 T: T >= V，因为一个顶点可能属于两个面
 vt 0.749279 0.501284
 vt 0.999110 0.501077
 vt 0.999455 0.750380
-vn 0.000000 0.000000 -1.000000			# 顶点的法向量，个数是 N
+vn 0.000000 0.000000 -1.000000			# [-1,1] 顶点的法向量，个数是 N
 vn -1.000000 -0.000000 -0.000000
 vn -0.000000 -0.000000 1.000000
 f 5/2/1 1/2/1 4/3/1						
 f 5/1/1 4/3/1 2/4/1
-# f面，一个面三个顶点，分别表示`v/vt/vn`.
+# f面，一个面三个顶点，分别表示`v/vt/vn`的索引（从1开始）。
 # 5/2/1 describes the first vertex of the first triangle
 #- 5: index of vertex [1.000000 1.000000 -1.000000]
 #- 2: index of texture coordinate [0.749279 0.501284]
@@ -32,7 +32,7 @@ from pytorch3d.io import load_obj, save_obj
 verts, faces, aux = load_obj(trg_obj)
 
 # verts: (V,3). 就是obj中的v
-# faces: Faces(verts_idx, normals_idx, textures_idx, materials_idx)
+# faces: Faces(verts_idx, normals_idx, textures_idx, materials_idx)：面的三个顶点的各索引
     # verts_id, textures_idx, normals_idx: (F, 3)，同上面 f 5/2/1 1/2/1 4/3/1
 # aux: Properties(normals, verts_uvs, material_colors, texture_images, texture_atlas)
     # verts_uvs: (T, 2). 就是obj中的vt

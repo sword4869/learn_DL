@@ -28,9 +28,9 @@ else:
     top = bbox[1]; bottom=bbox[3]
 ```
 
-# face_alignment
+## face_alignment
 
-## 2维
+### 2维
 
 ```python
 import cv2
@@ -69,7 +69,7 @@ preds = fa.get_landmarks(output)
 
 output = cv_draw_landmark(output[..., ::-1], preds[0])
 ```
-## 3维
+### 3维
 
 ```python
 # 需要 uint8, rgb, [h, w, 3]
@@ -78,7 +78,7 @@ preds = fa.get_landmarks(output)
 # print(preds[0].shape)   # (68, 3), 68个点，3维
 ```
 
-## Running on CPU/GPU
+### Running on CPU/GPU
 
 ```python
 import torch
