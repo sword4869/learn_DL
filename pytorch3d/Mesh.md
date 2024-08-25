@@ -1,5 +1,7 @@
 ## load_obj
 
+Load an `.obj` file and its associated `.mtl` file and create a Textures and Meshes object.
+
 ```
 # this is a comment
 v 1.000000 -1.000000 -1.000000			# [-1, 1] 顶点的坐标值，个数是 V
@@ -18,9 +20,9 @@ f 5/2/1 1/2/1 4/3/1
 f 5/1/1 4/3/1 2/4/1
 # f面，一个面三个顶点，分别表示`v/vt/vn`的索引（从1开始）。
 # 5/2/1 describes the first vertex of the first triangle
-#- 5: index of vertex [1.000000 1.000000 -1.000000]
-#- 2: index of texture coordinate [0.749279 0.501284]
-#- 1: index of normal [0.000000 0.000000 -1.000000]
+#- 5: index of vertex [1.000000 1.000000 -1.000000]		面的顶点的坐标值的索引 f-v   verts_idx
+#- 2: index of texture coordinate [0.749279 0.501284]	面的顶点的纹理的索引	f-vt   textures_idx
+#- 1: index of normal [0.000000 0.000000 -1.000000]		面的顶点的法向量的索引 f-vn  normals_idx
 ```
 
 v，vt, vn是坐标值，f里的都是索引。
@@ -29,30 +31,72 @@ v，vt, vn是坐标值，f里的都是索引。
 from pytorch3d.io import load_obj, save_obj
 
 # We read the target 3D model using load_obj
-verts, faces, aux = load_obj(trg_obj)
+verts, faces, aux = load_obj(trg_obj)		# 都是还在cpu上的tensor
 
 # verts: (V,3). 就是obj中的v
 # faces: Faces(verts_idx, normals_idx, textures_idx, materials_idx)：面的三个顶点的各索引
-    # verts_id, textures_idx, normals_idx: (F, 3)，同上面 f 5/2/1 1/2/1 4/3/1
+    # verts_idx, textures_idx, normals_idx: (F, 3)，同上面 f 5/2/1 1/2/1 4/3/1
+   	# materials_idx: (F)
 # aux: Properties(normals, verts_uvs, material_colors, texture_images, texture_atlas)
     # verts_uvs: (T, 2). 就是obj中的vt
 	# normals: (N,3). 就是obj中的vn
 ```
 
+## load_objs_as_meshes
+
+```
+from pytorch3d.io import load_objs_as_meshes
+
+device = torch.device("cuda:0")
+obj_filename = os.path.join(DATA_DIR, "cow_mesh/cow.obj")
+
+mesh = load_objs_as_meshes([obj_filename], device=device)
+```
+
 ## Meshes
+
+### 无纹理
 
 Meshes是一堆对齐的mesh，所以很多操作都是取出batch=1的单个mesh。
 
 ```python
 from pytorch3d.structures import Meshes
-
+from pytorch3d.io import load_obj
 
 verts, faces, aux = load_obj(trg_obj)
+verts = verts.to(device)
+verts_idx = faces.verts_idx.to(device)
 
 # 用[]就是因为可以输入多个mesh为一个batch
-# 顶点的坐标值 v, 面的顶点索引
-trg_mesh = Meshes(verts=[verts], faces=[faces.verts_idx])
+# 顶点的坐标值 v, 面的顶点的坐标值的索引 f-v
+mesh = Meshes(verts=[verts], faces=[verts_idx])
 ```
+### 捏造纹理
+
+```python
+from pytorch3d.renderer import TexturesVertex
+
+# Initialize each vertex to be white in color.
+verts_rgb = torch.ones_like(verts)[None]  # (1, V, 3)
+textures = TexturesVertex(verts_features=verts_rgb.to(device))
+
+mesh = Meshes(
+    verts=[verts.to(device)],   
+    faces=[verts_idx],
+    textures=textures
+)
+```
+
+### 来自点云
+
+```python
+from pytorch3d.ops import sample_points_from_meshes
+
+sample_trg = sample_points_from_meshes(trg_mesh, 5000)
+```
+
+### 属性
+
 属性
 ```python
 #### TexturesUV 
@@ -81,12 +125,6 @@ verts = mesh.verts_list()[0]
 verts /= verts.norm(p=2, dim=1, keepdim=True)
 faces = mesh.faces_list()[0]
 return Meshes(verts=[verts], faces=[faces])
-```
-
-```python
-from pytorch3d.ops import sample_points_from_meshes
-
-sample_trg = sample_points_from_meshes(trg_mesh, 5000)
 ```
 
 ## save_obj

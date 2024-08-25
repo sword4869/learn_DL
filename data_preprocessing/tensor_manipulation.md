@@ -1,19 +1,7 @@
-- [1. tensor\_manipulation](#1-tensor_manipulation)
-  - [1.1. create](#11-create)
-  - [1.2. calculate](#12-calculate)
-    - [1.2.1. multiple](#121-multiple)
-    - [1.2.2. other](#122-other)
-  - [1.3. 维度操作](#13-维度操作)
-  - [1.4. 逻辑运算符](#14-逻辑运算符)
-  - [1.5. 转换为其他Python对象](#15-转换为其他python对象)
-  - [1.6. 拷贝](#16-拷贝)
-    - [1.6.1. 拷贝](#161-拷贝)
-  - [1.7. torch.gather / torch.Tensor.gather](#17-torchgather--torchtensorgather)
-  - [1.8. 内存大小](#18-内存大小)
+[toc]
+# tensor_manipulation
 
-# 1. tensor_manipulation
-
-## 1.1. create
+## create
 
 
 ```python
@@ -241,8 +229,8 @@ a = X+Y
 ```
 
 
-## 1.2. calculate
-### 1.2.1. multiple
+## calculate
+### multiple
 element-wise
 ```python
 X = torch.arange(9).reshape((3, 3))
@@ -337,7 +325,7 @@ A@C     # [3], tensor([0.8935, 1.2776, 0.6071])
 ```
 
 
-### 1.2.2. other
+### other
 sum求和，降低维度
 ```python
 Z = torch.ones(3,4)
@@ -408,7 +396,7 @@ output = input.clamp(min=0, max=9)
 # tensor([[9, 4, 8, 9, 9, 9, 9, 9, 8, 0]])
 ```
 
-## 1.3. 维度操作
+## 维度操作
 如果有4个维度，`dim=-1`, 等同`dim=3`。
 
 > 张量的序列变张量 cat stack
@@ -469,7 +457,7 @@ https://blog.csdn.net/qq_42518956/article/details/103882579
 norm:
 https://zhuanlan.zhihu.com/p/260162240
 
-## 1.4. 逻辑运算符
+## 逻辑运算符
 
 ```python
 X = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
@@ -505,7 +493,7 @@ X[M] = 0
 ```
 
 
-## 1.5. 转换为其他Python对象
+## 转换为其他Python对象
 
 ```python
 # tensor -> numpy
@@ -529,9 +517,9 @@ a.item(), float(a), int(a)
 # 3.5, 3.5, 3
 ```
 
-## 1.6. 拷贝
+## 拷贝
 
-### 1.6.1. 拷贝
+### 拷贝
 
 深拷贝
 ```python
@@ -545,7 +533,7 @@ Y = X
 Y[1:2] = 2
 ```
 
-## 1.7. torch.gather / torch.Tensor.gather
+## torch.gather / torch.Tensor.gather
 
 > `torch.gather(input, dim, index, *, sparse_grad=False, out=None) → Tensor`
 
@@ -582,7 +570,7 @@ tensor([4, 3, 6])
 ```
 
 ```python
->>> tensor_0 = torch.tensor([[ 3,  4,  5], [ 6,  7,  8], [ 9, 10, 11]])
+>>> tensor_0 = torch.tensor([[ 3,  4,  5], [ 6,  7,  8], [ 9, 10, 11]])			# torch.Size([3, 3])
 # 行走：[[2,1,0]]→[[tensor_0(2,0),tensor_0(1,1),tensor_0(0,2)]]
 >>> tensor_0.gather(dim=0, index=torch.tensor([[2, 1, 0]]))
 tensor([[9, 7, 5]])
@@ -641,9 +629,9 @@ print("\nGathered Tensor:")
 print(gathered_tensor)
 ```
 
-```python
+### 最常用：idx索引
 
-# D:\git\FlashAvatar-code\dataset\Obama\parsing\00000_neckhead.png
+```python
 import torch
 
 # 创建一个三维张量，假设 B=2, N=3, M=4
@@ -655,24 +643,30 @@ tensor = torch.tensor([[[ 1,  2,  3,  4],
                         [17, 18, 19, 20],
                         [21, 22, 23, 24]]])
 
-#################### 选择不同bathch的数据 [0,1] 剩下的两个维度值都是batch维度的同一个值
-indices = torch.tensor([0, 1]).view(-1, 1, 1).expand(2, 3, 4)
-
-
-# 输出结果
-print("Original Tensor:")
-print(tensor)
-print("\nIndices Tensor:")
-print(indices)
-
-# 使用 torch.gather 收集张量
+#################### 选择不同bathch的数据 [0,1,1] 剩下的两个维度值都是batch维度的同一个值
+indices = torch.tensor([0, 1, 1]).view(-1, 1, 1).expand(-1, 3, 4)
+'''
+tensor([[[0, 0, 0, 0],
+         [0, 0, 0, 0],
+         [0, 0, 0, 0]],
+        [[1, 1, 1, 1],
+         [1, 1, 1, 1],
+         [1, 1, 1, 1]]])
+'''
 gathered_tensor = torch.gather(tensor, 0, indices)
-print("\nGathered Tensor:")
-print(gathered_tensor)
-
-
+'''
+tensor([[[ 1,  2,  3,  4],
+         [ 5,  6,  7,  8],
+         [ 9, 10, 11, 12]],
+        [[13, 14, 15, 16],
+         [17, 18, 19, 20],
+         [21, 22, 23, 24]],
+        [[13, 14, 15, 16],
+         [17, 18, 19, 20],
+         [21, 22, 23, 24]]])
+'''
 ```
-## 1.8. 内存大小
+## 内存大小
 
 32位浮点数，32bit，4B
 ```python

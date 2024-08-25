@@ -19,6 +19,10 @@ https://download.is.tue.mpg.de/download.php?domain=flame&sfile=FLAME2020.zip&res
 
 ## FLAME_masks.pkl
 
+顶点各自归属哪部分的mask。
+
+
+
 https://files.is.tue.mpg.de/tbolkart/FLAME/FLAME_masks.zip
 
 https://github.com/Zielon/MICA/blob/master/data/FLAME2020/FLAME_masks/FLAME_masks.pkl: windows上有pickle的换行符问题`_pickle.UnpicklingError: the STRING opcode argument must be quoted`，需要换行处理。
@@ -27,6 +31,23 @@ https://github.com/Zielon/MICA/blob/master/data/FLAME2020/FLAME_masks/FLAME_mask
 提取码：81w6
 
 ![image-20240701213949749](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202407012139779.png)
+
+```python
+flame_mask_path = "flame/FLAME_masks/FLAME_masks.pkl"
+flame_mask_dic = load_binary_pickle(flame_mask_path)
+
+import sys
+import pickle
+def load_binary_pickle(filepath):
+    with open(filepath, 'rb') as f:
+        if sys.version_info >= (3, 0):
+            data = pickle.load(f, encoding='latin1')
+        else:
+            data = pickle.load(f)
+    return data
+```
+
+![image-20240819132210406](https://cdn.jsdelivr.net/gh/sword4869/pic1@main/images/202408191333915.png)
 
 ## FLAME_texture.npz
 

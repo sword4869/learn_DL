@@ -1,12 +1,4 @@
-- [1. loss](#1-loss)
-- [2. overview](#2-overview)
-- [3. psnr和ssim](#3-psnr和ssim)
-  - [3.1. data\_range](#31-data_range)
-  - [3.2. psnr](#32-psnr)
-  - [3.3. ssim](#33-ssim)
-- [4. lpips](#4-lpips)
-
-----
+[toc]
 
 ## 1. loss
 
@@ -283,8 +275,8 @@ np.random.seed(123)
 
 # float32 要么在 np.astype() , 要么在 tensor.dtype 处
 imgs1 = np.random.rand(10, 100, 100, 3).astype(np.float32)
-imgs2 = np.random.rand(10, 100, 100, 3)
 imgs1 = torch.tensor(imgs1, device='cuda:0').permute(0, 3, 1, 2)
+imgs2 = np.random.rand(10, 100, 100, 3)
 imgs2 = torch.tensor(imgs2, dtype=torch.float32, device='cuda:0').permute(0, 3, 1, 2)
 
 

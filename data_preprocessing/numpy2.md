@@ -1,40 +1,10 @@
-- [1. 通用函数：快速的元素级数组函数](#1-通用函数快速的元素级数组函数)
-  - [1.1. 一元ufunc](#11-一元ufunc)
-  - [1.2. 二元ufunc](#12-二元ufunc)
-- [2. 可以返回多个数组的ufunc](#2-可以返回多个数组的ufunc)
-- [3. out可选参数](#3-out可选参数)
-- [4. 将条件逻辑表述为数组运算np.where()](#4-将条件逻辑表述为数组运算npwhere)
-- [5. 数学和统计方法](#5-数学和统计方法)
-  - [5.1. 聚合计算aggregation](#51-聚合计算aggregation)
-  - [5.2. max and nan](#52-max-and-nan)
-    - [torch.max](#torchmax)
-  - [5.3. nan](#53-nan)
-  - [5.4. 非聚合](#54-非聚合)
-- [6. 对布尔型数组中的True值计数](#6-对布尔型数组中的true值计数)
-- [7. 排序](#7-排序)
-  - [7.1. 三种排序算法](#71-三种排序算法)
-  - [7.2. numpy.sort()](#72-numpysort)
-  - [7.3. numpy.argsort()](#73-numpyargsort)
-  - [7.4. numpy.lexsort()](#74-numpylexsort)
-- [8. 唯一化以及其它的集合逻辑 ](#8-唯一化以及其它的集合逻辑)
-- [9. 用于数组的文件输入输出](#9-用于数组的文件输入输出)
-  - [9.1. npy](#91-npy)
-  - [9.2. npy](#92-npy)
-  - [9.3. bin](#93-bin)
-- [10. 线性代数](#10-线性代数)
-- [11. 伪随机数生成 np.random](#11-伪随机数生成-nprandom)
-  - [11.1. seed()](#111-seed)
-  - [11.2. rand()/random()/random\_sample() 连续均匀分布](#112-randrandomrandom_sample-连续均匀分布)
-  - [11.3. randint() 离散均匀分布](#113-randint-离散均匀分布)
-  - [11.4. randn()正态分布](#114-randn正态分布)
-  - [11.5. choice() 列表](#115-choice-列表)
+[toc]
 
-
-## 1. 通用函数：快速的元素级数组函数
+## 通用函数：快速的元素级数组函数
 
 通用函数（即ufunc）是一种对ndarray中的数据执行元素级运算的函数。
 
-### 1.1. 一元ufunc
+### 一元ufunc
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzM1NDQ1MTg3XzBCS1pabTFsSjAuanBn?x-oss-process=image/format,png)
 
@@ -59,7 +29,7 @@ print(np.exp(arr))
 '''
 ```
 
-### 1.2. 二元ufunc
+### 二元ufunc
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzM1NDcwNDA4XzhGYmVtZ0JtamIuanBn?x-oss-process=image/format,png)
 
@@ -78,7 +48,7 @@ print(np.maximum(x, y))
 '''
 ```
 
-## 2. 可以返回多个数组的ufunc
+## 可以返回多个数组的ufunc
 
 > modf就是一个例子，它是Python内置函数divmod的矢量化版本，它会返回浮点数数组的小数部分（第一个返回的数组）和整数部分（第二个）： 
 
@@ -95,7 +65,7 @@ print(whole_part)
 '''
 ```
 
-## 3. out可选参数
+## out可选参数
 
 > Ufuncs可以接受一个out可选参数，这样就能在数组原地进行操作： 
 
@@ -118,7 +88,7 @@ print(arr)
 ```
 
 
-## 4. 将条件逻辑表述为数组运算np.where()
+## 将条件逻辑表述为数组运算np.where()
 
 > numpy.where函数是三元表达式x if condition else y的矢量化版本,更快，更简洁
 > 
@@ -176,7 +146,7 @@ print(np.where(arr > 0, 2, arr))
 '''
 ```
 
-## 5. 数学和统计方法
+## 数学和统计方法
 
  ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzM3Mzk5NDE0X3pzVkVjOU0zdWouanBn?x-oss-process=image/format,png)
 
@@ -200,7 +170,7 @@ np.mean((a - b) ** 2)
 # 4.0
 ```
 
-### 5.1. 聚合计算aggregation
+### 聚合计算aggregation
 
 可以通过数组上的一组数学函数对整个数组或某个轴向的数据进行统计计算。sum、mean以及标准差std等聚合计算（aggregation，通常叫做约简（reduction））
 
@@ -239,7 +209,7 @@ print(arr.sum(axis=0))     #列，计算每列的和
 '''
 ```
 
-### 5.2. max and nan
+### max and nan
 
 由于`1<nan`, `1>nan`,`1==nan` 均为 `False`
 - `np.max(a, axis)`：有nan则最大值返回nan
@@ -289,13 +259,13 @@ tensor([657.7120], device='cuda:0')
 tensor([5392], device='cuda:0')
 ```
 
-### 5.3. nan
+### nan
 
 ```python
 depth_map = np.nan_to_num(depth_map) # nan全都变为0
 ```
 
-### 5.4. 非聚合
+### 非聚合
 
 > cumsum和cumprod之类的方法则不聚合，而是产生一个由中间结果组成的数组
 
@@ -325,7 +295,7 @@ print(arr.cumprod(axis=1))       #行，计算每行的累计和
 '''
 ```
 
-## 6. 对布尔型数组中的True值计数
+## 对布尔型数组中的True值计数
 
 > sum经常被用来对布尔型数组中的True值计数
 
@@ -363,9 +333,9 @@ False
 '''
 ```
 
-## 7. 排序
+## 排序
 
-###  7.1. 三种排序算法
+###  三种排序算法
 
 | 种类 | 速度 | 最坏情况 | 工作空间 | 稳定性 |
 | --- | --- | --- | --- | --- |
@@ -373,7 +343,7 @@ False
 | 'mergesort'(归并排序) | 2 | O(n\*log(n)) | ~n/2 | 是 |
 | 'he**a**psort'(堆排序) | 3 | O(n\*log(n)) | 0 | 否 |
 
-### 7.2. numpy.sort()
+### numpy.sort()
 
 sort()函数返回输入数组的排序副本。 它有以下参数：
 
@@ -415,7 +385,7 @@ print (np.sort(a, axis =  0))
 '''
 ```
 
-### 7.3. numpy.argsort()
+### numpy.argsort()
 
 numpy.argsort()函数对输入数组沿给定轴执行间接排序，并使用指定排序类型返回数据的索引数组。 这个索引数组用于构造排序后的数组。 
 
@@ -448,11 +418,11 @@ for i in y:
 '''
 ```
 
-### 7.4. numpy.lexsort()
+### numpy.lexsort()
 
 函数使用键序列执行间接排序。 键可以看作是电子表格中的一列。 该函数返回一个索引数组，使用它可以获得排序数据。 注意，最后一个键恰好是 sort 的主键。 
 
-## 8. 唯一化以及其它的集合逻辑 
+## 唯一化以及其它的集合逻辑 
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzQ0NzIzODU5XzRoNkdOYnhTWDAuanBn?x-oss-process=image/format,png)
 
@@ -477,11 +447,11 @@ print(np.in1d(values, [2, 3, 6]))
 #[ True False False  True  True False  True]
 ```
 
-## 9. 用于数组的文件输入输出
+## 用于数组的文件输入输出
 
 NumPy能够读写磁盘上的文本数据或二进制数据。
 
-### 9.1. npy
+### npy
 
 数组是以**未压缩**的原始二进制格式保存在扩展名为`.npy`的文件中的。如果文件路径末尾没有扩展名`.npy`，则该扩展名会被自动加上。
 
@@ -493,7 +463,7 @@ print(np.load('numpy_array.npy'))
 # [0 1 2 3 4 5 6 7 8 9]
 ```
 
-### 9.2. npy
+### npy
 
 `np.savez`可以将多个数组保存到一个未压缩文件中，将数组以关键字参数的形式传入即可
 
@@ -510,7 +480,7 @@ print(arch['a'], arch['b'])
 np.savez_compressed('archive_compressed.npz', a=arr, b=arr)
 ```
 
-### 9.3. bin
+### bin
 
 注意 dtype 来对齐字节
 ```python
@@ -520,7 +490,7 @@ print(np.fromfile('binary.bin', dtype=np.int32))
 ```
 
 
-## 10. 线性代数
+## 线性代数
 
 >  np.dot计算矩阵内积（点乘积）
 
@@ -568,13 +538,13 @@ print(np.linalg.inv(arr))
 #print(np.inv(arr)) 报错
 ```
 
-## 11. 伪随机数生成 np.random
+## 伪随机数生成 np.random
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzk2MDk4OTIxX25QTzMyWVFTUHouanBn?x-oss-process=image/format,png)
 
 ![GitHub](https://imgconvert.csdnimg.cn/aHR0cDovL2FsaXl1bnRpYW5jaGlwdWJsaWMuY24taGFuZ3pob3Uub3NzLXB1Yi5hbGl5dW4taW5jLmNvbS9wdWJsaWMvZmlsZXMvaW1hZ2UvbnVsbC8xNTMyMzk2MTM0Nzk1X3hvYXZ3d1Z5cGQuanBn?x-oss-process=image/format,png)
 
-### 11.1. seed()
+### seed()
 
 > np.random.seed更改随机数生成种子： 
 
@@ -652,7 +622,7 @@ print(" ***** set seed result ***** ")
 set_seed()
 ```
 
-### 11.2. rand()/random()/random_sample() 连续均匀分布
+### rand()/random()/random_sample() 连续均匀分布
 
 `rand()`, `random()` 都是 `random_sample()` 的别名
 
@@ -674,7 +644,7 @@ print(np.random.rand(2, 3) - 0.5)
 #  [-0.42226141  0.28728643 -0.33674102]]
 ```
 
-### 11.3. randint() 离散均匀分布
+### randint() 离散均匀分布
 
 > randint给定上下限范围 `[low, high)` 内的选取整数 
 
@@ -714,7 +684,7 @@ array([[ 8,  6,  9,  7],
        [ 1, 16,  9, 12]], dtype=uint8)
 ```
 
-### 11.4. randn()正态分布
+### randn()正态分布
 
 > randn(shape)
 
@@ -726,7 +696,7 @@ y=np.random.randn(2, 2)
 #  [-0.55820537  0.55722007]]
 ```
 
-### 11.5. choice() 列表
+### choice() 列表
 <https://blog.csdn.net/ImwaterP/article/details/96282230>
 
 `random.choice(a, size=None, replace=True, p=None)`

@@ -51,7 +51,9 @@ python test.py --idname Obama --checkpoint dataset/Obama/log/ckpt/chkpnt.pth
 loss = loss_huber*1 + loss_G*1
 ```
 
+loss_huber是头和嘴的huber。
 
+loss_G是头的lpips。
 
 ### huber 损失
 
@@ -384,3 +386,20 @@ class Deform_Model(nn.Module):
         self.init_networks(device)
 ```
 
+## QA
+
+Q: UV纹理图映射到Mesh上的顶点，`example_init`是运行几次？
+
+A：只在初始化中运行一次，而迭代中不运行。
+
+
+
+Q:  $\mu_T == \mu_M$?
+
+A: 是又不是。准确来是，它们都是纹理图上的像素点对应在mesh上的面的点的坐标。但是每次迭代时，mesh会随表情变化而变化，故而对应面的点的具体坐标是会变动。但是还是维持原本的对应关系，①初始化时像素点到空白表情对应的面的索引关系，②”纹理图上的像素点对应在mesh上的面的点的坐标”，是面的三个顶点的重心与三个顶点的坐标的结果，重心一直用初始化时的，只是三个顶点的坐标随mesh变化而变化。
+
+简单来说，就是还是那个面，只是面在移动。
+
+MLP的输入是经典mesh上的点的坐标 $\mu_T$ ，而迭代中的点的位置由MLP输出的offset和随表情变化的mesh上的点的坐标 $\mu_T$ 相加而成。
+
+也就是说，由表情变化引起的位置变形基本已由 $\mu_M$ 建模（FLame网格很强），MLP输出的offset只是起一些细节作用。

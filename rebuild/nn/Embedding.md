@@ -6,9 +6,9 @@ indices $\to$ word embedding(float vector)
 - This module is often used to store word embeddings and retrieve them using indices. 
 - The input to the module is a list of indices, and the output is the corresponding word embeddings.
 
-PS: 与`nn.Linear`等价的情况：
-    
-如果 `nn.Linear(num_embeddings, embedding_dim)` 的输入 `x` 是 one-hot 向量，且 `nn.Linear(x)` 是没有 bias 的, 那么 $f(x)=x * w^{T}$ 就相当于 取对应的 `weight`(shape is `(embedding_dim, num_embeddings)`) 的转置.
+PS: 与`nn.Linear`等价的情况： 
+
+​	如果 `nn.Linear(num_embeddings, embedding_dim)` 的输入 `x` 是 one-hot 向量，且 `nn.Linear(x)` 是没有 bias 的, 那么 $f(x)=x * w^{T}$ 就相当于 取对应的 `weight`(shape is `(embedding_dim, num_embeddings)`) 的转置.
 
 ## Embedding
 ```python
