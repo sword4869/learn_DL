@@ -105,25 +105,53 @@ input\duda\source 			# 25fps的人头裁剪
 output\duda\checkpoint		# .frame文件
 ```
 
+source将其重命名为 imgs，并让其从0开始。
 
+#### RVM
+
+```bash
+cd /media/lab/新加卷/DataSet/FlashAvatar/flash/dataset/nf_01
+# 会自动创建 alpha 文件夹
+rvm --variant resnet50 \
+--checkpoint /home/lab/Documents/RobustVideoMatting/model/rvm_resnet50.pth \
+--device cuda \
+--input-source imgs \
+--output-type png_sequence \
+--output-alpha "alpha" \
+--seq-chunk 1
+
+
+rvm --variant resnet50 --checkpoint E:\Models\rvm_resnet50.pth --device cuda --input-source imgs --output-type png_sequence --output-alpha "alpha" --seq-chunk 1
+
+
+```
+
+还需要重命名，少一位数字0.
 
 #### [face-parsing.PyTorch](https://github.com/zllrunning/face-parsing.PyTorch)
+
+自己修改的[face_parsing](https://github.com/sword4869/face_parsing)
 
 放入 `input\duda\source`
 
 得到
 
 ```
-test_res\chosen_merge_00000.png		# neck和head
-test_res\chosen_merge_00001.png
+# neck和head前景（反选背景和cloth）
+$ subject='bala'
+$ face_parsing  --ckpt /home/lab/Documents/face-seg/pretrain/79999_iter.pth \
+    --img_path /media/lab/新加卷/DataSet/FlashAvatar/flash/dataset/$subject/imgs \
+    --save_root /media/lab/新加卷/DataSet/FlashAvatar/flash/dataset/$subject/parsing \
+	--chosen_parts 0 16 --chosen_filename neckhead --chosen_reverse
+
+	
+$ face_parsing  --ckpt /home/lab/Documents/face-seg/pretrain/79999_iter.pth \
+    --img_path /media/lab/新加卷/DataSet/FlashAvatar/flash/dataset/$subject/imgs \
+    --save_root /media/lab/新加卷/DataSet/FlashAvatar/flash/dataset/$subject/parsing \
+	--chosen_parts 11 12 13 --chosen_filename mouth
 ```
 
-RVM的效果差，不如就用这个
 
-```
-test_res\chosen_merge_00000.png		# 反选背景
-test_res\chosen_merge_00001.png
-```
 
 ### train
 

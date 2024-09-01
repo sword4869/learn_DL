@@ -193,6 +193,8 @@ import torch
 11.1
 >>> torch.cuda.get_arch_list()
 ['sm_37', 'sm_50', 'sm_60', 'sm_70', 'sm_75', 'sm_80', 'sm_86']
+>>> torch.cuda.get_device_capability()
+(7, 5)		# 对应就是 7.5
 ```
 
 
@@ -205,8 +207,8 @@ CUDA Toolkit = Driver + CUDA, 所以不用自己去下Driver。 <https://develop
 
 选择 runfile(local)
 
-<details>
-<summary markdown="span">如果不成功，加这些步骤在前面</summary>
+##### 如无必须，特殊步骤
+如果不成功，加这些步骤在前面
 
 ```bash
 ######## 先调整一波grub，以便更好进入recovery模式
@@ -256,8 +258,6 @@ $ sudo apt-get install linux-headers-$(uname -r)
 $ reboot
 ```
 
-</details>
-
 
 ```bash
 # [各版本CUDA下载, 点进去后，会给wget下载命令。](https://developer.nvidia.com/cuda-toolkit-archive)
@@ -280,6 +280,35 @@ $ sudo ./XXXXXXXXXXX.run
 $ sudo systemctl start lightdm
 $ ctrl+alt+F7
 ```
+
+#### 正常步骤
+
+下载 run
+
+```bash
+$ sudo ./cuda_11.8.0_520.61.05_linux.run 
+===========
+= Summary =
+===========
+
+Driver:   Not Selected
+Toolkit:  Installed in /usr/local/cuda-11.8/
+
+Please make sure that
+ -   PATH includes /usr/local/cuda-11.8/bin
+ -   LD_LIBRARY_PATH includes /usr/local/cuda-11.8/lib64, or, add /usr/local/cuda-11.8/lib64 to /etc/ld.so.conf and run ldconfig as root
+```
+
+设置环境变量
+
+```bash
+# 这是软链接 `cuda -> /usr/local/cuda-11.8/`，也可以具体指定 /usr/local/cuda-11.8
+export CUDA_HOME=/usr/local/cuda		
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+```
+
+
 
 
 

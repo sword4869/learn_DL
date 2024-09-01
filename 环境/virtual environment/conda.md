@@ -130,47 +130,6 @@ powershell的权限问题，`learn_linux\docs\advance\shell美化\oh-my-posh\rea
 3. 输入`conda activate`，却报错，UnicodeEncodeError: 'gbk' codec can't encode character. 
     这是发生在git-bash读取环境变量时，因为你的环境变量中有个路径含有中文，删除掉它或者给它改成英文名字就好。
 
-## 配置源
-
-[bfsu 北外的源主页](https://mirrors.bfsu.edu.cn/help/anaconda/)
-
-the path of file `.condarc` is 
-- `C:\Users\<USERNAME>\.condarc`(win)
-- `~/.condarc`(linux)
-
-```bash
-# Linux: nothing
-# Win10: `conda config --set show_channel_urls yes` to produce this file.
-# 换了个北外的源，阿里、中科大、清华都挺满
-$ vim ~/.condarc
-
-channels:
-  - defaults
-show_channel_urls: true
-ssl_verify: false
-default_channels:
-  - https://mirrors.bfsu.edu.cn/anaconda/pkgs/main
-  - https://mirrors.bfsu.edu.cn/anaconda/pkgs/r
-  - https://mirrors.bfsu.edu.cn/anaconda/pkgs/msys2
-custom_channels:
-  conda-forge: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  msys2: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  bioconda: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  menpo: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  pytorch: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  pytorch-lts: https://mirrors.bfsu.edu.cn/anaconda/cloud
-  simpleitk: https://mirrors.bfsu.edu.cn/anaconda/cloud
-```
-
-然后运行 `conda clean -i` 清除索引缓存，保证用的是镜像站提供的索引。
-
-### SSLError
-
-> SSLError(MaxRetryError('HTTPSConnectionPool(host=\'mirrors.bfsu.edu.cn\', port=443): Max retries exceeded with url: /anaconda/pkgs/main/linux-64/repodata.json (Caused by SSLError(SSLError("bad handshake: Error([(\'SSL routines\', \'ssl3_get_server_certificate\', \'certificate verify failed\')])")))'))
-
-在`~/.condarc`中加一句`ssl_verify: false`
-
-
 ## Basic Command
 
 ### Managing conda
@@ -468,4 +427,3 @@ conda env create -n my_env --file ENV.yaml
 conda env update -n my_env --file ENV.yaml
 ```
 
-然而安起来，还是总出问题。不如requirements.txt

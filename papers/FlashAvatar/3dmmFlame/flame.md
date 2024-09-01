@@ -300,7 +300,7 @@ C:\Users\lab\.insightface
 
 
 
-（3）
+（3）可以直接按照conda的environment装
 
 pip install.
 
@@ -408,6 +408,12 @@ data
     ├── FLAME_texture.npz
     └── generic_model.pkl
 ```
+
+```bash
+python tracker.py --cfg ./configs/actors/duda.yml 
+```
+
+
 
 ### 输入和输出
 
