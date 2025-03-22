@@ -325,16 +325,25 @@ https://developer.nvidia.com/cuda-toolkit-archive
 
 #### 多个cuda
 
-再装11.8，会自动设置 `CUDA_PATH` 为刚安装的cuda。我猜，切换也是修改这个。
+再装11.8，会自动设置 `CUDA_PATH` 为刚安装的cuda。切换也是修改这个。
 
 新增：
 
 - `CUDA_PATH_V11_8`: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8`
-- `PATH`: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\libnvvp`, `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin`
+- `PATH`: 
+  - `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\libnvvp`, 
+  - `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8\bin`
 
-修改：
+
+
+
+但是当多个出现时，就有一个问题：`nvcc -V`使用Path中的最新一个，所以Path中只留一个。
 
 - `CUDA_PATH`: `C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8`
+- `PATH`: 
+  - `%CUDA_PATH%\libnvvp`
+  - `%CUDA_PATH%\bin`
+
 
 ### conda装CUDA
 

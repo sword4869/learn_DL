@@ -17,8 +17,6 @@
 ---
 ## install
 
-a. Packages for standard desktop environments (Windows, macOS, almost any GNU/Linux distribution)
-
 - Option 1 - Main modules package: 
     `pip install opencv-python`
 - Option 2 - Full package (contains both main modules and contrib/extra modulesm listing from OpenCV documentation): 
@@ -33,6 +31,17 @@ a. Packages for standard desktop environments (Windows, macOS, almost any GNU/Li
 Headless: Packages for server environments (such as Docker, cloud environments etc.), no GUI library dependencies
 
 所以，一般选择 `pip install opencv-contrib-python` 
+
+
+
+> 解决numpy.core.multiarray failed to import（numpy不降级方案）
+
+```bash
+opencv-python==4.7.0.72
+numpy==1.24.4
+```
+
+
 
 
 ## Usage
@@ -161,7 +170,7 @@ elif bits == 2:
 >>> cv2.imwrite("F://3.jpeg",img, [cv2.IMWRITE_JPEG_QUALITY, 2])
 # 多参数演示
 >>> cv2.imwrite("F://5.jpeg",img, [cv2.IMWRITE_JPEG_LUMA_QUALITY, 10, cv2.IMWRITE_JPEG_QUALITY, 100])
-``` 
+```
 
 ### 缩放
 

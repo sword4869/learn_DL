@@ -1,3 +1,5 @@
+[toc]
+
 ## Test
 
 输入和输出
@@ -79,33 +81,11 @@ def huber_loss(network_output, gt, alpha):
 
 #### [MICA](https://github.com/Zielon/MICA)
 
-放入全身的第一帧 `demo\input\duda.jpg`
-
-得到
-
-```
-demo\output\duda\identity.npy		# 身份
-```
-
 
 
 #### [metrical-tracker](https://github.com/Zielon/metrical-tracker)
 
-放入
 
-```
-input\duda\identity.npy		# 身份
-input\duda\video.mp4     	# 全身的视频
-```
-
-得到  
-
-```
-input\duda\source 			# 25fps的人头裁剪
-output\duda\checkpoint		# .frame文件
-```
-
-source将其重命名为 imgs，并让其从0开始。
 
 #### RVM
 

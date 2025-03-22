@@ -355,6 +355,11 @@ conda clean --all
 ```
 
 ### 离线打包
+
+Q：linux和windows的打包环境，能通用吗？
+
+A：不能。
+
 #### conda pack
 
 1. install

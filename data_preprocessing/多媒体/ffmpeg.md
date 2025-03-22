@@ -1,22 +1,4 @@
-- [1. 视频](#1-视频)
-  - [1.1. 转换视频格式](#11-转换视频格式)
-  - [1.2. 限定视频fps](#12-限定视频fps)
-  - [1.3. 重复写入不报错](#13-重复写入不报错)
-- [2. 提取声音](#2-提取声音)
-  - [2.1. Extract Audio from Audio](#21-extract-audio-from-audio)
-  - [2.2. Extract Audio from Video](#22-extract-audio-from-video)
-  - [2.3. 静音](#23-静音)
-  - [2.4. 音量增强](#24-音量增强)
-- [3. 从视频中提取图片](#3-从视频中提取图片)
-- [合成图片到视频](#合成图片到视频)
-- [4. 由图片生成gif](#4-由图片生成gif)
-- [5. crop](#5-crop)
-- [6. 音视频时间裁剪](#6-音视频时间裁剪)
-- [7. 格式](#7-格式)
-- [8. 合成b站缓存音频和视频](#8-合成b站缓存音频和视频)
-
-
----
+[toc]
 
 <http://ffmpeg.org/download.html>
 
@@ -27,7 +9,7 @@ conda install ffmpeg
 # 而不是 pip install ffmpeg, 这个下的是假库
 ```
 
-## 1. 视频
+## 视频
 
 ```bash
 # 显示信息，同时也是输入文件
@@ -43,7 +25,7 @@ Input #0, mp3, from '001.mp3':
 At least one output file must be specified
 ```
 
-### 1.1. 转换视频格式
+### 转换视频格式
 ```bash
 # 转换格式
 ffmpeg -i video_input.mp4 video_output.avi 
@@ -52,23 +34,23 @@ ffmpeg -i audio_input.mp3 audio_output.ogg
 # specify more output files:
 ffmpeg -i audio_input.wav audio_output_1.mp3 audio_output_2.ogg
 ```
-### 1.2. 限定视频fps
+### 限定视频fps
 ```bash
 # -r 20         fps
 ffmpeg -i video_input.mp4 -r 20 video_output.mp4
 ```
 
 
-### 1.3. 重复写入不报错
+### 重复写入不报错
 ```bash
 # -y          override
 ffmpeg -i video_input.mp4 -y video_output.mp4
 ```
 
-## 2. 提取声音
+## 提取声音
 
 
-### 2.1. Extract Audio from Audio
+### Extract Audio from Audio
 
 ```bash
 # -ar 16000     audio read 采样频率
@@ -77,7 +59,7 @@ ffmpeg -i video_input.mp4 -y video_output.mp4
 ffmpeg -i 001.mp3 -ar 16000 -ac 1 001.wav 
 ```
 
-### 2.2. Extract Audio from Video
+### Extract Audio from Video
 ```bash
 # -vn                 video no
 
@@ -92,14 +74,14 @@ ffmpeg -i video.mp4 audio.mp3
 ffmpeg -i video.mp4 -vn -ar 16000 -ac 1 audio.mp3
 ```
 
-### 2.3. 静音
+### 静音
 
 ```bash
 # -an                  audio no
 ffmpeg -i input.mp4 -an output.mp4
 ```
 
-### 2.4. 音量增强
+### 音量增强
 
 
 ```bash
@@ -110,7 +92,7 @@ ffmpeg -i input.wav -af "volume=1.5" output.wav
 ffmpeg -i input.ogg -af "volume=0.75" output.ogg
 ```
 
-## 3. 从视频中提取图片
+## 从视频中提取图片
 
 ```bash
 #  -f image2: 不写也行。告诉ffmpeg你想要的输出是图片而不是另一个视频文件或音频文件
@@ -135,13 +117,13 @@ os.system(f'ffmpeg -i {video_file} -vf fps=25 -q:v 1 {self.source}/source/%05d.p
 os.system(f'ffmpeg -y -framerate 25 -pattern_type glob -i \'{actor}/video/*.jpg\' -c:v libx264 {actor}.mp4')
 ```
 
-## 4. 由图片生成gif
+## 由图片生成gif
 ```bash
 # -i                  图片格式, 01.png,02.png
 ffmpeg -i "%01d.png" -r 20 name.gif
 ```
 
-## 5. crop
+## crop
 
 ```bash
 # -vf crop=in_w-200:in_h-200 
@@ -150,7 +132,7 @@ ffmpeg -i "%01d.png" -r 20 name.gif
 ffmpeg -i out.flv -vf crop=in_w-200:in_h-200 out.mp4
 ```
 
-## 6. 音视频时间裁剪
+## 音视频时间裁剪
 
 ```bash
 # -ss HH:MM:SS.MILLISECONDS    start second 开始时间
@@ -164,7 +146,7 @@ ffmpeg -i out.flv -ss 40 -to 70 out.ts
 ```
 
 
-## 7. 格式
+## 格式
 
 ```bash
 ffmpeg -i out.flv -f s16le out.pcm
@@ -188,7 +170,7 @@ ffmpeg -i out.flv -c:v copy -c:a copy out.mp4
   ```
 `-pix_fmt` 像素格式
 
-## 8. 合成b站缓存音频和视频
+## 合成b站缓存音频和视频
 
 ```
 ffmpeg -i video.m4s -i audio.m4s -codec copy output.mp4
